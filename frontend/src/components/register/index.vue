@@ -2,17 +2,17 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-const email = ref('');
-const password = ref('');
-const confirmPassword = ref('');
-const showPassword = ref(false);
-const confirmShowPassword = ref(false);
+const email = ref<string>('');
+const password = ref<string>('');
+const confirmPassword = ref<string>('');
+const showPassword = ref<boolean>(false);
+const confirmShowPassword = ref<boolean>(false);
 const router = useRouter();
 
 const handleRegister = async () => {
-    const errors = document.getElementsByClassName("error")
+    const errors = document.getElementsByClassName("error");
 
-    for (const error of errors){
+    for (const error of errors) {
         error.classList.add("hidden");
     }
 
@@ -28,23 +28,34 @@ const handleRegister = async () => {
         return;
     }
 
-    if (password.value != confirmPassword.value){
+    if (password.value != confirmPassword.value) {
         errors[2]?.classList.remove("hidden");
         return;
     }
 
-    const result = await fetch("http://localhost:3000/register", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-        },
-        body: JSON.stringify({ email: email.value, password: password.value })
-    });
+    try {
+        const result = await fetch("http://localhost:3000/register", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify({ email: email.value, password: password.value })
+        });
 
-    const output = await result.json();
+        const output = await result.json();
 
-    console.log(output);
+        if (output == "success") router.push({
+            name: "email",
+            state: { email: email.value, password: password.value, reason: "confirmation" }
+        })
+        else{
+            errors[3]?.classList.remove("hidden");
+        }
+    } catch (error) {
+        console.log("Erro no envio de email: ", error);
+        errors[3]?.classList.remove("hidden");
+    }
 };
 </script>
 
@@ -64,6 +75,7 @@ const handleRegister = async () => {
                     <p class="error text-red-500 text-center hidden">Prencha os campos!</p>
                     <p class="error text-red-500 text-center hidden">Email inválido!</p>
                     <p class="error text-red-500 text-center hidden">As senhas devem ser iguais!</p>
+                    <p class="error text-red-500 text-center hidden">Algo de errado aconteceu!</p>
 
                     <form @submit.prevent="handleRegister" class="pt-5 space-y-6">
                         <div class="relative group">
@@ -76,8 +88,7 @@ const handleRegister = async () => {
                                 </svg>
                             </div>
                             <input v-model="email" type="text" placeholder="Email Address"
-                                class="w-full py-3.5 pl-12 pr-4 bg-[#1a1a1a] border border-gray-800 rounded-full focus:outline-none focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e] transition-all duration-300 placeholder-gray-600 text-white"
-                            />
+                                class="w-full py-3.5 pl-12 pr-4 bg-[#1a1a1a] border border-gray-800 rounded-full focus:outline-none focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e] transition-all duration-300 placeholder-gray-600 text-white" />
                         </div>
 
                         <div class="relative group">
@@ -92,8 +103,7 @@ const handleRegister = async () => {
                             </div>
                             <input v-model.trim="password" :type="showPassword ? 'text' : 'password'"
                                 placeholder="Password"
-                                class="w-full py-3.5 pl-12 pr-12 bg-[#1a1a1a] border border-gray-800 rounded-full focus:outline-none focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e] transition-all duration-300 placeholder-gray-600 text-white"
-                            />
+                                class="w-full py-3.5 pl-12 pr-12 bg-[#1a1a1a] border border-gray-800 rounded-full focus:outline-none focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e] transition-all duration-300 placeholder-gray-600 text-white" />
                             <button type="button" @click="showPassword = !showPassword"
                                 class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-[#22c55e] transition-colors duration-300 focus:outline-none">
                                 <svg v-if="showPassword" class="h-5 w-5" viewBox="0 0 21 21"
@@ -130,8 +140,7 @@ const handleRegister = async () => {
                             </div>
                             <input v-model.trim="confirmPassword" :type="confirmShowPassword ? 'text' : 'password'"
                                 placeholder="Confirm Password"
-                                class="w-full py-3.5 pl-12 pr-12 bg-[#1a1a1a] border border-gray-800 rounded-full focus:outline-none focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e] transition-all duration-300 placeholder-gray-600 text-white"
-                            />
+                                class="w-full py-3.5 pl-12 pr-12 bg-[#1a1a1a] border border-gray-800 rounded-full focus:outline-none focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e] transition-all duration-300 placeholder-gray-600 text-white" />
                             <button type="button" @click="confirmShowPassword = !confirmShowPassword"
                                 class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-[#22c55e] transition-colors duration-300 focus:outline-none">
                                 <svg v-if="confirmShowPassword" class="h-5 w-5" viewBox="0 0 21 21"

@@ -1,0 +1,18 @@
+import { User } from "../types/user.js";
+import database from "../config/database.js";
+
+export const createAccout = async (email: string, password: string): Promise<void> => {
+    const user: User = {
+        name: "",
+        email: email,
+        password: password
+    };
+
+    await database.user.create({
+        data: {
+            name: user.name,
+            email: user.email,
+            password: user.password
+        }
+    });
+}

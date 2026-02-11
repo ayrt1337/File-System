@@ -2,10 +2,10 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-const email = ref('');
-const password = ref('');
-const showPassword = ref(false);
-const rememberMe = ref(false);
+const email = ref<string>('');
+const password = ref<string>('');
+const showPassword = ref<boolean>(false);
+const rememberMe = ref<boolean>(false);
 const router = useRouter();
 
 const handleLogin = () => {

@@ -1,9 +1,10 @@
 import { createRouter, createWebHistory } from "vue-router";
-import type { Route } from "../types/route";
 import Login from "../components/login/index.vue"
 import Register from "../components/register/index.vue"
+import Email from "../components/email-sent/index.vue"
+import ConfirmEmail from "../components/confirm-email/index.vue"
 
-const routes: Route[] = [
+const routes = [
     {
         path: "/login",
         name: "login",
@@ -14,6 +15,19 @@ const routes: Route[] = [
         path: "/register",
         name: "register",
         component: Register
+    },
+
+    {
+        path: "/email",
+        name: "email",
+        component: Email
+    },
+
+    {
+        path: "/confirmEmail/:token",
+        name: "confirmEmail",
+        component: ConfirmEmail,
+        props: true
     }
 ]
 

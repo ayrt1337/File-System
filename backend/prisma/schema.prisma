@@ -14,3 +14,12 @@ model User{
 
   @@map("users")
 }
+
+model Token{
+  id Int @id @default(autoincrement())
+  email String
+  token String @unique
+  password String?
+
+  @@map("tokens")
+}
