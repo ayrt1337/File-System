@@ -8,8 +8,10 @@ const reason = history.state.reason;
 const popup = ref<boolean>(false);
 
 const reSendEmail = async () => {
+    const path = reason == "confirmation" ? "register" : "reset"
+
     try {
-        const result = await fetch("http://localhost:3000/sendEmail", {
+        const result = await fetch(`http://localhost:3000/${path}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

@@ -2,7 +2,8 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import database from "./config/database.js";
-import { hashPassword } from "./utils/hash-password.js";
+import { v4 as uuidv4 } from "uuid";
+import { hashData, compareHash } from "./services/hash.js";
 import { genToken, verifyToken } from "./services/token.js";
 import { sendEmail } from "./services/email-confirmation.js";
 import { createAccout } from "./services/create-account.js";
@@ -26,7 +27,7 @@ app.post("/register", async (req, res) => {
         });
 
         if (!user) {
-            const newPassword = await hashPassword(password);
+            const newPassword = await hashData(password);
             const token = genToken();
             sendEmail(email, token, "confirmation");
 
@@ -46,6 +47,33 @@ app.post("/register", async (req, res) => {
     }
 })
 
+app.post("/login", async (req, res) => {
+    const { email, password, rememberMe } = req.body;
+
+    const user = await database.user.findUnique({
+        where: { email: email },
+        select: { password: true, id: true }
+    });
+
+    if (!user || !await compareHash(password, user.password)){
+        res.status(200).json("fail");
+    }
+
+    const maxAge = rememberMe == true ? 3600000 * 8766 : null;
+    const sessionKey = uuidv4();
+    const hashSessionKey = await hashData(sessionKey);
+
+    database.cookie.create({
+        data: {
+            userId: user.id,
+            cookie: hashSessionKey
+        }
+    });
+
+    res.cookie("sessionId", sessionKey, { maxAge });
+    res.status(200).json("success");
+})
+
 app.post("/reset", async (req, res) => {
     try {
         const { email } = req.body;
@@ -54,7 +82,7 @@ app.post("/reset", async (req, res) => {
             where: { email: email }
         });
 
-        if (!user) {
+        if (user) {
             const token = genToken();
             sendEmail(email, token, "reset");
 

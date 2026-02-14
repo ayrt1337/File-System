@@ -16,13 +16,12 @@ const handleRegister = async () => {
         error.classList.add("hidden");
     }
 
-    if (email.value == "" || password.value == "") {
+    if (email.value == "" || password.value == "" || confirmPassword.value == "") {
         errors[0]?.classList.remove("hidden");
         return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
     if (!emailRegex.test(email.value)) {
         errors[1]?.classList.remove("hidden");
         return;
@@ -45,11 +44,13 @@ const handleRegister = async () => {
 
         const output = await result.json();
 
-        if (output == "success") router.push({
-            name: "email",
-            state: { email: email.value, password: password.value, reason: "confirmation" }
-        })
-        else{
+        if (output == "success") {
+            router.push({
+                name: "email",
+                state: { email: email.value, password: password.value, reason: "confirmation" }
+            })
+        }
+        else {
             errors[3]?.classList.remove("hidden");
         }
     } catch (error) {
@@ -87,7 +88,7 @@ const handleRegister = async () => {
                                     <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
                                 </svg>
                             </div>
-                            <input v-model="email" type="text" placeholder="Email Address"
+                            <input v-model.trim="email" type="text" placeholder="Email"
                                 class="w-full py-3.5 pl-12 pr-4 bg-[#1a1a1a] border border-gray-800 rounded-full focus:outline-none focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e] transition-all duration-300 placeholder-gray-600 text-white" />
                         </div>
 
@@ -102,11 +103,11 @@ const handleRegister = async () => {
                                 </svg>
                             </div>
                             <input v-model.trim="password" :type="showPassword ? 'text' : 'password'"
-                                placeholder="Password"
+                                placeholder="Senha"
                                 class="w-full py-3.5 pl-12 pr-12 bg-[#1a1a1a] border border-gray-800 rounded-full focus:outline-none focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e] transition-all duration-300 placeholder-gray-600 text-white" />
                             <button type="button" @click="showPassword = !showPassword"
                                 class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-[#22c55e] transition-colors duration-300 focus:outline-none">
-                                <svg v-if="showPassword" class="h-5 w-5" viewBox="0 0 21 21"
+                                <svg v-if="showPassword" class="cursor-pointer h-5 w-5" viewBox="0 0 21 21"
                                     xmlns="http://www.w3.org/2000/svg">
                                     <g fill="none" fill-rule="evenodd" stroke="currentColor" stroke-linecap="round"
                                         stroke-linejoin="round" transform="translate(2 10)">
@@ -118,7 +119,7 @@ const handleRegister = async () => {
                                         <path d="m6.5 6-1 2.5" />
                                     </g>
                                 </svg>
-                                <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                <svg v-else xmlns="http://www.w3.org/2000/svg" class="cursor-pointer h-5 w-5" fill="none"
                                     viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -139,11 +140,11 @@ const handleRegister = async () => {
                                 </svg>
                             </div>
                             <input v-model.trim="confirmPassword" :type="confirmShowPassword ? 'text' : 'password'"
-                                placeholder="Confirm Password"
+                                placeholder="Confirmar Senha"
                                 class="w-full py-3.5 pl-12 pr-12 bg-[#1a1a1a] border border-gray-800 rounded-full focus:outline-none focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e] transition-all duration-300 placeholder-gray-600 text-white" />
                             <button type="button" @click="confirmShowPassword = !confirmShowPassword"
                                 class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-500 hover:text-[#22c55e] transition-colors duration-300 focus:outline-none">
-                                <svg v-if="confirmShowPassword" class="h-5 w-5" viewBox="0 0 21 21"
+                                <svg v-if="confirmShowPassword" class="cursor-pointer h-5 w-5" viewBox="0 0 21 21"
                                     xmlns="http://www.w3.org/2000/svg">
                                     <g fill="none" fill-rule="evenodd" stroke="currentColor" stroke-linecap="round"
                                         stroke-linejoin="round" transform="translate(2 10)">
@@ -155,7 +156,7 @@ const handleRegister = async () => {
                                         <path d="m6.5 6-1 2.5" />
                                     </g>
                                 </svg>
-                                <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                <svg v-else xmlns="http://www.w3.org/2000/svg" class="cursor-pointer h-5 w-5" fill="none"
                                     viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />

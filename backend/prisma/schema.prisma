@@ -11,6 +11,7 @@ model User{
   name String
   email String @unique
   password String
+  cookie Cookie[]
 
   @@map("users")
 }
@@ -22,4 +23,13 @@ model Token{
   password String?
 
   @@map("tokens")
+}
+
+model Cookie{
+  id Int @id @default(autoincrement())
+  cookie String @unique
+  user User @relation(fields: [userId], references: [id])
+  userId Int
+
+  @@map("cookies") 
 }
