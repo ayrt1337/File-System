@@ -60,13 +60,13 @@ const changePassword = async () => {
     }
 
     try {
-        const result = await fetch("http://localhost:3000/resetPassword", {
+        const result = await fetch(`http://localhost:3000/resetPassword/${props.token}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 "Accept": "application/json"
             },
-            body: JSON.stringify({ token: props.token, password: password })
+            body: JSON.stringify({ token: props.token, password: password.value })
         })
 
         const output = await result.json();
@@ -107,7 +107,7 @@ const changePassword = async () => {
                     <p class="error text-red-500 text-center hidden">As senhas devem ser iguais!</p>
                     <p class="error text-red-500 text-center hidden">Algo de errado aconteceu!</p>
 
-                    <div class="w-full relative group">
+                    <div class="mt-5 w-full relative group">
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                             <svg xmlns="http://www.w3.org/2000/svg"
                                 class="h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300"

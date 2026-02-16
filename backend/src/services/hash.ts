@@ -1,10 +1,10 @@
 import bcrypt from "bcrypt";
 
-export const hashData = (password: string) => {
+export const hashData = (data: string) => {
     const salt = 10;
-    return bcrypt.hash(password, salt);
+    return bcrypt.hash(data, salt);
 }
 
-export const compareHash = (password: string, hashPassword: string) => {
-    return bcrypt.compare(password, hashPassword);
+export const compareHash = (data: string, hashData: string) => {
+    return bcrypt.compare(data, hashData);
 }

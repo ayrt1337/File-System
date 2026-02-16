@@ -11,7 +11,7 @@ const router = useRouter();
 
 const handleRegister = async () => {
     const errors = document.getElementsByClassName("error");
-
+    
     for (const error of errors) {
         error.classList.add("hidden");
     }
@@ -69,8 +69,8 @@ const handleRegister = async () => {
                     <div class="mb-5">
                         <h1
                             class="text-4xl font-bold bg-gradient-to-r from-white to-gray-500 bg-clip-text text-transparent mb-2 text-center">
-                            Create Account</h1>
-                        <p class="text-gray-500 text-center">Join us today!</p>
+                            Cadastrar Conta</h1>
+                        <p class="text-gray-500 text-center">Junte-se a nos hoje!</p>
                     </div>
 
                     <p class="error text-red-500 text-center hidden">Prencha os campos!</p>
@@ -169,12 +169,12 @@ const handleRegister = async () => {
                         <div class="flex gap-4 pt-2">
                             <button type="submit"
                                 class="cursor-pointer flex-1 bg-[#009900] hover:bg-[#22c55e] text-black font-bold py-3.5 px-6 rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(34,197,94,0.3)] hover:shadow-[0_0_25px_rgba(34,197,94,0.5)] transform hover:-translate-y-0.5">
-                                SIGN UP
+                                Cadastrar
                             </button>
 
                             <button type="button" @click="router.push('/login')"
                                 class="cursor-pointer flex-1 bg-transparent hover:bg-gray-800/50 text-gray-300 hover:text-white border border-gray-700 hover:border-gray-500 font-bold py-3.5 px-6 rounded-full transition-all duration-300 transform hover:-translate-y-0.5">
-                                SIGN IN
+                                Login
                             </button>
                         </div>
                     </form>

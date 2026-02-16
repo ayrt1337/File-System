@@ -9,6 +9,23 @@ const rememberMe = ref<boolean>(false);
 const router = useRouter();
 
 const handleLogin = async () => {
+    const errors = document.getElementsByClassName("error");
+
+    for (const error of errors) {
+        error.classList.add("hidden");
+    }
+
+    if (email.value == "" || password.value == "") {
+        errors[0]?.classList.remove("hidden");
+        return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.value)) {
+        errors[1]?.classList.remove("hidden");
+        return;
+    }
+
     try {
         const result = await fetch("http://localhost:3000/login", {
             method: "POST",
@@ -16,12 +33,21 @@ const handleLogin = async () => {
                 "Content-Type": "application/json",
                 "Accept": "application/json"
             },
+            credentials: "include",
             body: JSON.stringify({ email: email.value, password: password.value, rememberMe: rememberMe.value })
         });
 
         const output = await result.json();
+
+        if(output == "success"){
+
+        }
+        else {
+            errors[3]?.classList.remove("hidden");
+        }
         console.log(output);
     } catch (error) {
+        errors[3]?.classList.remove("hidden");
         console.log("Erro no envio de dados login: ", error)
     }
 };
@@ -33,11 +59,15 @@ const handleLogin = async () => {
             <div class="w-full lg:w-1/2 pr-0 p-8 md:py-12 lg:py-16 flex flex-col justify-center relative z-20 bg-[#121212]">
                 <div class="max-w-md mx-auto w-full">
                     <div class="mb-10">
-                        <h1 class="text-4xl font-bold bg-gradient-to-r from-white to-gray-500 bg-clip-text text-transparent mb-2 text-center">Welcome!</h1>
-                        <p class="text-gray-500 text-center">Sign in to your Account</p>
+                        <h1 class="text-4xl font-bold bg-gradient-to-r from-white to-gray-500 bg-clip-text text-transparent mb-2 text-center">Bem Vindo!</h1>
+                        <p class="text-gray-500 text-center">Faça o login para a sua conta</p>
                     </div>
 
-                    <form @submit.prevent="handleLogin" class="space-y-6">
+                    <p class="error text-red-500 text-center hidden">Prencha os campos!</p>
+                    <p class="error text-red-500 text-center hidden">Email inválido!</p>
+                    <p class="error text-red-500 text-center hidden">Algo de errado aconteceu!</p>
+
+                    <form @submit.prevent="handleLogin" class="mt-5 space-y-6">
                         <div class="relative group">
                             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" viewBox="0 0 20 20" fill="currentColor">
@@ -47,10 +77,9 @@ const handleLogin = async () => {
                             </div>
                             <input 
                                 v-model.trim="email"
-                                type="email" 
+                                type="text"
                                 placeholder="Email" 
-                                class="w-full py-3.5 pl-12 pr-4 bg-[#1a1a1a] border border-gray-800 rounded-full focus:outline-none focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e] transition-all duration-300 placeholder-gray-600 text-white"
-                                required
+                                class="w-full py-3.5 pl-12 pr-4 bg-[#1a1a1a] border border-gray-800 rounded-full focus:outline-none focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e] transition-all duration-300 placeholder-gray-600 text-white"                       
                             />
                         </div>
 
@@ -65,7 +94,6 @@ const handleLogin = async () => {
                                 :type="showPassword ? 'text' : 'password'" 
                                 placeholder="Senha" 
                                 class="w-full py-3.5 pl-12 pr-12 bg-[#1a1a1a] border border-gray-800 rounded-full focus:outline-none focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e] transition-all duration-300 placeholder-gray-600 text-white"
-                                required
                             />
                             <button 
                                 type="button"
@@ -89,18 +117,17 @@ const handleLogin = async () => {
                             <label class="flex items-center cursor-pointer group">
                                 <input v-model="rememberMe" type="checkbox" class="sr-only peer">
                                 <div class="relative w-11 h-6 bg-[#1a1a1a] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#22c55e]/50 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-gray-500 after:border-gray-600 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#22c55e] peer-checked:after:bg-white peer-checked:after:border-transparent"></div>
-                                <span class="ml-3 text-gray-500 group-hover:text-gray-400 transition select-none">Remember me</span>
+                                <span class="ml-3 text-gray-500 group-hover:text-gray-400 transition select-none">Manter login</span>
                             </label>
-                            <a @click="router.push('/reset')" class="cursor-pointer text-[#00b300] hover:text-[#22c55e] transition-colors font-medium">Forgot Password?</a>
+                            <a @click="router.push('/reset')" class="cursor-pointer text-[#00b300] hover:text-[#22c55e] transition-colors font-medium">Esqueceu a senha?</a>
                         </div>
 
                         <div class="flex gap-4 pt-2">
                             <button
-                                @click="handleLogin()"
                                 type="submit" 
                                 class="cursor-pointer flex-1 bg-[#009900] hover:bg-[#22c55e] text-black font-bold py-3.5 px-6 rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(34,197,94,0.3)] hover:shadow-[0_0_25px_rgba(34,197,94,0.5)] transform hover:-translate-y-0.5"
                             >
-                                SIGN IN
+                                Login
                             </button>
                             
                             <button 
@@ -108,7 +135,7 @@ const handleLogin = async () => {
                                 @click="router.push('/register')"
                                 class="cursor-pointer flex-1 bg-transparent hover:bg-gray-800/50 text-gray-300 hover:text-white border border-gray-700 hover:border-gray-500 font-bold py-3.5 px-6 rounded-full transition-all duration-300 transform hover:-translate-y-0.5"
                             >
-                                SIGN UP
+                                Cadastrar
                             </button>
                         </div>
                     </form>

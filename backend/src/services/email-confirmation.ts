@@ -11,11 +11,14 @@ export const sendEmail = (email: string, token: string, reason: string): void =>
         }
     });
 
+    const subject = reason == "confirmation" ? "Confirmação de Email" : "Alteração de Senha";
+    const path = reason == "confirmation" ? "confirmEmail" : "confirmPassword";
+
     const message: Message = {
         from: process.env.EMAIL,
         to: email,
-        subject: reason == "confirmation" ? "Confirmação de Email" : "Alteração de Senha",
-        html: `<a href="http://localhost:5173/confirmEmail/${token}">${reason == "confirmation" ? "Confirmar Email" : "Alterar Senha"}</a>`
+        subject: subject,
+        html: `<a href="http://localhost:5173/${path}/${token}">${subject}</a>`
     };
 
     transporter.sendMail(message, error => {

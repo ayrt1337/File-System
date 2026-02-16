@@ -3,20 +3,19 @@ import express from "express";
 import cors from "cors";
 import database from "./config/database.js";
 import { v4 as uuidv4 } from "uuid";
-import { hashData, compareHash } from "./services/hash.js";
-import { genToken, verifyToken } from "./services/token.js";
-import { sendEmail } from "./services/email-confirmation.js";
-import { createAccout } from "./services/create-account.js";
-import { updateAccout } from "./services/update-accout.js";
+import cookieParser from "cookie-parser"
+import * as service from "./services/index.js";
 
 const options = {
-    origin: process.env.CORS_ORIGIN
+    origin: process.env.CORS_ORIGIN,
+    credentials: true
 };
 
 const app = express();
 
 app.use(express.json());
 app.use(cors(options));
+app.use(cookieParser());
 
 app.post("/register", async (req, res) => {
     try {
@@ -27,9 +26,9 @@ app.post("/register", async (req, res) => {
         });
 
         if (!user) {
-            const newPassword = await hashData(password);
-            const token = genToken();
-            sendEmail(email, token, "confirmation");
+            const newPassword = await service.hashData(password);
+            const token = service.genToken();
+            service.sendEmail(email, token, "confirmation");
 
             await database.token.create({
                 data: {
@@ -42,36 +41,46 @@ app.post("/register", async (req, res) => {
 
         res.status(200).json("success");
     } catch (error) {
-        console.log("Erro no envio do email:", error.message);
+        console.log("Erro no envio do email: ", error.message);
         res.status(200).json("success");
     }
 })
 
 app.post("/login", async (req, res) => {
-    const { email, password, rememberMe } = req.body;
+    try {
+        const { email, password, rememberMe } = req.body;
+        const cookie = req.cookies.sessionId;
 
-    const user = await database.user.findUnique({
-        where: { email: email },
-        select: { password: true, id: true }
-    });
+        const user = await database.user.findUnique({
+            where: { email: email },
+            select: { password: true, id: true }
+        });
 
-    if (!user || !await compareHash(password, user.password)){
+        if (!user || !await service.compareHash(password, user.password)) {
+            res.status(200).json("fail");
+        }
+
+        if (cookie) {
+            await service.deleteCookie(cookie, user.id);
+        }
+
+        const maxAge = rememberMe == true ? 3600000 * 8766 : null;
+        const sessionKey = uuidv4();
+        const hashSessionKey = await service.hashData(sessionKey);
+
+        await database.cookie.create({
+            data: {
+                userId: user.id,
+                cookie: hashSessionKey
+            }
+        });
+
+        res.cookie("sessionId", sessionKey, { maxAge });
+        res.status(200).json("success");
+    } catch (error) {
+        console.log("Erro no login: ", error.message);
         res.status(200).json("fail");
     }
-
-    const maxAge = rememberMe == true ? 3600000 * 8766 : null;
-    const sessionKey = uuidv4();
-    const hashSessionKey = await hashData(sessionKey);
-
-    database.cookie.create({
-        data: {
-            userId: user.id,
-            cookie: hashSessionKey
-        }
-    });
-
-    res.cookie("sessionId", sessionKey, { maxAge });
-    res.status(200).json("success");
 })
 
 app.post("/reset", async (req, res) => {
@@ -83,8 +92,8 @@ app.post("/reset", async (req, res) => {
         });
 
         if (user) {
-            const token = genToken();
-            sendEmail(email, token, "reset");
+            const token = service.genToken();
+            service.sendEmail(email, token, "reset");
 
             await database.token.create({
                 data: {
@@ -96,7 +105,7 @@ app.post("/reset", async (req, res) => {
 
         res.status(200).json("success");
     } catch (error) {
-        console.log("Erro no envio do email:", error.message);
+        console.log("Erro no envio do email: ", error.message);
         res.status(200).json("success");
     }
 })
@@ -122,9 +131,13 @@ app.post("/resetPassword/:token", async (req, res) => {
             }
         });
 
-        user.password = password;
+        user.password = await service.hashData(password);
 
-        await updateAccout(user);
+        await service.updateAccout(user);
+
+        await database.token.deleteMany({
+            where: { email: user.email }
+        });
 
         res.status(200).json("success");
     } catch (error) {
@@ -137,7 +150,7 @@ app.get("/confirmEmail/:token", async (req, res) => {
     try {
         const { token } = req.params;
 
-        if (!verifyToken(token)) {
+        if (!service.verifyToken(token)) {
             res.status(200).json("fail");
         }
 
@@ -151,11 +164,15 @@ app.get("/confirmEmail/:token", async (req, res) => {
             }
         });
 
+        if (!user) {
+            res.status(200).json("fail");
+        }
+
         if (user.password) {
             await database.token.deleteMany({
                 where: { email: user.email }
             });
-            await createAccout(user.email, user.password);
+            await service.createAccout(user.email, user.password);
         }
 
         res.status(200).json("success");
@@ -165,4 +182,4 @@ app.get("/confirmEmail/:token", async (req, res) => {
     }
 })
 
-app.listen(3000, () => console.log(`Server Started at ${process.env.PORT}`))
+app.listen(process.env.PORT, () => console.log(`Server Started at ${process.env.PORT}`))

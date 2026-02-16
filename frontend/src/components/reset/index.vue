@@ -66,7 +66,7 @@ const sendEmail = async (): Promise<void> => {
                         <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
                     </svg>
                 </div>
-                <input v-model.trim="email" type="text" placeholder="Email Address"
+                <input v-model.trim="email" type="text" placeholder="Email"
                     class="w-full py-3.5 pl-12 pr-4 bg-[#1a1a1a] border border-gray-800 rounded-full focus:outline-none focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e] transition-all duration-300 placeholder-gray-600 text-white" />
             </div>
 
