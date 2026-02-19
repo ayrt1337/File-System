@@ -4,7 +4,7 @@ import cors from "cors";
 import database from "./config/database.js";
 import { v4 as uuidv4 } from "uuid";
 import cookieParser from "cookie-parser"
-import * as service from "./services/index.js";
+import * as services from "./services/index.js";
 
 const options = {
     origin: process.env.CORS_ORIGIN,
@@ -26,9 +26,9 @@ app.post("/register", async (req, res) => {
         });
 
         if (!user) {
-            const newPassword = await service.hashData(password);
-            const token = service.genToken();
-            service.sendEmail(email, token, "confirmation");
+            const newPassword = await services.hashData(password);
+            const token = services.genToken();
+            services.sendEmail(email, token, "confirmation");
 
             await database.token.create({
                 data: {
@@ -56,17 +56,17 @@ app.post("/login", async (req, res) => {
             select: { password: true, id: true }
         });
 
-        if (!user || !await service.compareHash(password, user.password)) {
-            res.status(200).json("fail");
+        if (!user || !await services.compareHash(password, user.password)) {
+            res.status(404).json("fail");
         }
 
         if (cookie) {
-            await service.deleteCookie(cookie, user.id);
+            await services.deleteCookie(cookie, user.id);
         }
 
         const maxAge = rememberMe == true ? 3600000 * 8766 : null;
         const sessionKey = uuidv4();
-        const hashSessionKey = await service.hashData(sessionKey);
+        const hashSessionKey = await services.hashData(sessionKey);
 
         await database.cookie.create({
             data: {
@@ -75,7 +75,7 @@ app.post("/login", async (req, res) => {
             }
         });
 
-        res.cookie("sessionId", sessionKey, { maxAge });
+        res.cookie("sessionId", sessionKey + user.id, { maxAge });
         res.status(200).json("success");
     } catch (error) {
         console.log("Erro no login: ", error.message);
@@ -92,8 +92,8 @@ app.post("/reset", async (req, res) => {
         });
 
         if (user) {
-            const token = service.genToken();
-            service.sendEmail(email, token, "reset");
+            const token = services.genToken();
+            services.sendEmail(email, token, "reset");
 
             await database.token.create({
                 data: {
@@ -131,9 +131,9 @@ app.post("/resetPassword/:token", async (req, res) => {
             }
         });
 
-        user.password = await service.hashData(password);
+        user.password = await services.hashData(password);
 
-        await service.updateAccout(user);
+        await services.updateAccout(user);
 
         await database.token.deleteMany({
             where: { email: user.email }
@@ -150,7 +150,7 @@ app.get("/confirmEmail/:token", async (req, res) => {
     try {
         const { token } = req.params;
 
-        if (!service.verifyToken(token)) {
+        if (!services.verifyToken(token)) {
             res.status(200).json("fail");
         }
 
@@ -172,7 +172,7 @@ app.get("/confirmEmail/:token", async (req, res) => {
             await database.token.deleteMany({
                 where: { email: user.email }
             });
-            await service.createAccout(user.email, user.password);
+            await services.createAccout(user.email, user.password);
         }
 
         res.status(200).json("success");
@@ -180,6 +180,20 @@ app.get("/confirmEmail/:token", async (req, res) => {
         console.log("Erro na verificação de token: ", error.message);
         res.status(200).json("fail");
     }
+})
+
+app.get("/session", async (req, res) => {
+    const sessionKey = req.cookies.sessionKey;
+    const cookie = sessionKey.substring(0, sessionKey.length - 2);
+    const userId = Number(sessionKey[sessionKey.length - 1]);
+
+    const user = await services.verifyCookie(cookie, userId);
+
+    if(user){
+        res.status(200).json({ user });
+    }
+    
+    res.status(200).json("fail");
 })
 
 app.listen(process.env.PORT, () => console.log(`Server Started at ${process.env.PORT}`))
