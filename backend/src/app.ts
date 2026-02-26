@@ -16,6 +16,10 @@ const app = express();
 app.use(express.json());
 app.use(cors(options));
 app.use(cookieParser());
+app.use(async (req, res, next) => {
+    await services.expireCookie();
+    next();
+})
 
 app.post("/register", async (req, res) => {
     try {
@@ -59,14 +63,15 @@ app.post("/login", async (req, res) => {
             await services.deleteCookie(cookie, user.id);
         }
 
-        const maxAge = rememberMe ? 3600000 * 8766 : null;
+        const maxAge = rememberMe ? 3600000 * 8766 : 3600000 * 24;
         const sessionKey = uuidv4();
         const hashSessionKey = await services.hashData(sessionKey);
 
         await database.cookie.create({
             data: {
                 userId: user.id,
-                cookie: hashSessionKey
+                cookie: hashSessionKey,
+                maxAge: new Date(Date.now() + maxAge)
             }
         });
 

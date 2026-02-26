@@ -21,6 +21,7 @@ model Cookie{
   cookie String @unique
   user User @relation(fields: [userId], references: [id])
   userId Int
+  maxAge DateTime
 
   @@map("cookies") 
 }
