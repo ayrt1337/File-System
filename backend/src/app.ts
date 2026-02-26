@@ -48,7 +48,8 @@ app.post("/register", async (req, res) => {
 app.post("/login", async (req, res) => {
     try {
         const { email, password, rememberMe } = req.body;
-        const cookie = req.cookies.sessionId;
+        const sessionId = req.cookies.sessionId;
+        const cookie = sessionId.substring(0, sessionId.length - 1);
 
         const user = await database.user.findUnique({
             where: { email: email },
@@ -142,8 +143,6 @@ app.get("/confirmEmail/:token", async (req, res) => {
         }
 
         if (typeof decoded !== 'string') {
-            console.log(decoded.user.email);
-
             if (!decoded.user.password) {
                 res.status(200).json("success");
             }
@@ -173,8 +172,8 @@ app.get("/confirmEmail/:token", async (req, res) => {
 
 app.get("/session", async (req, res) => {
     try {
-        const sessionKey = req.cookies.sessionKey;
-        const cookie = sessionKey.substring(0, sessionKey.length - 2);
+        const sessionKey = req.cookies.sessionId;
+        const cookie = sessionKey.substring(0, sessionKey.length - 1);
         const userId = Number(sessionKey[sessionKey.length - 1]);
 
         const user = await services.verifyCookie(cookie, userId);

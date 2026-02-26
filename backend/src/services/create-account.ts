@@ -1,7 +1,7 @@
 import { User } from "../types/user.js";
 import database from "../config/database.js";
 
-export const createAccout = async (email: string, password: string): Promise<void> => {
+export const createAccout = async (email: string, password: string) => {
     const user: User = {
         name: "",
         email: email,

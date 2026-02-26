@@ -2,7 +2,7 @@ import "dotenv/config";
 import nodemailer from "nodemailer";
 import { Message } from "../types/message.js";
 
-export const sendEmail = (email: string, token: string, reason: string): void => {
+export const sendEmail = (email: string, token: string, reason: string) => {
     const transporter = nodemailer.createTransport({
         service: "gmail",
         auth: {

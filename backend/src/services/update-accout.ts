@@ -1,7 +1,7 @@
 import database from "../config/database.js";
 import { User } from "../types/user.js";
 
-export const updateAccout = async (user: User): Promise<void> => {
+export const updateAccout = async (user: User) => {
     await database.user.update({
         where: { email: user.email },
         data: {
