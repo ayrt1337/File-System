@@ -58,6 +58,7 @@ app.post("/login", async (req, res) => {
 
         if (!user || !await services.compareHash(password, user.password)) {
             res.status(404).json("fail");
+            return;
         }
 
         if (cookie) {
@@ -124,6 +125,7 @@ app.post("/resetPassword/:token", async (req, res) => {
             user.password = await services.hashData(password);
             await services.updateAccout(user);
             res.status(200).json("success");
+            return;
         }
 
         res.status(502).json("fail");
@@ -140,11 +142,13 @@ app.get("/confirmEmail/:token", async (req, res) => {
 
         if (!decoded) {
             res.status(200).json("fail");
+            return;
         }
 
         if (typeof decoded !== 'string') {
             if (!decoded.user.password) {
                 res.status(200).json("success");
+                return;
             }
 
             else {
@@ -155,10 +159,12 @@ app.get("/confirmEmail/:token", async (req, res) => {
                 if (!user) {
                     await services.createAccout(decoded.user.email, decoded.user.password);
                     res.status(200).json("success");
+                    return;
                 }
 
                 else {
                     res.status(200).json("fail");
+                    return;
                 }
             }
         }
@@ -180,6 +186,7 @@ app.get("/session", async (req, res) => {
 
         if (user) {
             res.status(200).json({ user });
+            return;
         }
 
         res.status(500).json("fail");
