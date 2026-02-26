@@ -4,6 +4,7 @@ import { compareHash } from "./hash.js";
 export const deleteCookie = async (cookie: string, userId: number) => {
     const cookies = await database.cookie.findMany({
         where: { userId: userId },
+        select: { cookie: true }
     });
 
     if (cookies.length > 0) {

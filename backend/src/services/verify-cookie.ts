@@ -7,8 +7,8 @@ export const verifyCookie = async (cookie: string, userId: number) => {
         select: { cookie: true }
     });
 
-    for (const userCookie of cookies){
-        if(await compareHash(cookie, userCookie.cookie)){
+    for (const userCookie of cookies) {
+        if (await compareHash(cookie, userCookie.cookie)) {
             const user = database.user.findUnique({
                 where: { id: userId },
                 select: { name: true }
@@ -17,6 +17,6 @@ export const verifyCookie = async (cookie: string, userId: number) => {
             return user;
         }
     }
-    
+
     return;
 }

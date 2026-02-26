@@ -1,15 +1,19 @@
 import jwt from "jsonwebtoken";
+import { User } from "../types/user.js";
 
-export const genToken = (): string => {
+export const genToken = (user: User, expiresIn: number): string => {
     const token = jwt.sign({
-        data: "Token Data"
+        user: user
     },
-        "secret_key", { expiresIn: "10m" }
+        "secret_key", { expiresIn }
     );
     return token;
 }
 
 export const verifyToken = (token: string) => {
-    const verify = jwt.verify(token, "secret_key");
-    return verify;
+    return jwt.verify(token, "secret_key");
+}
+
+export const decodeToken = (token: string) => {
+    return jwt.decode(token);
 }

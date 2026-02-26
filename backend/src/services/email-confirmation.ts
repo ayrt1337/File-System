@@ -22,6 +22,6 @@ export const sendEmail = (email: string, token: string, reason: string): void =>
     };
 
     transporter.sendMail(message, error => {
-        if(error) console.log(error);
+        if (error) console.log(error);
     });
 }
