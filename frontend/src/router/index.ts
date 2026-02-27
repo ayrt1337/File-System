@@ -1,10 +1,10 @@
 import { createRouter, createWebHistory } from "vue-router";
-import Login from "../components/login/index.vue"
-import Register from "../components/register/index.vue"
-import Email from "../components/email-sent/index.vue"
-import ConfirmEmail from "../components/confirm-email/index.vue"
-import Reset from "../components/reset/index.vue"
-import ConfirmPassword from "../components/confirm-password/index.vue"
+import Login from "../pages/login.vue";
+import Register from "../pages/register.vue";
+import Email from "../pages/email-sent.vue";
+import ConfirmEmail from "../pages/confirm-email.vue";
+import Reset from "../pages/reset.vue";
+import ConfirmPassword from "../pages/confirm-password.vue";
 
 const routes = [
     {

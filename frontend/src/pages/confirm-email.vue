@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { router } from '../../router';
-import LoadingSpinner from '../loading-spinner/index.vue';
+import { router } from '../router';
+import LoadingSpinner from '../components/loading-spinner.vue';
+import Container from '../components/container.vue';
+import BgContainer from '../components/bg-container.vue';
 
 interface Props {
     token: string
@@ -42,8 +44,8 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="min-h-screen flex items-center justify-center bg-black font-sans text-gray-300">
-        <div class="relative w-full max-w-[700px] p-15 py-13 pt-14 shadow-2xl overflow-hidden rounded-2xl bg-[#121212] z-10">
+    <Container>
+        <BgContainer class="max-w-[700px] p-15 py-13 pt-14">
             <div class="flex flex-col items-center justify-center" v-if="loading">
                 <LoadingSpinner />
                 <p class="mt-8 text-center text-[18px] text-gray-400">Verificando suas informações...</p>
@@ -51,15 +53,15 @@ onMounted(async () => {
 
             <div v-else>
                 <div class="flex flex-col items-center justify-center" v-if="success">
-                    <img class="size-[200px] mb-6" src="../../assets/success.png" alt="success">
+                    <img class="size-[200px] mb-6" src="../assets/success.png" alt="success">
                     <p class="text-center text-[20px]">Conta cadastrada com sucesso! Você será redirecionado para o login em breve.</p>
                 </div>
 
                 <div class="flex flex-col items-center justify-center" v-else>
-                    <img class="size-[200px] mb-6" src="../../assets/fail.png" alt="error">
+                    <img class="size-[200px] mb-6" src="../assets/fail.png" alt="error">
                     <p class="text-center text-[20px]">Algo inesperado aconteceu, tente realizar o cadastro novamente.</p>
                 </div>
             </div>
-        </div>
-    </div>
+        </BgContainer>
+    </Container>
 </template>

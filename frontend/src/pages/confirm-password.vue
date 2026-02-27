@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { router } from "../../router";
-import LoadingSpinner from '../loading-spinner/index.vue';
+import { router } from "../router";
+import LoadingSpinner from '../components/loading-spinner.vue';
+import Container from '../components/container.vue';
+import MessageError from "../components/message-error.vue";
+import BgContainer from "../components/bg-container.vue";
 
 interface Props {
     token: string
@@ -91,9 +94,8 @@ const changePassword = async () => {
 </script>
 
 <template>
-    <div class="min-h-screen flex items-center justify-center bg-black font-sans text-gray-300">
-        <div
-            class="relative w-full max-w-[700px] p-15 py-13 pt-14 flex flex-col items-center justify-center shadow-2xl overflow-hidden rounded-2xl bg-[#121212] z-10">
+    <Container>
+        <BgContainer class="max-w-[700px] p-15 py-13 pt-14">
             <div v-if="loading">
                 <LoadingSpinner />
                 <p class="mt-8 text-center text-[18px] text-gray-400">Verificando suas informações...</p>
@@ -103,9 +105,9 @@ const changePassword = async () => {
                 <div class="w-full flex flex-col items-center justify-center" v-if="showInput">
                     <h1 class="mb-6 text-[18px]">Escreva abaixo a nova senha</h1>
 
-                    <p class="error text-red-500 text-center hidden">Prencha os campos!</p>
-                    <p class="error text-red-500 text-center hidden">As senhas devem ser iguais!</p>
-                    <p class="error text-red-500 text-center hidden">Algo de errado aconteceu!</p>
+                    <MessageError>Prencha os campos!</MessageError>
+                    <MessageError>As senhas devem ser iguais!</MessageError>
+                    <MessageError>Algo de errado aconteceu!</MessageError>
 
                     <div class="mt-5 w-full relative group">
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -190,20 +192,20 @@ const changePassword = async () => {
 
                 <div v-else>
                     <div class="flex flex-col items-center justify-center" v-if="success">
-                        <img class="size-[200px] mb-6" src="../../assets/success.png" alt="success">
+                        <img class="size-[200px] mb-6" src="../assets/success.png" alt="success">
                         <p class="text-center text-[20px]">Senha alterada com sucesso! Você será redirecionado para o
                             login
                             em breve.</p>
                     </div>
 
                     <div class="flex flex-col items-center justify-center" v-else>
-                        <img class="size-[200px] mb-6" src="../../assets/fail.png" alt="error">
+                        <img class="size-[200px] mb-6" src="../assets/fail.png" alt="error">
                         <p class="text-center text-[20px]">Algo inesperado aconteceu, tente realizar a alteração de
                             senha
                             novamente.</p>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
+        </BgContainer>
+    </Container>
 </template>
