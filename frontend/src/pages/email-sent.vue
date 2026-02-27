@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import Container from '../components/container.vue';
+import BgContainer from '../components/bg-container.vue';
 
 const email = history.state.email;
 const password = history.state.password;
@@ -35,8 +37,8 @@ const reSendEmail = async () => {
 </script>
 
 <template>
-    <div class="min-h-screen flex items-center justify-center bg-black font-sans text-gray-300">
-        <div class="relative w-full max-w-[700px] p-15 py-13 pt-14 flex-col items-center justify-center flex shadow-2xl overflow-hidden rounded-2xl bg-[#121212] relative z-10">
+    <Container>
+        <BgContainer class="max-w-[700px] p-15 py-13 pt-14">
             <Transition name="fade-scale">
                 <div v-if="popup" class="absolute bg-[#0f0f0f] rounded-2xl p-4 px-6">
                     <p class="text-[18px] text-[#ffffff] font-medium flex items-center gap-2">
@@ -45,12 +47,12 @@ const reSendEmail = async () => {
                 </div>
             </Transition>
 
-            <img class="size-[240px]" src="../../assets/email-img.png" alt="email">
+            <img class="size-[240px]" src="../assets/email-img.png" alt="email">
 
             <p class="text-center mb-5 mt-6 text-[20px]">Enviamos um email para <span class="text-[#009900]">{{ email }}</span>, clique no link presente para {{ reason == "confirmation" ? "confirmar o seu cadastro." : "redefinir sua senha." }}</p>
             <p class="text-center text-[20px]"><span @click="reSendEmail()" class="cursor-pointer text-[#009900]">Clique aqui</span> se você não recebeu nenhum email.</p>
-        </div>
-    </div>
+        </BgContainer>
+    </Container>
 </template>
 
 <style scoped>

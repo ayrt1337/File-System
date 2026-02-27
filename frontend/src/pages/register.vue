@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import Container from '../components/container.vue';
+import MessageError from '../components/message-error.vue';
+import BgContainer from '../components/bg-container.vue';
 
 const email = ref<string>('');
 const password = ref<string>('');
@@ -11,7 +14,7 @@ const router = useRouter();
 
 const handleRegister = async () => {
     const errors = document.getElementsByClassName("error");
-    
+
     for (const error of errors) {
         error.classList.add("hidden");
     }
@@ -61,8 +64,8 @@ const handleRegister = async () => {
 </script>
 
 <template>
-    <div class="min-h-screen flex items-center justify-center bg-black font-sans text-gray-300">
-        <div class="w-full max-w-6xl h-[70vh] flex shadow-2xl overflow-hidden rounded-2xl bg-[#121212] relative z-10">
+    <Container>
+        <BgContainer class="max-w-6xl h-[70vh] flex">
             <div
                 class="w-full lg:w-1/2 pr-0 p-8 md:py-12 lg:py-16 flex flex-col justify-center relative z-20 bg-[#121212]">
                 <div class="max-w-md mx-auto w-full">
@@ -73,10 +76,10 @@ const handleRegister = async () => {
                         <p class="text-gray-500 text-center">Junte-se a nos hoje!</p>
                     </div>
 
-                    <p class="error text-red-500 text-center hidden">Prencha os campos!</p>
-                    <p class="error text-red-500 text-center hidden">Email inválido!</p>
-                    <p class="error text-red-500 text-center hidden">As senhas devem ser iguais!</p>
-                    <p class="error text-red-500 text-center hidden">Algo de errado aconteceu!</p>
+                    <MessageError>Prencha os campos!</MessageError>
+                    <MessageError>Email inválido!</MessageError>
+                    <MessageError>As senhas devem ser iguais!</MessageError>
+                    <MessageError>Algo de errado aconteceu!</MessageError>
 
                     <form @submit.prevent="handleRegister" class="pt-5 space-y-6">
                         <div class="relative group">
@@ -119,8 +122,8 @@ const handleRegister = async () => {
                                         <path d="m6.5 6-1 2.5" />
                                     </g>
                                 </svg>
-                                <svg v-else xmlns="http://www.w3.org/2000/svg" class="cursor-pointer h-5 w-5" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
+                                <svg v-else xmlns="http://www.w3.org/2000/svg" class="cursor-pointer h-5 w-5"
+                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -156,8 +159,8 @@ const handleRegister = async () => {
                                         <path d="m6.5 6-1 2.5" />
                                     </g>
                                 </svg>
-                                <svg v-else xmlns="http://www.w3.org/2000/svg" class="cursor-pointer h-5 w-5" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor">
+                                <svg v-else xmlns="http://www.w3.org/2000/svg" class="cursor-pointer h-5 w-5"
+                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -186,13 +189,13 @@ const handleRegister = async () => {
                     <div
                         class="w-full h-full relative rounded-xl backdrop-blur-sm flex flex-col items-center justify-center p-8">
                         <div class="mb-6 p-4">
-                            <img src="../../assets/unnamed.jpg" alt="">
+                            <img src="../assets/unnamed.jpg" alt="">
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
+        </BgContainer>
+    </Container>
 </template>
 
 <style scoped>
