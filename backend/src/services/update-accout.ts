@@ -9,5 +9,5 @@ export const updateAccout = async (user: User) => {
             email: user.email,
             password: user.password
         }
-    })
+    });
 }
