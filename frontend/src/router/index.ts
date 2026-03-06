@@ -5,6 +5,7 @@ import Email from "../pages/email-sent.vue";
 import ConfirmEmail from "../pages/confirm-email.vue";
 import Reset from "../pages/reset.vue";
 import ConfirmPassword from "../pages/confirm-password.vue";
+import Home from "../pages/home.vue";
 
 const routes = [
     {
@@ -44,6 +45,12 @@ const routes = [
         component: ConfirmPassword,
         props: true
     },
+
+    {
+        path: "/home",
+        name: "home",
+        component: Home
+    }
 ];
 
 export const router = createRouter({

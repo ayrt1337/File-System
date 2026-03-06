@@ -138,7 +138,7 @@ app.post("/resetPassword/:token", async (req, res) => {
 app.get("/confirmEmail/:token", async (req, res) => {
     try {
         const { token } = req.params;
-        const decoded = services.verifyToken(token)
+        const decoded = services.verifyToken(token);
 
         if (!decoded) {
             res.status(200).json("fail");
@@ -172,26 +172,6 @@ app.get("/confirmEmail/:token", async (req, res) => {
         res.status(200).json("fail");
     } catch (error) {
         console.log("Erro na verificação de token: ", error.message);
-        res.status(500).json("fail");
-    }
-})
-
-app.get("/session", async (req, res) => {
-    try {
-        const sessionKey = req.cookies.sessionId;
-        const cookie = sessionKey.substring(0, sessionKey.length - 1);
-        const userId = Number(sessionKey[sessionKey.length - 1]);
-
-        const user = await services.verifyCookie(cookie, userId);
-
-        if (user) {
-            res.status(200).json({ user });
-            return;
-        }
-
-        res.status(500).json("fail");
-    } catch (error) {
-        console.log("Erro ao verificar sessão: ", error.message);
         res.status(500).json("fail");
     }
 })

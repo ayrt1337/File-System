@@ -1,11 +1,18 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import Container from '../components/container.vue';
 import BgContainer from '../components/bg-container.vue';
+import { router } from '../router';
 
 const email = history.state.email;
 const password = history.state.password;
 const reason = history.state.reason;
+
+onMounted(() => {
+    if (!email || !password || !reason) {
+        router.push('/login');
+    }
+})
 
 const popup = ref<boolean>(false);
 

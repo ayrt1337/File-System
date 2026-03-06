@@ -1,7 +1,7 @@
 import database from "../config/database.js";
 import { compareHash } from "./hash.js";
 
-export const verifyCookie = async (cookie: string, userId: number) => {
+const verifyCookie = async (cookie: string, userId: number) => {
     const cookies = await database.cookie.findMany({
         where: { userId: userId },
         select: { cookie: true, user: true }
@@ -13,5 +13,15 @@ export const verifyCookie = async (cookie: string, userId: number) => {
         }
     }
 
+    return;
+}
+
+export const verifySession = async (sessionKey: string) => {
+    const cookie = sessionKey.substring(0, sessionKey.length - 1);
+    const userId = Number(sessionKey[sessionKey.length - 1]);
+    const user = await verifyCookie(cookie, userId);
+    if (user) {
+        return user;
+    }
     return;
 }
