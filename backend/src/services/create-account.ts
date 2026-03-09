@@ -3,7 +3,7 @@ import database from "../config/database.js";
 
 export const createAccout = async (email: string, password: string) => {
     const user: User = {
-        name: "",
+        name: "Usuário",
         email: email,
         password: password
     };

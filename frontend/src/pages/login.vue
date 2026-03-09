@@ -5,6 +5,9 @@ import Container from '../components/container.vue';
 import MessageError from '../components/message-error.vue';
 import Input from '../components/input.vue';
 import BgContainer from '../components/bg-container.vue';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { faEnvelope, faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
+import { faLock } from '@fortawesome/free-solid-svg-icons';
 
 const email = ref<string>('');
 const password = ref<string>('');
@@ -43,14 +46,13 @@ const handleLogin = async () => {
         const output = await result.json();
 
         if (output == "success") {
-
+            router.push("/my-files");
         }
         else {
             errors[3]?.classList.remove("hidden");
         }
-        console.log(output);
     } catch (error) {
-        errors[3]?.classList.remove("hidden");
+        errors[2]?.classList.remove("hidden");
         console.log("Erro no envio de dados login: ", error)
     }
 };
@@ -71,6 +73,7 @@ const handleLogin = async () => {
                     <MessageError>Prencha os campos!</MessageError>
                     <MessageError>Email inválido!</MessageError>
                     <MessageError>Algo de errado aconteceu!</MessageError>
+                    <MessageError>Dados Incorretos!</MessageError>
 
                     <form @submit.prevent="handleLogin" class="mt-5 space-y-6">
                         <Input
@@ -78,12 +81,7 @@ const handleLogin = async () => {
                             v-model="email"
                         >
                             <template v-slot:leftImage>
-                                <svg xmlns="http://www.w3.org/2000/svg"
-                                    class="h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300"
-                                    viewBox="0 0 20 20" fill="currentColor">
-                                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                                </svg>
+                                <FontAwesomeIcon :icon="faEnvelope" class="h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
                             </template>
                         </Input>
 
@@ -93,38 +91,15 @@ const handleLogin = async () => {
                             v-model="password"
                         >
                            <template v-slot:leftImage>
-                                <svg xmlns="http://www.w3.org/2000/svg"
-                                    class="h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300"
-                                    viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd"
-                                        d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                                        clip-rule="evenodd" />
-                                </svg>
+                                <FontAwesomeIcon :icon="faLock" class="h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
                             </template>
 
                             <template v-slot:eyeClosed>
-                                <svg class="cursor-pointer h-5 w-5" viewBox="0 0 21 21"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <g fill="none" fill-rule="evenodd" stroke="currentColor" stroke-linecap="round"
-                                        stroke-linejoin="round" transform="translate(2 10)">
-                                        <path
-                                            d="m0 .5c2.53705308 3.66666667 5.37038642 5.5 8.5 5.5 3.1296136 0 5.9629469-1.83333333 8.5-5.5" />
-                                        <path d="m2.5 3.423-2 2.077" />
-                                        <path d="m14.5 3.423 2 2.077" />
-                                        <path d="m10.5 6 1 2.5" />
-                                        <path d="m6.5 6-1 2.5" />
-                                    </g>
-                                </svg>
+                                <FontAwesomeIcon :icon="faEyeSlash" class="cursor-pointer hover:text-[#22c55e] h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
                             </template>
 
                             <template v-slot:eyeOpen>
-                                <svg xmlns="http://www.w3.org/2000/svg" class="cursor-pointer h-5 w-5"
-                                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
+                                <FontAwesomeIcon :icon="faEye" class="cursor-pointer hover:text-[#22c55e] h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
                             </template>
                         </Input>
 

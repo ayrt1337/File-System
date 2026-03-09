@@ -16,10 +16,44 @@ const app = express();
 app.use(express.json());
 app.use(cors(options));
 app.use(cookieParser());
+
 app.use(async (req, res, next) => {
-    await services.expireCookie();
-    next();
-})
+    try {
+        await services.expireCookie();
+        next();
+    } catch (error) {
+        console.log("Erro na expiração de cookies: ", error.message);
+        res.status(501).json("Internal Server Error");
+    }
+});
+
+const publicRoutes = ["/login", "/register", "/reset", "/resetPassword", "/confirmEmail"];
+
+app.use(async (req, res, next) => {
+    const isPublic = publicRoutes.some(route => req.path.startsWith(route));
+    if (isPublic) {
+        return next();
+    }
+
+    try {
+        const sessionKey = req.cookies.sessionId;
+
+        if (!sessionKey) {
+            return res.status(401).json("Unauthorized");
+        }
+
+        const user = await services.verifySession(sessionKey);
+        if (!user) {
+            return res.status(401).json("Unauthorized");
+        }
+
+        (req as any).user = user;
+        next();
+    } catch (error) {
+        console.log("Erro no middleware de autenticação: ", error.message);
+        res.status(500).json("Internal Server Error");
+    }
+});
 
 app.post("/register", async (req, res) => {
     try {
@@ -49,7 +83,7 @@ app.post("/login", async (req, res) => {
     try {
         const { email, password, rememberMe } = req.body;
         const sessionId = req.cookies.sessionId;
-        const cookie = sessionId.substring(0, sessionId.length - 1);
+        const cookie = sessionId?.substring(0, sessionId?.length - 1);
 
         const user = await database.user.findUnique({
             where: { email: email },
@@ -138,7 +172,7 @@ app.post("/resetPassword/:token", async (req, res) => {
 app.get("/confirmEmail/:token", async (req, res) => {
     try {
         const { token } = req.params;
-        const decoded = services.verifyToken(token)
+        const decoded = services.verifyToken(token);
 
         if (!decoded) {
             res.status(200).json("fail");
@@ -176,23 +210,23 @@ app.get("/confirmEmail/:token", async (req, res) => {
     }
 })
 
-app.get("/session", async (req, res) => {
+app.get("/my-files", async (req, res) => {
+    const user = (req as any).user;
+    res.status(200).json({ user });
+})
+
+app.get("/logout", async (req, res) => {
     try {
         const sessionKey = req.cookies.sessionId;
         const cookie = sessionKey.substring(0, sessionKey.length - 1);
-        const userId = Number(sessionKey[sessionKey.length - 1]);
+        const user = (req as any).user;
 
-        const user = await services.verifyCookie(cookie, userId);
-
-        if (user) {
-            res.status(200).json({ user });
-            return;
-        }
-
-        res.status(500).json("fail");
+        await services.deleteCookie(cookie, user.id);
+        res.clearCookie("sessionId");
+        res.status(200).json("success");
     } catch (error) {
-        console.log("Erro ao verificar sessão: ", error.message);
-        res.status(500).json("fail");
+        console.log("Erro no logout: ", error.message);
+        res.status(500).json("Internal Server Error");
     }
 })
 

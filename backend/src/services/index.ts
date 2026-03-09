@@ -4,5 +4,5 @@ export * from "./email-confirmation.js";
 export * from "./hash.js";
 export * from "./token.js";
 export * from "./update-accout.js";
-export * from "./verify-cookie.js";
+export * from "./verify-session.js";
 export * from "./expire-cookie.js";

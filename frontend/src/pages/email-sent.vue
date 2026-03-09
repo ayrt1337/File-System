@@ -1,11 +1,18 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import Container from '../components/container.vue';
 import BgContainer from '../components/bg-container.vue';
+import { router } from '../router';
 
 const email = history.state.email;
 const password = history.state.password;
 const reason = history.state.reason;
+
+onMounted(() => {
+    if (!email || !password || !reason) {
+        router.push('/login');
+    }
+})
 
 const popup = ref<boolean>(false);
 
@@ -38,7 +45,7 @@ const reSendEmail = async () => {
 
 <template>
     <Container>
-        <BgContainer class="max-w-[700px] p-15 py-13 pt-14">
+        <BgContainer class="flex-col items-center justify-center flex max-w-[700px] p-15 py-13 pt-14">
             <Transition name="fade-scale">
                 <div v-if="popup" class="absolute bg-[#0f0f0f] rounded-2xl p-4 px-6">
                     <p class="text-[18px] text-[#ffffff] font-medium flex items-center gap-2">
