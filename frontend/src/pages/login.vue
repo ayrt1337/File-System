@@ -7,11 +7,12 @@ import Input from '../components/input.vue';
 import BgContainer from '../components/bg-container.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faEnvelope, faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
-import { faLock } from '@fortawesome/free-solid-svg-icons';
+import { faLock, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 const email = ref<string>('');
 const password = ref<string>('');
 const rememberMe = ref<boolean>(false);
+const loading = ref<boolean>(false);
 const router = useRouter();
 
 const handleLogin = async () => {
@@ -32,6 +33,7 @@ const handleLogin = async () => {
         return;
     }
 
+    loading.value = true;
     try {
         const result = await fetch("http://localhost:3000/login", {
             method: "POST",
@@ -54,6 +56,8 @@ const handleLogin = async () => {
     } catch (error) {
         errors[2]?.classList.remove("hidden");
         console.log("Erro no envio de dados login: ", error)
+    } finally {
+        loading.value = false;
     }
 };
 </script>
@@ -64,9 +68,7 @@ const handleLogin = async () => {
             <div class="w-full lg:w-1/2 pr-0 p-8 md:py-12 lg:py-16 flex flex-col justify-center relative z-20 bg-[#121212]">
                 <div class="max-w-md mx-auto w-full">
                     <div class="mb-10">
-                        <h1
-                            class="text-4xl font-bold bg-gradient-to-r from-white to-gray-500 bg-clip-text text-transparent mb-2 text-center">
-                            Bem Vindo!</h1>
+                        <h1 class="text-4xl font-bold bg-gradient-to-r from-white to-gray-500 bg-clip-text text-transparent mb-2 text-center">Bem Vindo!</h1>
                         <p class="text-gray-500 text-center">Faça o login para a sua conta</p>
                     </div>
 
@@ -106,24 +108,20 @@ const handleLogin = async () => {
                         <div class="flex justify-between items-center text-sm">
                             <label class="flex items-center cursor-pointer group">
                                 <input v-model="rememberMe" type="checkbox" class="sr-only peer">
-                                <div
-                                    class="relative w-11 h-6 bg-[#1a1a1a] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#22c55e]/50 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-gray-500 after:border-gray-600 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#22c55e] peer-checked:after:bg-white peer-checked:after:border-transparent">
+                                <div class="relative w-11 h-6 bg-[#1a1a1a] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#22c55e]/50 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-gray-500 after:border-gray-600 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#22c55e] peer-checked:after:bg-white peer-checked:after:border-transparent">
                                 </div>
-                                <span class="ml-3 text-gray-500 group-hover:text-gray-400 transition select-none">Manter
-                                    login</span>
+                                <span class="ml-3 text-gray-500 group-hover:text-gray-400 transition select-none">Manter login</span>
                             </label>
                             <a @click="router.push('/reset')" class="cursor-pointer text-[#00b300] hover:text-[#22c55e] transition-colors font-medium">Esqueceu a senha?</a>
                         </div>
 
                         <div class="flex gap-4 pt-2">
-                            <button type="submit"
-                                class="cursor-pointer flex-1 bg-[#009900] hover:bg-[#22c55e] text-black font-bold py-3.5 px-6 rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(34,197,94,0.3)] hover:shadow-[0_0_25px_rgba(34,197,94,0.5)] transform hover:-translate-y-0.5">
+                            <button type="submit" class="cursor-pointer flex-1 bg-[#009900] hover:bg-[#22c55e] text-black font-bold py-3.5 px-6 rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(34,197,94,0.3)] hover:shadow-[0_0_25px_rgba(34,197,94,0.5)] transform hover:-translate-y-0.5">
+                                <FontAwesomeIcon v-if="loading" :icon="faSpinner" spin />
                                 Login
                             </button>
 
-                            <button type="button" @click="router.push('/register')"
-                                class="cursor-pointer flex-1 bg-transparent hover:bg-gray-800/50 text-gray-300 hover:text-white border border-gray-700 hover:border-gray-500 font-bold py-3.5 px-6 rounded-full transition-all duration-300 transform hover:-translate-y-0.5">
-                                Cadastrar
+                            <button type="button" @click="router.push('/register')" class="cursor-pointer flex-1 bg-transparent hover:bg-gray-800/50 text-gray-300 hover:text-white border border-gray-700 hover:border-gray-500 font-bold py-3.5 px-6 rounded-full transition-all duration-300 transform hover:-translate-y-0.5">Cadastrar
                             </button>
                         </div>
                     </form>

@@ -7,11 +7,12 @@ import BgContainer from '../components/bg-container.vue';
 import Input from '../components/input.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faEnvelope, faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
-import { faLock } from '@fortawesome/free-solid-svg-icons';
+import { faLock, faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 const email = ref<string>('');
 const password = ref<string>('');
 const confirmPassword = ref<string>('');
+const loading = ref<boolean>(false);
 const router = useRouter();
 
 const handleRegister = async () => {
@@ -37,6 +38,7 @@ const handleRegister = async () => {
         return;
     }
 
+    loading.value = true;
     try {
         const result = await fetch("http://localhost:3000/register", {
             method: "POST",
@@ -61,6 +63,8 @@ const handleRegister = async () => {
     } catch (error) {
         console.log("Erro no envio de email: ", error);
         errors[3]?.classList.remove("hidden");
+    } finally {
+        loading.value = false;
     }
 };
 </script>
@@ -84,54 +88,50 @@ const handleRegister = async () => {
                     <MessageError>Algo de errado aconteceu!</MessageError>
 
                     <form @submit.prevent="handleRegister" class="pt-5 space-y-6">
-                        <Input
-                            text="Email"
-                            v-model="email"
-                        >
+                        <Input text="Email" v-model="email">
                             <template v-slot:leftImage>
-                                <FontAwesomeIcon :icon="faEnvelope" class="h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
+                                <FontAwesomeIcon :icon="faEnvelope"
+                                    class="h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
                             </template>
                         </Input>
 
-                        <Input
-                            text="Senha"
-                            :password="true"
-                            v-model="password"
-                        >
+                        <Input text="Senha" :password="true" v-model="password">
                             <template v-slot:leftImage>
-                                <FontAwesomeIcon :icon="faLock" class="h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
+                                <FontAwesomeIcon :icon="faLock"
+                                    class="h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
                             </template>
 
                             <template v-slot:eyeClosed>
-                                <FontAwesomeIcon :icon="faEyeSlash" class="cursor-pointer hover:text-[#22c55e] h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
+                                <FontAwesomeIcon :icon="faEyeSlash"
+                                    class="cursor-pointer hover:text-[#22c55e] h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
                             </template>
 
                             <template v-slot:eyeOpen>
-                                <FontAwesomeIcon :icon="faEye" class="cursor-pointer hover:text-[#22c55e] h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
+                                <FontAwesomeIcon :icon="faEye"
+                                    class="cursor-pointer hover:text-[#22c55e] h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
                             </template>
                         </Input>
 
-                        <Input
-                            text="Confirmar Senha"
-                            :password="true"
-                            v-model="confirmPassword"
-                        >
+                        <Input text="Confirmar Senha" :password="true" v-model="confirmPassword">
                             <template v-slot:leftImage>
-                                <FontAwesomeIcon :icon="faLock" class="h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
+                                <FontAwesomeIcon :icon="faLock"
+                                    class="h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
                             </template>
 
                             <template v-slot:eyeClosed>
-                                <FontAwesomeIcon :icon="faEyeSlash" class="cursor-pointer hover:text-[#22c55e] h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
+                                <FontAwesomeIcon :icon="faEyeSlash"
+                                    class="cursor-pointer hover:text-[#22c55e] h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
                             </template>
 
                             <template v-slot:eyeOpen>
-                                <FontAwesomeIcon :icon="faEye" class="cursor-pointer hover:text-[#22c55e] h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
+                                <FontAwesomeIcon :icon="faEye"
+                                    class="cursor-pointer hover:text-[#22c55e] h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
                             </template>
                         </Input>
 
                         <div class="flex gap-4 pt-2">
-                            <button type="submit"
-                                class="cursor-pointer flex-1 bg-[#009900] hover:bg-[#22c55e] text-black font-bold py-3.5 px-6 rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(34,197,94,0.3)] hover:shadow-[0_0_25px_rgba(34,197,94,0.5)] transform hover:-translate-y-0.5">
+                            <button type="submit" :disabled="loading" class="cursor-pointer flex-1 bg-[#009900] hover:bg-[#22c55e] text-black font-bold py-3.5 px-6 rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(34,197,94,0.3)] hover:shadow-[0_0_25px_rgba(34,197,94,0.5)] transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2">
+                                <FontAwesomeIcon v-if="loading" :icon="faSpinner" spin />
                                 Cadastrar
                             </button>
 

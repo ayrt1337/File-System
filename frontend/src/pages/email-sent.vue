@@ -4,9 +4,7 @@ import Container from '../components/container.vue';
 import BgContainer from '../components/bg-container.vue';
 import { router } from '../router';
 
-const email = history.state.email;
-const password = history.state.password;
-const reason = history.state.reason;
+const { email, password, reason } = history.state;
 
 onMounted(() => {
     if (!email || !password || !reason) {
@@ -17,10 +15,15 @@ onMounted(() => {
 const popup = ref<boolean>(false);
 
 const reSendEmail = async () => {
-    const path = reason == "confirmation" ? "register" : "reset"
+    popup.value = true;
+    setTimeout(() => {
+        popup.value = false;
+    }, 2000);
+
+    const path = reason == "confirmation" ? "register" : "reset";
 
     try {
-        const result = await fetch(`http://localhost:3000/${path}`, {
+        await fetch(`http://localhost:3000/${path}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -28,15 +31,6 @@ const reSendEmail = async () => {
             },
             body: JSON.stringify({ email: email, password: password })
         });
-
-        const output = await result.json();
-
-        if (output == "success") {
-            popup.value = true;
-            setTimeout(() => {
-                popup.value = false;
-            }, 2000);
-        }
     } catch (error) {
         console.log("Erro no reenvio do email: ", error);
     }

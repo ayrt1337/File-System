@@ -2,9 +2,14 @@
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faFile, faStar } from '@fortawesome/free-regular-svg-icons';
 import { faUsers, faArrowRightArrowLeft, faTrash, faArrowRightFromBracket } from '@fortawesome/free-solid-svg-icons';
+import { router } from '../router';
+
+const emit = defineEmits(['update-loading']);
 
 const handleLogout = async () => {
-    const result = await fetch("http://localhost/logout", {
+    emit('update-loading', true);
+
+    const result = await fetch("http://localhost:3000/logout", {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -15,7 +20,9 @@ const handleLogout = async () => {
 
     const output = await result.json();
 
-    if (output) {}
+    if (output == "success") {
+       router.push("/login");
+    }
 }
 </script>
 

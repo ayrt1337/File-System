@@ -45,13 +45,10 @@ onMounted(async () => {
 
 <template>
     <Container>
-        <BgContainer class="max-w-[700px] p-15 py-13 pt-14">
-            <div class="flex flex-col items-center justify-center" v-if="loading">
-                <LoadingSpinner />
-                <p class="mt-8 text-center text-[18px] text-gray-400">Verificando suas informações...</p>
-            </div>
+        <LoadingSpinner v-if="loading" />
 
-            <div v-else>
+        <BgContainer v-else class="max-w-[700px] p-15 py-13 pt-14">
+            <div>
                 <div class="flex flex-col items-center justify-center" v-if="success">
                     <img class="size-[200px] mb-6" src="../assets/success.png" alt="success">
                     <p class="text-center text-[20px]">Conta cadastrada com sucesso! Você será redirecionado para o login em breve.</p>

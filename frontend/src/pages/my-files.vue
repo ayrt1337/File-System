@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import Sidebar from '../components/sidebar.vue';
 import Header from '../components/header.vue';
+import LoadingSpinner from '../components/loading-spinner.vue';
+import Container from '../components/container.vue';
 import { onMounted, ref } from 'vue';
 import { router } from '../router';
 
@@ -24,11 +26,20 @@ onMounted(async () => {
 
     loading.value = false;
 })
+
+const updateLoading = (newLoading: boolean) => {
+    console.log(123)
+    loading.value = newLoading;
+};
 </script>
 
 <template>
-    <div class="flex h-screen bg-[#121212]">
-        <Sidebar />
+    <Container v-if="loading">
+        <LoadingSpinner />
+    </Container>
+
+    <div v-else class="flex h-screen bg-[#121212]">
+        <Sidebar @update-loading="updateLoading" />
 
         <div class="h-screen flex flex-col w-full">
             <Header />

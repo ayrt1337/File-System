@@ -96,13 +96,10 @@ const changePassword = async () => {
 
 <template>
     <Container>
-        <BgContainer class="flex flex-col items-center justify-center max-w-[700px] p-15 py-13 pt-14">
-            <div v-if="loading">
-                <LoadingSpinner />
-                <p class="mt-8 text-center text-[18px] text-gray-400">Verificando suas informações...</p>
-            </div>
+        <LoadingSpinner v-if="loading" />
 
-            <div class="w-full" v-else>
+        <BgContainer v-else class="flex flex-col items-center justify-center max-w-[700px] p-15 py-13 pt-14">
+            <div class="w-full">
                 <div class="w-full flex flex-col items-center justify-center" v-if="showInput">
                     <h1 class="mb-6 text-[18px]">Escreva abaixo a nova senha</h1>
 
@@ -147,16 +144,12 @@ const changePassword = async () => {
                 <div v-else>
                     <div class="flex flex-col items-center justify-center" v-if="success">
                         <img class="size-[200px] mb-6" src="../assets/success.png" alt="success">
-                        <p class="text-center text-[20px]">Senha alterada com sucesso! Você será redirecionado para o
-                            login
-                            em breve.</p>
+                        <p class="text-center text-[20px]">Senha alterada com sucesso! Você será redirecionado para o login em breve.</p>
                     </div>
 
                     <div class="flex flex-col items-center justify-center" v-else>
                         <img class="size-[200px] mb-6" src="../assets/fail.png" alt="error">
-                        <p class="text-center text-[20px]">Algo inesperado aconteceu, tente realizar a alteração de
-                            senha
-                            novamente.</p>
+                        <p class="text-center text-[20px]">Algo inesperado aconteceu, tente realizar a alteração de senha novamente.</p>
                     </div>
                 </div>
             </div>
