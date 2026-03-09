@@ -46,14 +46,13 @@ const handleLogin = async () => {
         const output = await result.json();
 
         if (output == "success") {
-
+            router.push("/my-files");
         }
         else {
             errors[3]?.classList.remove("hidden");
         }
-        console.log(output);
     } catch (error) {
-        errors[3]?.classList.remove("hidden");
+        errors[2]?.classList.remove("hidden");
         console.log("Erro no envio de dados login: ", error)
     }
 };
@@ -74,6 +73,7 @@ const handleLogin = async () => {
                     <MessageError>Prencha os campos!</MessageError>
                     <MessageError>Email inválido!</MessageError>
                     <MessageError>Algo de errado aconteceu!</MessageError>
+                    <MessageError>Dados Incorretos!</MessageError>
 
                     <form @submit.prevent="handleLogin" class="mt-5 space-y-6">
                         <Input

@@ -9,7 +9,7 @@ const verifyCookie = async (cookie: string, userId: number) => {
 
     for (const userCookie of cookies) {
         if (await compareHash(cookie, userCookie.cookie)) {
-            return userCookie.user.name;
+            return userCookie.user;
         }
     }
 
