@@ -7,7 +7,7 @@ import { router } from '../router';
 const emit = defineEmits(['update-loading']);
 
 const handleLogout = async () => {
-    emit('update-loading', true);
+    emit('update-loading', { loading: true, error: false });
 
     const result = await fetch("http://localhost:3000/logout", {
         method: "GET",
@@ -22,6 +22,9 @@ const handleLogout = async () => {
 
     if (output == "success") {
        router.push("/login");
+    }
+    else {
+        emit('update-loading', { loading: false, error: true });
     }
 }
 </script>

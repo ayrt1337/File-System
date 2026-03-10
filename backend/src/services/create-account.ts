@@ -5,14 +5,20 @@ export const createAccout = async (email: string, password: string) => {
     const user: User = {
         name: "Usuário",
         email: email,
-        password: password
+        password: password,
+        createdAt: new Date(),
+        lastUpdate: new Date(),
+        inactive: false
     };
 
     await database.user.create({
         data: {
             name: user.name,
             email: user.email,
-            password: user.password
+            password: user.password,
+            createdAt: user.createdAt,
+            lastUpdate: user.lastUpdate,
+            inactive: user.inactive
         }
     });
 }

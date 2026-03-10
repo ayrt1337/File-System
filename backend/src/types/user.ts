@@ -1,5 +1,9 @@
 export interface User{
-    name?: string,
+    id?: number,
+    name: string,
     email: string,
-    password?: string
+    password: string,
+    createdAt: Date,
+    lastUpdate: Date
+    inactive: boolean
 };

@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import { User } from "../types/user.js";
 
-export const genToken = (user: User, expiresIn: number): string => {
+export const genToken = (user: Partial<User>, expiresIn: number): string => {
     const token = jwt.sign({
         user: user
     },

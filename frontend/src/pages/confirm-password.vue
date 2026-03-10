@@ -7,17 +7,19 @@ import MessageError from "../components/message-error.vue";
 import BgContainer from "../components/bg-container.vue";
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
-import { faLock } from '@fortawesome/free-solid-svg-icons';
+import { faLock, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import Input from "../components/input.vue";
 
 interface Props {
     token: string
-}
+};
 
 const props = defineProps<Props>();
 
 const password = ref<string>("");
 const confirmPassword = ref<string>("");
 const loading = ref<boolean>(true);
+const inputLoading = ref<boolean>(false);
 const success = ref<boolean>(false);
 const showInput = ref<boolean>(false);
 
@@ -63,6 +65,7 @@ const changePassword = async () => {
         return;
     }
 
+    inputLoading.value = true;
     try {
         const result = await fetch(`http://localhost:3000/resetPassword/${props.token}`, {
             method: "POST",
@@ -88,7 +91,8 @@ const changePassword = async () => {
             showInput.value = false;
         }
     } catch (error) {
-        console.log("Erro ao enviar a senha: ", error)
+        console.log("Erro ao enviar a senha: ", error);
+        inputLoading.value = false;
         errors[2]?.classList.remove("hidden");
     }
 } 
@@ -107,7 +111,7 @@ const changePassword = async () => {
                     <MessageError>As senhas devem ser iguais!</MessageError>
                     <MessageError>Algo de errado aconteceu!</MessageError>
 
-                    <Input class="mt-5 ww-full" text="Senha" :password="true" v-model="password">
+                    <Input class="mt-5 w-full" text="Senha" :password="true" v-model="password">
                         <template v-slot:leftImage>
                             <FontAwesomeIcon :icon="faLock" class="h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
                         </template>
@@ -121,7 +125,7 @@ const changePassword = async () => {
                         </template>
                     </Input>
 
-                    <Input class="mt-5 ww-full" text="Confirmar Senha" :password="true" v-model="confirmPassword">
+                    <Input class="mt-5 w-full" text="Confirmar Senha" :password="true" v-model="confirmPassword">
                         <template v-slot:leftImage>
                             <FontAwesomeIcon :icon="faLock" class="h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
                         </template>
@@ -135,9 +139,9 @@ const changePassword = async () => {
                         </template>
                     </Input>
 
-                    <button type="button" @click="changePassword()"
-                        class="mt-6 cursor-pointer flex-1 bg-[#009900] hover:bg-[#22c55e] text-black font-bold py-3.5 px-6 rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(34,197,94,0.3)] hover:shadow-[0_0_25px_rgba(34,197,94,0.5)] transform hover:-translate-y-0.5">Solicitar
-                        Alteração
+                    <button type="button" :disabled="inputLoading" @click="changePassword()" class="disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none mt-6 cursor-pointer flex-1 bg-[#009900] hover:bg-[#22c55e] text-black font-bold py-3.5 px-6 rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(34,197,94,0.3)] hover:shadow-[0_0_25px_rgba(34,197,94,0.5)] transform hover:-translate-y-0.5">
+                        <FontAwesomeIcon v-if="inputLoading" :icon="faSpinner" spin />
+                        Solicitar Alteração
                     </button>
                 </div>
 

@@ -7,7 +7,7 @@ import { router } from '../router';
 const { email, password, reason } = history.state;
 
 onMounted(() => {
-    if (!email || !password || !reason) {
+    if (!email || !reason) {
         router.push('/login');
     }
 })

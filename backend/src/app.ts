@@ -23,9 +23,9 @@ app.use(async (req, res, next) => {
         next();
     } catch (error) {
         console.log("Erro na expiração de cookies: ", error.message);
-        res.status(501).json("Internal Server Error");
+        res.status(500).json("Internal Server Error");
     }
-});
+})
 
 const publicRoutes = ["/login", "/register", "/reset", "/resetPassword", "/confirmEmail"];
 
@@ -53,7 +53,7 @@ app.use(async (req, res, next) => {
         console.log("Erro no middleware de autenticação: ", error.message);
         res.status(500).json("Internal Server Error");
     }
-});
+})
 
 app.post("/register", async (req, res) => {
     try {
@@ -63,7 +63,7 @@ app.post("/register", async (req, res) => {
             where: { email: email }
         });
 
-        if (!user) {
+        if (!user || user.inactive) {
             const newPassword = await services.hashData(password);
             const token = services.genToken({
                 email: email,
@@ -86,7 +86,7 @@ app.post("/login", async (req, res) => {
         const cookie = sessionId?.substring(0, sessionId?.length - 1);
 
         const user = await database.user.findUnique({
-            where: { email: email },
+            where: { email: email, inactive: false },
             select: { password: true, id: true }
         });
 
@@ -107,7 +107,8 @@ app.post("/login", async (req, res) => {
             data: {
                 userId: user.id,
                 cookie: hashSessionKey,
-                maxAge: new Date(Date.now() + maxAge)
+                maxAge: new Date(Date.now() + maxAge),
+                createdAt: new Date()
             }
         });
 
@@ -115,7 +116,7 @@ app.post("/login", async (req, res) => {
         res.status(200).json("success");
     } catch (error) {
         console.log("Erro no login: ", error.message);
-        res.status(500).json("fail");
+        res.status(500).json("Internal Server Error");
     }
 })
 
@@ -150,8 +151,7 @@ app.post("/resetPassword/:token", async (req, res) => {
             const user = await database.user.findUnique({
                 where: { email: decoded.user.email },
                 select: {
-                    name: true,
-                    email: true,
+                    id: true,
                     password: true
                 }
             });
@@ -162,10 +162,10 @@ app.post("/resetPassword/:token", async (req, res) => {
             return;
         }
 
-        res.status(502).json("fail");
+        res.status(502).json("Bad Gateway");
     } catch (error) {
         console.log("Erro na alteração de senha: ", error.message);
-        res.status(500).json("fail");
+        res.status(500).json("Internal Server Error");
     }
 })
 
@@ -175,7 +175,7 @@ app.get("/confirmEmail/:token", async (req, res) => {
         const decoded = services.verifyToken(token);
 
         if (!decoded) {
-            res.status(200).json("fail");
+            res.status(400).json("Bad Request");
             return;
         }
 
@@ -187,7 +187,8 @@ app.get("/confirmEmail/:token", async (req, res) => {
 
             else {
                 const user = await database.user.findUnique({
-                    where: { email: decoded.user.email }
+                    where: { email: decoded.user.email },
+                    select: { name: true, lastUpdate: true, password: true, inactive: true }
                 });
 
                 if (!user) {
@@ -196,17 +197,28 @@ app.get("/confirmEmail/:token", async (req, res) => {
                     return;
                 }
 
+                else if (user.inactive) {
+                    user.name = "Usuário";
+                    user.password = decoded.user.password;
+                    user.lastUpdate = new Date();
+                    user.inactive = false;
+
+                    await services.updateAccout(user);
+                    res.status(200).json("success");
+                    return;
+                }
+
                 else {
-                    res.status(200).json("fail");
+                    res.status(400).json("Bad Request");
                     return;
                 }
             }
         }
 
-        res.status(200).json("fail");
+        res.status(502).json("Bad Gateway");
     } catch (error) {
         console.log("Erro na verificação de token: ", error.message);
-        res.status(500).json("fail");
+        res.status(500).json("Internal Server Error");
     }
 })
 

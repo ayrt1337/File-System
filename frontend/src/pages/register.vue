@@ -58,13 +58,13 @@ const handleRegister = async () => {
             })
         }
         else {
+            loading.value = false;
             errors[3]?.classList.remove("hidden");
         }
     } catch (error) {
         console.log("Erro no envio de email: ", error);
-        errors[3]?.classList.remove("hidden");
-    } finally {
         loading.value = false;
+        errors[3]?.classList.remove("hidden");
     }
 };
 </script>
@@ -79,7 +79,7 @@ const handleRegister = async () => {
                         <h1
                             class="text-4xl font-bold bg-gradient-to-r from-white to-gray-500 bg-clip-text text-transparent mb-2 text-center">
                             Cadastrar Conta</h1>
-                        <p class="text-gray-500 text-center">Junte-se a nos hoje!</p>
+                        <p class="text-gray-500 text-center">Junte-se a nós hoje!</p>
                     </div>
 
                     <MessageError>Prencha os campos!</MessageError>

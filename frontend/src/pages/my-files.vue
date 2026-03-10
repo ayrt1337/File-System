@@ -1,8 +1,5 @@
 <script setup lang="ts">
-import Sidebar from '../components/sidebar.vue';
-import Header from '../components/header.vue';
-import LoadingSpinner from '../components/loading-spinner.vue';
-import Container from '../components/container.vue';
+import MainPageTemplate from '../components/main-page-template.vue';
 import { onMounted, ref } from 'vue';
 import { router } from '../router';
 
@@ -26,32 +23,22 @@ onMounted(async () => {
 
     loading.value = false;
 })
-
-const updateLoading = (newLoading: boolean) => {
-    loading.value = newLoading;
-};
 </script>
 
 <template>
-    <Container v-if="loading">
-        <LoadingSpinner />
-    </Container>
+    <MainPageTemplate
+        :header="true"
+        :sidebar="true"
+        :loading="loading"
+    >
+        <div class="flex flex-1 flex-col bg-[#1e1e1e] rounded-[24px] mr-8 mb-8 min-h-0">
+            <h1 class="pt-8 px-8 text-[24px] text-white font-medium mb-6">Meus Arquivos</h1>
 
-    <div v-else class="flex h-screen bg-[#121212]">
-        <Sidebar @update-loading="updateLoading" />
+            <div class="overflow-y-auto px-8 custom-scrollbar">
 
-        <div class="h-screen flex flex-col w-full">
-            <Header />
-
-            <div class="flex flex-1 flex-col bg-[#1e1e1e] rounded-[24px] mr-8 mb-8 min-h-0">
-                <h1 class="pt-8 px-8 text-[24px] text-white font-medium mb-6">Meus Arquivos</h1>
-
-                <div class="overflow-y-auto px-8 custom-scrollbar">
-
-                </div>
             </div>
         </div>
-    </div>
+    </MainPageTemplate>
 </template>
 
 <style scoped>
