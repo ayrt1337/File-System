@@ -11,7 +11,11 @@ model User{
   name String
   email String @unique
   password String
+  createdAt DateTime
+  lastUpdate DateTime
+  inactive Boolean
   cookie Cookie[]
+  files Files[]
 
   @@map("users")
 }
@@ -21,7 +25,20 @@ model Cookie{
   cookie String @unique
   user User @relation(fields: [userId], references: [id])
   userId Int
+  createdAt DateTime
   maxAge DateTime
 
   @@map("cookies") 
+}
+
+model Files{
+  id Int @id @default(autoincrement())
+  name String
+  format String
+  createdAt DateTime
+  lastUpdate DateTime
+  user User @relation(fields: [userId], references: [id])
+  userId Int
+
+  @@map("files")
 }

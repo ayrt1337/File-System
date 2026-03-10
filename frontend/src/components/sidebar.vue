@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faFile, faStar } from '@fortawesome/free-regular-svg-icons';
-import { faUsers, faArrowRightArrowLeft, faTrash, faArrowRightFromBracket } from '@fortawesome/free-solid-svg-icons';
+import { faUsers, faArrowRightArrowLeft, faTrash, faArrowRightFromBracket, faDownload } from '@fortawesome/free-solid-svg-icons';
 import { router } from '../router';
 
 const emit = defineEmits(['update-loading']);
@@ -65,6 +65,12 @@ const handleLogout = async () => {
                     class="gap-2 py-2 px-3 hover:bg-[#009900] hover:text-white rounded-full transition-all duration-300 text-[17px] cursor-pointer flex items-center">
                     <FontAwesomeIcon :icon="faArrowRightArrowLeft" />
                     <p>Converter Arquivos</p>
+                </div>
+
+                <div
+                    class="gap-2 py-2 px-3 hover:bg-[#009900] hover:text-white rounded-full transition-all duration-300 text-[17px] cursor-pointer flex items-center">
+                    <FontAwesomeIcon :icon="faDownload" />
+                    <p>Baixar Vídeos</p>
                 </div>
 
                 <div

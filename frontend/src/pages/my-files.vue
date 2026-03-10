@@ -28,7 +28,6 @@ onMounted(async () => {
 })
 
 const updateLoading = (newLoading: boolean) => {
-    console.log(123)
     loading.value = newLoading;
 };
 </script>
