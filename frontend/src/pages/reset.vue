@@ -29,7 +29,7 @@ const sendEmail = async (): Promise<void> => {
     }
 
     try {
-        const result = await fetch("http://localhost:3000/reset", {
+        const result = await fetch(import.meta.env.VITE_API_BASE_URL + `/reset`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

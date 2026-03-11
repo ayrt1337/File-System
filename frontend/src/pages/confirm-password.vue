@@ -9,6 +9,8 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
 import { faLock, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import Input from "../components/input.vue";
+import SuccessImage from '../assets/success.png';
+import FailImage from '../assets/fail.png';
 
 interface Props {
     token: string
@@ -25,7 +27,7 @@ const showInput = ref<boolean>(false);
 
 onMounted(async () => {
     try {
-        const result = await fetch(`http://localhost:3000/confirmEmail/${props.token}`, {
+        const result = await fetch(import.meta.env.VITE_API_BASE_URL + `/confirmEmail/${props.token}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -67,7 +69,7 @@ const changePassword = async () => {
 
     inputLoading.value = true;
     try {
-        const result = await fetch(`http://localhost:3000/resetPassword/${props.token}`, {
+        const result = await fetch(import.meta.env.VITE_API_BASE_URL + `/resetPassword/${props.token}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -147,12 +149,12 @@ const changePassword = async () => {
 
                 <div v-else>
                     <div class="flex flex-col items-center justify-center" v-if="success">
-                        <img class="size-[200px] mb-6" src="../assets/success.png" alt="success">
+                        <img class="size-[200px] mb-6" :src="SuccessImage" alt="success">
                         <p class="text-center text-[20px]">Senha alterada com sucesso! Você será redirecionado para o login em breve.</p>
                     </div>
 
                     <div class="flex flex-col items-center justify-center" v-else>
-                        <img class="size-[200px] mb-6" src="../assets/fail.png" alt="error">
+                        <img class="size-[200px] mb-6" :src="FailImage" alt="error">
                         <p class="text-center text-[20px]">Algo inesperado aconteceu, tente realizar a alteração de senha novamente.</p>
                     </div>
                 </div>

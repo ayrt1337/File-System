@@ -12,13 +12,6 @@ export const createAccout = async (email: string, password: string) => {
     };
 
     await database.user.create({
-        data: {
-            name: user.name,
-            email: user.email,
-            password: user.password,
-            createdAt: user.createdAt,
-            lastUpdate: user.lastUpdate,
-            inactive: user.inactive
-        }
+        data: { ...user }
     });
 }

@@ -8,6 +8,7 @@ import BgContainer from '../components/bg-container.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faEnvelope, faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
 import { faLock, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import Image from '../assets/unnamed.jpg';
 
 const email = ref<string>('');
 const password = ref<string>('');
@@ -35,7 +36,7 @@ const handleLogin = async () => {
 
     loading.value = true;
     try {
-        const result = await fetch("http://localhost:3000/login", {
+        const result = await fetch(import.meta.env.VITE_API_BASE_URL + `/login`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -136,7 +137,7 @@ const handleLogin = async () => {
                     <div
                         class="w-full h-full relative rounded-xl backdrop-blur-sm flex flex-col items-center justify-center p-8">
                         <div class="mb-6 p-4">
-                            <img src="../assets/unnamed.jpg" alt="">
+                            <img :src="Image" alt="">
                         </div>
                     </div>
                 </div>

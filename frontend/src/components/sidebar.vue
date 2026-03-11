@@ -9,7 +9,7 @@ const emit = defineEmits(['update-loading']);
 const handleLogout = async () => {
     emit('update-loading', { loading: true, error: false });
 
-    const result = await fetch("http://localhost:3000/logout", {
+    const result = await fetch(import.meta.env.VITE_API_BASE_URL + '/logout', {
         method: "GET",
         headers: {
             "Content-Type": "application/json",

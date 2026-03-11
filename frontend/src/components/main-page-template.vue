@@ -7,6 +7,7 @@ import ServerError from './server-error.vue';
 import Unauthorized from './unauthorized.vue';
 
 interface Props {
+    user: any,
     header: boolean,
     sidebar: boolean,
     loading?: boolean,
@@ -53,7 +54,7 @@ const updateLoading = (newLoading: any) => {
         <Sidebar v-if="sidebar" @update-loading="updateLoading" />
 
         <div class="h-screen flex flex-col w-full">
-            <Header v-if="header" />
+            <Header :user="user.name" v-if="header" />
 
             <slot />
         </div>

@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue';
 import Container from '../components/container.vue';
 import BgContainer from '../components/bg-container.vue';
 import { router } from '../router';
+import EmailImg from '../assets/email-img.png';
 
 const { email, password, reason } = history.state;
 
@@ -23,7 +24,7 @@ const reSendEmail = async () => {
     const path = reason == "confirmation" ? "register" : "reset";
 
     try {
-        await fetch(`http://localhost:3000/${path}`, {
+        await fetch(import.meta.env.VITE_API_BASE_URL + `/${path}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -48,7 +49,7 @@ const reSendEmail = async () => {
                 </div>
             </Transition>
 
-            <img class="size-[240px]" src="../assets/email-img.png" alt="email">
+            <img class="size-[240px]" :src="EmailImg" alt="email">
 
             <p class="text-center mb-5 mt-6 text-[20px]">Enviamos um email para <span class="text-[#009900]">{{ email }}</span>, clique no link presente para {{ reason == "confirmation" ? "confirmar o seu cadastro." : "redefinir sua senha." }}</p>
             <p class="text-center text-[20px]"><span @click="reSendEmail()" class="cursor-pointer text-[#009900]">Clique aqui</span> se você não recebeu nenhum email.</p>

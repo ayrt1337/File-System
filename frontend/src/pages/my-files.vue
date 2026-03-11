@@ -5,10 +5,11 @@ import { onMounted, ref } from 'vue';
 const loading = ref<boolean>(true);
 const error = ref<boolean>(false);
 const unauthorized = ref<boolean>(false);
+const user = ref<object>({});
 
 onMounted(async () => {
     try {
-        const result = await fetch("http://localhost:3000/my-files", {
+        const result = await fetch(import.meta.env.VITE_API_BASE_URL + `/my-files`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -16,6 +17,8 @@ onMounted(async () => {
             },
             credentials: "include"
         });
+
+        user.value = await result.json();
 
         if (result.status == 403) {
             unauthorized.value = true;
@@ -35,6 +38,7 @@ onMounted(async () => {
 
 <template>
     <MainPageTemplate
+        :user="user"
         :header="true"
         :sidebar="true"
         :loading="loading"
