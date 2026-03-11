@@ -2,28 +2,39 @@
 import Sidebar from '../components/sidebar.vue';
 import Header from '../components/header.vue';
 import LoadingSpinner from '../components/loading-spinner.vue';
-import Container from '../components/container.vue';
-import { ref, provide, watch } from 'vue';
+import { ref, watch } from 'vue';
+import ServerError from './server-error.vue';
+import Unauthorized from './unauthorized.vue';
 
 interface Props {
     header: boolean,
     sidebar: boolean,
-    loading?: boolean
-}
+    loading?: boolean,
+    error?: boolean,
+    unauthorized?: boolean
+};
 
 const props = defineProps<Props>();
 
 const loadingState = ref<boolean>(props.loading ?? true);
+const errorState = ref<boolean>(props.error ?? false);
+const unauthorizedState = ref<boolean>(props.unauthorized ?? false);
 
-watch(() => props.loading, (newVal) => {
-    if (newVal !== undefined) {
-        loadingState.value = newVal;
+watch(() => ([props.loading, props.error, props.unauthorized]), ([newLoading, newError, newUnauthorized]) => {
+    if (newLoading !== undefined) {
+        loadingState.value = newLoading;
+    }
+
+    if (newError !== undefined) {
+        errorState.value = newError;
+    }
+
+    if (newUnauthorized !== undefined) {
+        unauthorizedState.value = newUnauthorized;
     }
 });
 
 const updateLoading = (newLoading: any) => {
-    console.log(newLoading)
-
     if (!newLoading.error) {
         loadingState.value = newLoading.loading;
         return;
@@ -31,14 +42,12 @@ const updateLoading = (newLoading: any) => {
     
     // POPUP DE ERRO
 };
-
-provide('updateLoading', updateLoading);
 </script>
 
 <template>
-    <Container v-if="loadingState">
-        <LoadingSpinner />
-    </Container>
+    <LoadingSpinner v-if="loadingState" />
+    <ServerError v-else-if="!loadingState && errorState" />
+    <Unauthorized v-else-if="!loadingState && unauthorizedState" />
 
     <div v-else class="flex h-screen bg-[#121212]">
         <Sidebar v-if="sidebar" @update-loading="updateLoading" />

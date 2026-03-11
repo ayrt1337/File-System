@@ -99,10 +99,10 @@ const changePassword = async () => {
 </script>
 
 <template>
-    <Container>
-        <LoadingSpinner v-if="loading" />
+    <LoadingSpinner v-if="loading" />
 
-        <BgContainer v-else class="flex flex-col items-center justify-center max-w-[700px] p-15 py-13 pt-14">
+    <Container v-else>
+        <BgContainer class="flex flex-col items-center justify-center max-w-[700px] p-15 py-13 pt-14">
             <div class="w-full">
                 <div class="w-full flex flex-col items-center justify-center" v-if="showInput">
                     <h1 class="mb-6 text-[18px]">Escreva abaixo a nova senha</h1>

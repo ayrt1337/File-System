@@ -39,12 +39,12 @@ app.use(async (req, res, next) => {
         const sessionKey = req.cookies.sessionId;
 
         if (!sessionKey) {
-            return res.status(401).json("Unauthorized");
+            return res.status(403).json("Unauthorized");
         }
 
         const user = await services.verifySession(sessionKey);
         if (!user) {
-            return res.status(401).json("Unauthorized");
+            return res.status(403).json("Unauthorized");
         }
 
         (req as any).user = user;
@@ -224,7 +224,7 @@ app.get("/confirmEmail/:token", async (req, res) => {
 
 app.get("/my-files", async (req, res) => {
     const user = (req as any).user;
-    res.status(200).json({ user });
+    res.status(200).json({ name: user.name });
 })
 
 app.get("/logout", async (req, res) => {

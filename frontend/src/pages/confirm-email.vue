@@ -44,10 +44,10 @@ onMounted(async () => {
 </script>
 
 <template>
-    <Container>
-        <LoadingSpinner v-if="loading" />
+    <LoadingSpinner v-if="loading" />
 
-        <BgContainer v-else class="max-w-[700px] p-15 py-13 pt-14">
+    <Container v-else>
+        <BgContainer class="max-w-[700px] p-15 py-13 pt-14">
             <div>
                 <div class="flex flex-col items-center justify-center" v-if="success">
                     <img class="size-[200px] mb-6" src="../assets/success.png" alt="success">

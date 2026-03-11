@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Input from './input.vue';
-import { ref } from 'vue'
-import UserImage from '../assets/981d6b2e0ccb5e968a0618c8d47671da.jpg'
+import { ref } from 'vue';
+import UserImage from '../assets/981d6b2e0ccb5e968a0618c8d47671da.jpg';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 

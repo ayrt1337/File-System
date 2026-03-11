@@ -1,27 +1,35 @@
 <script setup lang="ts">
 import MainPageTemplate from '../components/main-page-template.vue';
 import { onMounted, ref } from 'vue';
-import { router } from '../router';
 
 const loading = ref<boolean>(true);
+const error = ref<boolean>(false);
+const unauthorized = ref<boolean>(false);
 
 onMounted(async () => {
-    const result = await fetch("http://localhost:3000/my-files", {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-        },
-        credentials: "include"
-    });
+    try {
+        const result = await fetch("http://localhost:3000/my-files", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            credentials: "include"
+        });
 
-    if (result.status !== 200) {
-        alert("Você não possui permissão para acessar essa página!");
-        router.push("/login");
-        return;
+        if (result.status == 403) {
+            unauthorized.value = true;
+        }
+        else if (result.status !== 200) {
+            error.value = true;
+        }
+
+        loading.value = false;
+    } catch (messageError) {
+        console.log("Erro em iniciar página: ", messageError);
+        error.value = true;
+        loading.value = false;
     }
-
-    loading.value = false;
 })
 </script>
 
@@ -30,6 +38,8 @@ onMounted(async () => {
         :header="true"
         :sidebar="true"
         :loading="loading"
+        :error="error"
+        :unauthorized="unauthorized"
     >
         <div class="flex flex-1 flex-col bg-[#1e1e1e] rounded-[24px] mr-8 mb-8 min-h-0">
             <h1 class="pt-8 px-8 text-[24px] text-white font-medium mb-6">Meus Arquivos</h1>

@@ -6,6 +6,7 @@ import ConfirmEmail from "../pages/confirm-email.vue";
 import Reset from "../pages/reset.vue";
 import ConfirmPassword from "../pages/confirm-password.vue";
 import MyFiles from "../pages/my-files.vue";
+import NotFound from "../pages/not-found.vue";
 
 const routes = [
     {
@@ -50,6 +51,12 @@ const routes = [
         path: "/my-files",
         name: "myFiles",
         component: MyFiles
+    },
+
+    {
+        path: "/:pathMatch(.*)*",
+        name: "notFound",
+        component: NotFound
     }
 ];
 
