@@ -49,7 +49,7 @@ onUnmounted(() => {
             <img :src="UserImage" class="profile-avatar cursor-pointer rounded-[50%] object-cover" height="50px" width="50px" @click="popup = !popup">
         </div>
 
-        <div v-if="popup" ref="popupRef" class="absolute right-8 top-[100px] w-[350px] bg-[#1f1f1f] rounded-[28px] p-5 flex flex-col items-center shadow-2xl z-50 border border-[#333]">
+        <div v-if="popup" ref="popupRef" class="absolute right-8 top-[100px] w-[350px] bg-[#1f1f1f] rounded-[28px] p-5 pb-10 flex flex-col items-center shadow-2xl z-50 border border-[#333]">
             <div class="w-full flex justify-end">
                 <div class="p-1 hover:bg-gray-800 rounded-full cursor-pointer transition-colors" @click="popup = false">
                     <FontAwesomeIcon :icon="faXmark" class="text-gray-400 h-5 w-5" />
@@ -58,14 +58,14 @@ onUnmounted(() => {
             
             <div class="relative mt-2">
                 <img :src="UserImage" class="rounded-full w-[80px] h-[80px] object-cover" />
-                <div class="absolute bottom-[-4px] right-[-4px] bg-[#1f1f1f] rounded-full p-2 border border-[#333] cursor-pointer hover:bg-gray-800 transition-colors">
-                    <FontAwesomeIcon :icon="faCamera" class="text-xs text-[#a8c7fa]" />
+                <div class="absolute bottom-[-4px] right-[-4px] cursor-pointer">
+                    <FontAwesomeIcon :icon="faCamera" class="scale-y-110 rounded-full bg-[#1f1f1f] p-2 border border-[#333] hover:bg-gray-800 transition-colors text-xs text-[#a8c7fa]" />
                 </div>
             </div>
 
             <h2 class="text-white text-xl mt-4 font-normal">Olá, {{ user }}!</h2>
             
-            <button class="mt-5 px-6 py-2 border border-[#444] rounded-full text-[#a8c7fa] text-sm font-medium hover:bg-gray-800 transition-all duration-200">
+            <button class="cursor-pointer mt-5 px-6 py-2 border border-[#444] rounded-full text-[#a8c7fa] text-sm font-medium hover:bg-gray-800 transition-all duration-200">
                 Gerenciar sua Conta
             </button>
         </div>
