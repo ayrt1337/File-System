@@ -7,6 +7,7 @@ import Reset from "../pages/reset.vue";
 import ConfirmPassword from "../pages/confirm-password.vue";
 import MyFiles from "../pages/my-files.vue";
 import NotFound from "../pages/not-found.vue";
+import Profile from "../pages/profile.vue";
 
 const routes = [
     {
@@ -51,6 +52,13 @@ const routes = [
         path: "/my-files",
         name: "myFiles",
         component: MyFiles
+    },
+
+    {
+        path: "/profile",
+        name: "profile",
+        component: Profile,
+        props: true
     },
 
     {

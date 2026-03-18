@@ -242,4 +242,9 @@ app.get("/logout", async (req, res) => {
     }
 })
 
+app.get("/profile", async (req, res) => {
+    const user = (req as any).user;
+    res.status(200).json({ email: user.email, name: user.name });
+})
+
 app.listen(process.env.PORT, () => console.log(`Server Started at ${process.env.PORT}`))

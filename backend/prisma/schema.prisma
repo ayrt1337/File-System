@@ -11,8 +11,8 @@ model User{
   name String
   email String @unique
   password String
-  createdAt DateTime
-  lastUpdate DateTime
+  createdAt DateTime @default(now())
+  lastUpdate DateTime?
   inactive Boolean
   cookie Cookie[]
   files Files[]
@@ -25,7 +25,7 @@ model Cookie{
   cookie String @unique
   user User @relation(fields: [userId], references: [id])
   userId Int
-  createdAt DateTime
+  createdAt DateTime @default(now())
   maxAge DateTime
 
   @@map("cookies") 
@@ -35,8 +35,8 @@ model Files{
   id Int @id @default(autoincrement())
   name String
   format String
-  createdAt DateTime
-  lastUpdate DateTime
+  createdAt DateTime @default(now())
+  lastUpdate DateTime?
   user User @relation(fields: [userId], references: [id])
   userId Int
 

@@ -56,7 +56,7 @@ const handleRegister = async () => {
             router.push({
                 name: "email",
                 state: { email: email.value, password: password.value, reason: "confirmation" }
-            })
+            });
         }
         else {
             loading.value = false;

@@ -10,6 +10,7 @@ interface Props {
     user: any,
     header: boolean,
     sidebar: boolean,
+    title: string,
     loading?: boolean,
     error?: boolean,
     unauthorized?: boolean
@@ -51,12 +52,18 @@ const updateLoading = (newLoading: any) => {
     <Unauthorized v-else-if="!loadingState && unauthorizedState" />
 
     <div v-else class="flex h-screen bg-[#121212]">
-        <Sidebar v-if="sidebar" @update-loading="updateLoading" />
+        <Sidebar v-if="sidebar" @update-loading="updateLoading"/>
 
         <div class="h-screen flex flex-col w-full">
             <Header :user="user.name" v-if="header" />
 
-            <slot />
+            <div :class="(!header ? 'mt-[85px] ' : '') + 'flex flex-1 flex-col bg-[#1e1e1e] rounded-[24px] mr-8 mb-8 min-h-0'">
+                <h1 v-if="title" class="pt-8 px-8 text-[24px] text-white font-medium">{{ title }}</h1>
+
+                <div class="overflow-y-auto mt-6 px-8 custom-scrollbar">
+                    <slot />
+                </div>
+            </div>
         </div>
     </div>
 </template>

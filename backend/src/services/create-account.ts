@@ -6,8 +6,6 @@ export const createAccout = async (email: string, password: string) => {
         name: "Usuário",
         email: email,
         password: password,
-        createdAt: new Date(),
-        lastUpdate: new Date(),
         inactive: false
     };
 

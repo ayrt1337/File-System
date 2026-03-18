@@ -49,7 +49,7 @@ const handleLogin = async () => {
         const output = await result.json();
 
         if (output == "success") {
-            router.push({ name: "myFiles", state: { option: "my-files" } });
+            router.push({ name: "myFiles" });
         }
         else if (result.status == 404) {
             errors[3]?.classList.remove("hidden");

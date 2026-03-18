@@ -3,7 +3,6 @@ export interface User{
     name: string,
     email: string,
     password: string,
-    createdAt: Date,
-    lastUpdate: Date
+    lastUpdate?: Date
     inactive: boolean
 };
