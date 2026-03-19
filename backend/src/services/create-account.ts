@@ -8,8 +8,6 @@ export const createAccout = async (email: string, password: string): Promise<voi
         password: password,
     };
 
-    console.log(user);
-
     await database.user.create({
         data: { ...user }
     });
