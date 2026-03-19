@@ -11,25 +11,29 @@ const emit = defineEmits(['update-loading']);
 const handleLogout = async () => {
     emit('update-loading', { loading: true, error: false });
 
-    // const result = await fetch(import.meta.env.VITE_API_BASE_URL + '/logout', {
-    //     method: "GET",
-    //     headers: {
-    //         "Content-Type": "application/json",
-    //         "Accept": "application/json"
-    //     },
-    //     credentials: "include"
-    // });
+    try {
+        const result = await fetch(import.meta.env.VITE_API_BASE_URL + '/logout', {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            credentials: "include"
+        });
 
-    // const output = await result.json();
+        if (result.status === 200) {
+            router.push("/login");
+        }
+        else {
+            emit('update-loading', { loading: false, error: true });
+            return;
+        }
 
-    // if (output == "success") {
-    //    router.push("/login");
-    // }
-    // else {
-    //     emit('update-loading', { loading: false, error: true });
-    // }
-
-    emit('update-loading', { loading: false, error: false });
+        emit('update-loading', { loading: false, error: false });
+    } catch (error) {
+        console.log("Erro em deslogar: ", error);
+        emit('update-loading', { loading: false, error: true });
+    }
 }
 </script>
 

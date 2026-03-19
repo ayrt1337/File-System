@@ -17,15 +17,7 @@ app.use(express.json());
 app.use(cors(options));
 app.use(cookieParser());
 
-app.use(async (req, res, next) => {
-    try {
-        await services.expireCookie();
-        next();
-    } catch (error) {
-        console.log("Erro na expiração de cookies: ", error.message);
-        res.status(500).json("Internal Server Error");
-    }
-})
+services.expireCookie();
 
 const publicRoutes = ["/login", "/register", "/reset", "/resetPassword", "/confirmEmail"];
 
@@ -37,7 +29,6 @@ app.use(async (req, res, next) => {
 
     try {
         const sessionKey = req.cookies.sessionId;
-
         if (!sessionKey) {
             return res.status(403).json("Unauthorized");
         }
@@ -180,6 +171,7 @@ app.get("/confirmEmail/:token", async (req, res) => {
         }
 
         if (typeof decoded !== 'string') {
+            console.log(decoded)
             if (!decoded.user.password) {
                 res.status(200).json("success");
                 return;
@@ -235,7 +227,7 @@ app.get("/logout", async (req, res) => {
 
         await services.deleteCookie(cookie, user.id);
         res.clearCookie("sessionId");
-        res.status(200).json("success");
+        res.status(200).json("Internal Server Error");
     } catch (error) {
         console.log("Erro no logout: ", error.message);
         res.status(500).json("Internal Server Error");
@@ -245,6 +237,30 @@ app.get("/logout", async (req, res) => {
 app.get("/profile", async (req, res) => {
     const user = (req as any).user;
     res.status(200).json({ email: user.email, name: user.name });
+})
+
+app.patch("/update", async (req, res) => {
+    try {
+        const { name }= req.body;
+        const user = (req as any).user;
+        await services.updateAccout({ id: user.id, name });
+        res.status(200).json("success");
+    } catch (error) {
+        console.log("Erro em atualizar conta: ", error.message);
+        res.status(500).json("Internal Server Error");
+    }
+})
+
+app.patch("/delete", async (req, res) => {
+    try {
+        const user = (req as any).user;
+        await services.inactiveAccout(user.id);
+        res.clearCookie("sessionId");
+        res.status(200).json("success");
+    } catch (error) {
+        console.log("Erro em inativar conta: ", error.message);
+        res.status(500).json("Internal Server Error");
+    }
 })
 
 app.listen(process.env.PORT, () => console.log(`Server Started at ${process.env.PORT}`))

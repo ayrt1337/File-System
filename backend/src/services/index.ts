@@ -6,3 +6,4 @@ export * from "./token.js";
 export * from "./update-accout.js";
 export * from "./verify-session.js";
 export * from "./expire-cookie.js";
+export * from "./inactiveAccout.js";

@@ -4,5 +4,5 @@ export interface User{
     email: string,
     password: string,
     lastUpdate?: Date
-    inactive: boolean
+    inactive?: boolean
 };

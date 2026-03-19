@@ -17,8 +17,8 @@ const verifyCookie = async (cookie: string, userId: number) => {
 }
 
 export const verifySession = async (sessionKey: string) => {
-    const cookie = sessionKey.substring(0, sessionKey.length - 1);
-    const userId = Number(sessionKey[sessionKey.length - 1]);
+    const cookie = sessionKey.substring(0, 36);
+    const userId = Number(sessionKey.substring(36));
     const user = await verifyCookie(cookie, userId);
     if (user) {
         return user;

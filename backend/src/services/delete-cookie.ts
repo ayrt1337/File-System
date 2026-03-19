@@ -1,7 +1,7 @@
 import database from "../config/database.js";
 import { compareHash } from "./hash.js";
 
-export const deleteCookie = async (cookie: string, userId: number) => {
+export const deleteCookie = async (cookie: string, userId: number): Promise<void> => {
     const cookies = await database.cookie.findMany({
         where: { userId: userId },
         select: { cookie: true }

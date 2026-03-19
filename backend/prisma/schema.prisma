@@ -13,7 +13,7 @@ model User{
   password String
   createdAt DateTime @default(now())
   lastUpdate DateTime?
-  inactive Boolean
+  inactive Boolean @default(false)
   cookie Cookie[]
   files Files[]
 

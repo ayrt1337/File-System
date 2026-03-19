@@ -120,7 +120,7 @@ const handleLogin = async () => {
                         </div>
 
                         <div class="flex gap-4 pt-2">
-                            <button type="submit" :disabled="loading" class="cursor-pointer flex-1 bg-[#009900] hover:bg-[#22c55e] text-black font-bold py-3.5 px-6 rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(34,197,94,0.3)] hover:shadow-[0_0_25px_rgba(34,197,94,0.5)] transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none">
+                            <button type="submit" :disabled="loading" class="cursor-pointer flex-1 bg-[#009900] hover:bg-[#22c55e] text-black font-bold py-3.5 px-6 rounded-full transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none">
                                 <FontAwesomeIcon v-if="loading" :icon="faSpinner" spin />
                                 Login
                             </button>
