@@ -2,7 +2,6 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import database from "./config/database.js";
-import { v4 as uuidv4 } from "uuid";
 import cookieParser from "cookie-parser"
 import * as services from "./services/index.js";
 
@@ -17,8 +16,6 @@ app.use(express.json());
 app.use(cors(options));
 app.use(cookieParser());
 
-services.expireCookie();
-
 const publicRoutes = ["/login", "/register", "/reset", "/resetPassword", "/confirmEmail"];
 
 app.use(async (req, res, next) => {
@@ -28,15 +25,23 @@ app.use(async (req, res, next) => {
     }
 
     try {
-        const sessionKey = req.cookies.sessionId;
-        if (!sessionKey) {
+        const token = req.cookies.sessionId;
+        if (!token) {
             return res.status(403).json("Unauthorized");
         }
 
-        const user = await services.verifySession(sessionKey);
-        if (!user) {
+        const decodedUser = services.verifyToken(token);
+        if (!decodedUser) {
             return res.status(403).json("Unauthorized");
         }
+
+        if (typeof decodedUser === "string") {
+            return res.status(502).json("Bad Gateway");
+        }
+        console.log(decodedUser)
+        const user = await database.user.findUnique({
+            where: { id: decodedUser.user.id }
+        });
 
         (req as any).user = user;
         next();
@@ -73,8 +78,6 @@ app.post("/register", async (req, res) => {
 app.post("/login", async (req, res) => {
     try {
         const { email, password, rememberMe } = req.body;
-        const sessionId = req.cookies.sessionId;
-        const cookie = sessionId?.substring(0, 36);
 
         const user = await database.user.findUnique({
             where: { email: email, inactive: false },
@@ -86,24 +89,10 @@ app.post("/login", async (req, res) => {
             return;
         }
 
-        if (cookie) {
-            await services.deleteCookie(cookie, user.id);
-        }
-
         const maxAge = rememberMe ? 3600000 * 8766 : 3600000 * 24;
-        const sessionKey = uuidv4();
-        const hashSessionKey = await services.hashData(sessionKey);
+        const sessionId = services.genToken({ id: user.id }, maxAge);
 
-        await database.cookie.create({
-            data: {
-                userId: user.id,
-                cookie: hashSessionKey,
-                maxAge: new Date(Date.now() + maxAge),
-                createdAt: new Date()
-            }
-        });
-
-        res.cookie("sessionId", sessionKey + user.id, { maxAge, secure: true, httpOnly: true });
+        res.cookie("sessionId", sessionId, { maxAge, secure: true, httpOnly: true });
         res.status(200).json("success");
     } catch (error) {
         console.log("Erro no login: ", error.message);
@@ -139,16 +128,12 @@ app.post("/resetPassword/:token", async (req, res) => {
         const decoded = services.decodeToken(token);
 
         if (typeof decoded !== 'string') {
-            const user = await database.user.findUnique({
+            const hashPassword = await services.hashData(password);
+            await database.user.update({
                 where: { email: decoded.user.email },
-                select: {
-                    id: true,
-                    password: true
-                }
+                data: { password: hashPassword }
             });
 
-            user.password = await services.hashData(password);
-            await services.updateAccout(user);
             res.status(200).json("success");
             return;
         }
@@ -177,24 +162,22 @@ app.get("/confirmEmail/:token", async (req, res) => {
             }
 
             else {
-                const user = await database.user.findUnique({
+                const user = await database.user.upsert({
                     where: { email: decoded.user.email },
-                    select: { name: true, lastUpdate: true, password: true, inactive: true }
+                    update: { 
+                        name: "Usuário", 
+                        inactive: false, 
+                        password: decoded.user.password, 
+                        lastUpdate: new Date() 
+                    },
+                    create: { 
+                        name: "Usuário", 
+                        email: decoded.user.email, 
+                        password: decoded.user.password, 
+                    }
                 });
 
-                if (!user) {
-                    await services.createAccout(decoded.user.email, decoded.user.password);
-                    res.status(200).json("success");
-                    return;
-                }
-
-                else if (user.inactive) {
-                    user.name = "Usuário";
-                    user.password = decoded.user.password;
-                    user.lastUpdate = new Date();
-                    user.inactive = false;
-
-                    await services.updateAccout(user);
+                if (user) {
                     res.status(200).json("success");
                     return;
                 }
@@ -220,11 +203,6 @@ app.get("/my-files", async (req, res) => {
 
 app.get("/logout", async (req, res) => {
     try {
-        const sessionKey = req.cookies.sessionId;
-        const cookie = sessionKey.substring(0, 36);
-        const user = (req as any).user;
-
-        await services.deleteCookie(cookie, user.id);
         res.clearCookie("sessionId");
         res.status(200).json("Internal Server Error");
     } catch (error) {
@@ -234,15 +212,25 @@ app.get("/logout", async (req, res) => {
 })
 
 app.get("/profile", async (req, res) => {
-    const user = (req as any).user;
-    res.status(200).json({ email: user.email, name: user.name });
+    try {
+        const user = (req as any).user;
+        res.status(200).json({ email: user.email, name: user.name });
+    } catch (error) {
+        console.log("Erro em enviar perfil: ", error.message);
+        res.status(500).json("Internal Server Error");
+    }
 })
 
 app.patch("/update", async (req, res) => {
     try {
-        const { name }= req.body;
+        const { name } = req.body;
         const user = (req as any).user;
-        await services.updateAccout({ id: user.id, name });
+
+        await database.user.update({
+            where: { id: user.id },
+            data: { name, lastUpdate: new Date() }
+        });
+
         res.status(200).json("success");
     } catch (error) {
         console.log("Erro em atualizar conta: ", error.message);

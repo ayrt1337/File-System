@@ -202,14 +202,14 @@ const confirmDelete = async () => {
 
             <div class="flex mt-[50px]">
                 <div class="mr-3">
-                    <button @click="handleUpdate()" type="submit" :disabled="inputLoading" class="cursor-pointer text-[15px] flex-1 bg-[#009900] hover:bg-[#22c55e] text-black font-bold py-3 px-6 rounded-full transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none">
+                    <button @click="handleUpdate()" type="submit" :disabled="inputLoading" class="cursor-pointer text-[15px] flex-1 bg-[#009900] hover:bg-[#22c55e] text-black font-bold py-2.5 px-6 rounded-full transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none">
                         <FontAwesomeIcon v-if="inputLoading" :icon="faSpinner" spin />
                         Salvar Alterações
                     </button>
                 </div>
 
                 <div>
-                    <button @click="showDeleteConfirm = true" type="submit" class="cursor-pointer flex-1 bg-red-600 hover:bg-red-500 text-black font-bold text-[15px] py-3 px-6 rounded-full transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none">
+                    <button @click="showDeleteConfirm = true" type="submit" class="cursor-pointer flex-1 bg-red-600 hover:bg-red-500 text-black font-bold text-[15px] py-2.5 px-6 rounded-full transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none">
                         Excluir Conta
                     </button>
                 </div>
