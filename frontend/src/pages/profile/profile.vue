@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import MainPageTemplate from '../components/main-page-template.vue';
-import UserImage from '../assets/981d6b2e0ccb5e968a0618c8d47671da.jpg';
-import Input from '../components/input.vue';
+import MainPageTemplate from '../../components/main-page-template.vue';
+import UserImage from '../../assets/981d6b2e0ccb5e968a0618c8d47671da.jpg';
+import Input from '../../components/input.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faCamera, faUser } from '@fortawesome/free-regular-svg-icons';
 import { faSpinner, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
-import { router } from '../router';
-import Overlay from '../components/overlay.vue';
+import { router } from '../../router/index.ts';
+import Overlay from '../../components/overlay.vue';
 
 const loading = ref<boolean>(true);
 const error = ref<boolean>(false);

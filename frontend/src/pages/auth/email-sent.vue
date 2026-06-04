@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import Container from '../components/container.vue';
-import BgContainer from '../components/bg-container.vue';
-import { router } from '../router';
-import EmailImg from '../assets/email-img.png';
+import Container from '../../components/container.vue';
+import BgContainer from '../../components/bg-container.vue';
+import { router } from '../../router/index.ts';
+import EmailImg from '../../assets/email-img.png';
 
 const { email, password, reason } = history.state;
 

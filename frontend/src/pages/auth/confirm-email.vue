@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { router } from '../router';
-import LoadingSpinner from '../components/loading-spinner.vue';
-import Container from '../components/container.vue';
-import BgContainer from '../components/bg-container.vue';
-import SuccessImage from '../assets/success.png';
-import FailImage from '../assets/fail.png';
+import { router } from '../../router/index.ts';
+import LoadingSpinner from '../../components/loading-spinner.vue';
+import Container from '../../components/container.vue';
+import BgContainer from '../../components/bg-container.vue';
+import SuccessImage from '../../assets/success.png';
+import FailImage from '../../assets/fail.png';
 
 interface Props {
     token: string

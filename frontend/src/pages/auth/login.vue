@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import Container from '../components/container.vue';
-import MessageError from '../components/message-error.vue';
-import Input from '../components/input.vue';
-import BgContainer from '../components/bg-container.vue';
+import Container from '../../components/container.vue';
+import MessageError from '../../components/message-error.vue';
+import Input from '../../components/input.vue';
+import BgContainer from '../../components/bg-container.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faEnvelope, faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
 import { faLock, faSpinner } from '@fortawesome/free-solid-svg-icons';
-import Image from '../assets/unnamed.jpg';
+import Image from '../../assets/unnamed.jpg';
 
 const email = ref<string>('');
 const password = ref<string>('');

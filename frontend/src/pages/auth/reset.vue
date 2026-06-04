@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { router } from '../router';
-import Container from '../components/container.vue';
-import MessageError from '../components/message-error.vue';
-import BgContainer from '../components/bg-container.vue';
-import Input from '../components/input.vue';
+import { router } from '../../router';
+import Container from '../../components/container.vue';
+import MessageError from '../../components/message-error.vue';
+import BgContainer from '../../components/bg-container.vue';
+import Input from '../../components/input.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faEnvelope } from '@fortawesome/free-regular-svg-icons'; 
 

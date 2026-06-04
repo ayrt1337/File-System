@@ -1,4 +1,3 @@
-export * from "./email-confirmation.js";
+export * from "./handle-email.js";
 export * from "./hash.js";
 export * from "./token.js";
-export * from "./inactiveAccout.js";

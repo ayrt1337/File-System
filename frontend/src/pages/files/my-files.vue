@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import MainPageTemplate from '../components/main-page-template.vue';
+import MainPageTemplate from '../../components/main-page-template.vue';
 import { onMounted, ref } from 'vue';
 
 const loading = ref<boolean>(true);

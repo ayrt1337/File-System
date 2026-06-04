@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { router } from "../router";
-import LoadingSpinner from '../components/loading-spinner.vue';
-import Container from '../components/container.vue';
-import MessageError from "../components/message-error.vue";
-import BgContainer from "../components/bg-container.vue";
+import { router } from "../../router/index.ts";
+import LoadingSpinner from '../../components/loading-spinner.vue';
+import Container from '../../components/container.vue';
+import MessageError from "../../components/message-error.vue";
+import BgContainer from "../../components/bg-container.vue";
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
 import { faLock, faSpinner } from '@fortawesome/free-solid-svg-icons';
-import Input from "../components/input.vue";
-import SuccessImage from '../assets/success.png';
-import FailImage from '../assets/fail.png';
+import Input from "../../components/input.vue";
+import SuccessImage from '../../assets/success.png';
+import FailImage from '../../assets/fail.png';
 
 interface Props {
     token: string
