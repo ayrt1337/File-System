@@ -6,7 +6,8 @@ import MessageError from '../../components/message-error.vue';
 import BgContainer from '../../components/bg-container.vue';
 import Input from '../../components/input.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { faEnvelope } from '@fortawesome/free-regular-svg-icons'; 
+import { faEnvelope } from '@fortawesome/free-regular-svg-icons';
+import { api } from '../../services/api'; 
 
 const email = ref<string>("");
 
@@ -29,18 +30,9 @@ const sendEmail = async (): Promise<void> => {
     }
 
     try {
-        const result = await fetch(import.meta.env.VITE_API_BASE_URL + `/reset`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            },
-            body: JSON.stringify({ email: email.value })
-        });
+        const result = await api.post(`/reset`, { email: email.value });
 
-        const output = await result.json();
-
-        if (output == "success") {
+        if (result.data == "success") {
             router.push({
                 name: "email",
                 state: { email: email.value, reason: "reset" }

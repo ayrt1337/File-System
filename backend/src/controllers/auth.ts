@@ -44,7 +44,7 @@ export class Auth {
         where: { email: email, inactive: false },
         select: { password: true, id: true },
       });
-
+      
       if (!user || !(await services.compareHash(password, user.password))) {
         throw new AppError("Dados incorretos!", 400);
       }
@@ -93,14 +93,14 @@ export class Auth {
     try {
       const { password, token } = req.body;
 
-      const decoded = services.decodeToken(token) as { email: string };
+      const decoded = services.decodeToken(token) as { data: { email: string } };
 
       if (!decoded) {
         throw new AppError("Bad Request", 400);
       }
       const hashPassword = await services.hashData(password);
       await database.user.update({
-        where: { email: decoded.email },
+        where: { email: decoded.data.email },
         data: { password: hashPassword },
       });
 
@@ -114,31 +114,29 @@ export class Auth {
     try {
       const { token } = req.query as { token: string };
 
-      const decoded = services.verifyToken(token) as {
-        email: string;
-        password: string;
-      };
+      const decoded = services.verifyToken(token) as { data: { email: string, password: string } }
 
       if (!decoded) {
         throw new AppError("Bad Request", 400);
       }
 
-      if (!decoded.password) {
+      if (!decoded.data.password) {
         res.status(200).json("success");
+        return;
       }
 
       await database.user.upsert({
-        where: { email: decoded.email },
+        where: { email: decoded.data.email },
         update: {
           name: "Usuário",
           inactive: false,
-          password: decoded.password,
+          password: decoded.data.password,
           lastUpdate: new Date(),
         },
         create: {
           name: "Usuário",
-          email: decoded.email,
-          password: decoded.password,
+          email: decoded.data.email,
+          password: decoded.data.password,
         },
       });
 

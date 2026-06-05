@@ -6,9 +6,10 @@ import MessageError from '../../components/message-error.vue';
 import BgContainer from '../../components/bg-container.vue';
 import Input from '../../components/input.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { faEnvelope, faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
+import { faEnvelope } from '@fortawesome/free-regular-svg-icons';
 import { faLock, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import Image from '../../assets/unnamed.jpg';
+import { api } from '../../services/api';
 
 const email = ref<string>('');
 const password = ref<string>('');
@@ -41,18 +42,12 @@ const handleRegister = async () => {
 
     loading.value = true;
     try {
-        const result = await fetch(import.meta.env.VITE_API_BASE_URL + `/register`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            },
-            body: JSON.stringify({ email: email.value, password: password.value })
+        const result = await api.post(`/register`, {
+            email: email.value,
+            password: password.value
         });
 
-        const output = await result.json();
-
-        if (output == "success") {
+        if (result.data == "success") {
             router.push({
                 name: "email",
                 state: { email: email.value, password: password.value, reason: "confirmation" }
@@ -101,32 +96,12 @@ const handleRegister = async () => {
                                 <FontAwesomeIcon :icon="faLock"
                                     class="h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
                             </template>
-
-                            <template v-slot:eyeClosed>
-                                <FontAwesomeIcon :icon="faEyeSlash"
-                                    class="cursor-pointer hover:text-[#22c55e] h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
-                            </template>
-
-                            <template v-slot:eyeOpen>
-                                <FontAwesomeIcon :icon="faEye"
-                                    class="cursor-pointer hover:text-[#22c55e] h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
-                            </template>
                         </Input>
 
                         <Input text="Confirmar Senha" :password="true" v-model="confirmPassword">
                             <template v-slot:leftImage>
                                 <FontAwesomeIcon :icon="faLock"
                                     class="h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
-                            </template>
-
-                            <template v-slot:eyeClosed>
-                                <FontAwesomeIcon :icon="faEyeSlash"
-                                    class="cursor-pointer hover:text-[#22c55e] h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
-                            </template>
-
-                            <template v-slot:eyeOpen>
-                                <FontAwesomeIcon :icon="faEye"
-                                    class="cursor-pointer hover:text-[#22c55e] h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
                             </template>
                         </Input>
 

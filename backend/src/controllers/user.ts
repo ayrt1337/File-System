@@ -14,10 +14,11 @@ export class User {
   async update(req: Request, res: Response, next: NextFunction) {
     try {
       const user = (req as any).user;
+      const { name } = req.body;
 
       await database.user.update({
         where: { id: user.id },
-        data: { name: user.name, lastUpdate: new Date() },
+        data: { name, lastUpdate: new Date() },
       });
 
       res.status(200).json("success");

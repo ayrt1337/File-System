@@ -6,6 +6,7 @@ import Container from '../../components/container.vue';
 import BgContainer from '../../components/bg-container.vue';
 import SuccessImage from '../../assets/success.png';
 import FailImage from '../../assets/fail.png';
+import { api } from '../../services/api';
 
 interface Props {
     token: string
@@ -18,15 +19,11 @@ const success = ref<boolean>(false);
 
 onMounted(async () => {
     try {
-        const result = await fetch(import.meta.env.VITE_API_BASE_URL + `/confirmEmail/${props.token}`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
+        const result = await api.get('/confirmEmail', {
+            params: { token: props.token }
         });
 
-        const output = await result.json();
+        const output = result.data;
 
         if (output == "success") {
             success.value = true;

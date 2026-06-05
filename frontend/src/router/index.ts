@@ -1,74 +1,88 @@
 import { createRouter, createWebHistory } from "vue-router";
-import Login from "../pages/auth/login.vue";
-import Register from "../pages/auth/register.vue";
-import Email from "../pages/auth/email-sent.vue";
-import ConfirmEmail from "../pages/auth/confirm-email.vue";
-import Reset from "../pages/auth/reset.vue";
-import ConfirmPassword from "../pages/auth/confirm-password.vue";
-import MyFiles from "../pages/files/my-files.vue";
-import NotFound from "../pages/not-found/not-found.vue";
-import Profile from "../pages/profile/profile.vue";
+import { resetPageState } from "../services/page-reset-state";
+import { useUser } from "../composables/use-user";
+import { useLoading } from "../composables/use-loading";
+import { verifyApiError } from "../services/verify-api-error";
+import { api } from "../services/api";
 
 const routes = [
   {
     path: "/login",
     name: "login",
-    component: Login,
+    component: () => import("../pages/auth/login.vue"),
   },
-
   {
     path: "/register",
     name: "register",
-    component: Register,
+    component: () => import("../pages/auth/register.vue"),
   },
-
   {
     path: "/email",
     name: "email",
-    component: Email,
+    component: () => import("../pages/auth/email-sent.vue"),
   },
-
   {
     path: "/confirmEmail/:token",
     name: "confirmEmail",
-    component: ConfirmEmail,
+    component: () => import("../pages/auth/confirm-email.vue"),
     props: true,
   },
-
   {
     path: "/reset",
     name: "reset",
-    component: Reset,
+    component: () => import("../pages/auth/reset.vue"),
   },
-
   {
     path: "/confirmPassword/:token",
     name: "confirmPassword",
-    component: ConfirmPassword,
+    component: () => import("../pages/auth/confirm-password.vue"),
     props: true,
   },
-
   {
     path: "/my-files",
     name: "myFiles",
-    component: MyFiles,
+    component: () => import("../pages/files/my-files.vue"),
+    meta: { requiresAuth: true },
   },
-
   {
     path: "/profile",
     name: "profile",
-    component: Profile,
+    component: () => import("../pages/profile/profile.vue"),
     props: true,
+    meta: { requiresAuth: true, static: true },
   },
-
   {
     path: "/:pathMatch(.*)*",
     name: "notFound",
-    component: NotFound,
+    component: () => import("../pages/not-found/not-found.vue"),
   },
 ];
 
 export const router = createRouter({
   history: createWebHistory(),
   routes,
+});
+
+router.beforeEach(() => {
+  resetPageState();
+  return;
+});
+
+router.afterEach(async (current, before) => {
+  const { setUser } = useUser();
+  const { showLoadingPage } = useLoading();
+
+  if (current.meta.requiresAuth && current.path !== before.path) {
+    if (current.meta.static) showLoadingPage(true);
+
+    try {
+      const response = await api("/profile");
+      setUser(response.data);
+    } catch (error: any) {
+      console.error("Erro ao verificar usuário:", error);
+      verifyApiError(error.response?.status);
+    } finally {
+      if (current.meta.static) showLoadingPage(false);
+    }
+  }
 });

@@ -4,35 +4,24 @@ import { faFile, faStar } from '@fortawesome/free-regular-svg-icons';
 import { faUsers, faArrowRightArrowLeft, faTrash, faArrowRightFromBracket, faDownload, faGear, faUser } from '@fortawesome/free-solid-svg-icons';
 import { router } from '../router';
 import { useRoute } from 'vue-router';
+import { useLoading } from '../composables/use-loading';
+import { useToast } from '../composables/use-toast';
+import { api } from '../services/api';
 
+const { showToast } = useToast();
+const { showLoadingPage } = useLoading();
 const route = useRoute();
-const emit = defineEmits(['update-loading']);
 
 const handleLogout = async () => {
-    emit('update-loading', { loading: true, error: false });
+    showLoadingPage(true);
 
     try {
-        const result = await fetch(import.meta.env.VITE_API_BASE_URL + '/logout', {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            },
-            credentials: "include"
-        });
-
-        if (result.status === 200) {
-            router.push("/login");
-        }
-        else {
-            emit('update-loading', { loading: false, error: true });
-            return;
-        }
-
-        emit('update-loading', { loading: false, error: false });
+        await api.get('/logout');
+        router.push("/login");
     } catch (error) {
-        console.log("Erro em deslogar: ", error);
-        emit('update-loading', { loading: false, error: true });
+        console.error("Erro em deslogar: ", error);
+        showLoadingPage(false);
+        showToast("Algo deu errado!", "error");
     }
 }
 </script>

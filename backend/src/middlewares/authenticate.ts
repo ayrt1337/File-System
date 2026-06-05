@@ -10,13 +10,13 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
             throw new AppError("Unauthorized", 401);
         }
 
-        const decodedUser = verifyToken(token) as { id: string };
+        const decodedUser = verifyToken(token) as { data: { id: string } };
         if (!decodedUser) {
-            throw new AppError("Unauthorized", 401);
+            throw new AppError("Unauthorized", 403);
         }
 
         const user = await database.user.findUnique({
-            where: { id: decodedUser.id }
+            where: { id: decodedUser.data.id }
         });
 
         if (!user) {

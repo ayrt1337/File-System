@@ -6,9 +6,10 @@ import MessageError from '../../components/message-error.vue';
 import Input from '../../components/input.vue';
 import BgContainer from '../../components/bg-container.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { faEnvelope, faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
+import { faEnvelope } from '@fortawesome/free-regular-svg-icons';
 import { faLock, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import Image from '../../assets/unnamed.jpg';
+import { api } from '../../services/api';
 
 const email = ref<string>('');
 const password = ref<string>('');
@@ -36,30 +37,22 @@ const handleLogin = async () => {
 
     loading.value = true;
     try {
-        const result = await fetch(import.meta.env.VITE_API_BASE_URL + `/login`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            },
-            credentials: "include",
-            body: JSON.stringify({ email: email.value, password: password.value, rememberMe: rememberMe.value })
+        const result = await api.post(`/login`, {
+            email: email.value,
+            password: password.value,
+            rememberMe: rememberMe.value
         });
 
-        const output = await result.json();
-
-        if (output == "success") {
+        if (result.data == "success") {
             router.push({ name: "myFiles" });
         }
-        else if (result.status == 404) {
+    } catch (error: any) {
+        if (error.response && (error.response.status === 400 || error.response.status === 404)) {
             errors[3]?.classList.remove("hidden");
-        }
-        else {
+        } else {
             errors[2]?.classList.remove("hidden");
         }
-    } catch (error) {
-        errors[2]?.classList.remove("hidden");
-        console.log("Erro no envio de dados login: ", error)
+        console.log("Erro no envio de dados login: ", error);
     } finally {
         loading.value = false;
     }
@@ -98,14 +91,6 @@ const handleLogin = async () => {
                         >
                            <template v-slot:leftImage>
                                 <FontAwesomeIcon :icon="faLock" class="h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
-                            </template>
-
-                            <template v-slot:eyeClosed>
-                                <FontAwesomeIcon :icon="faEyeSlash" class="cursor-pointer hover:text-[#22c55e] h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
-                            </template>
-
-                            <template v-slot:eyeOpen>
-                                <FontAwesomeIcon :icon="faEye" class="cursor-pointer hover:text-[#22c55e] h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
                             </template>
                         </Input>
 

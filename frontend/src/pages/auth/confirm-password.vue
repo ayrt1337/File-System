@@ -6,11 +6,11 @@ import Container from '../../components/container.vue';
 import MessageError from "../../components/message-error.vue";
 import BgContainer from "../../components/bg-container.vue";
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
 import { faLock, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import Input from "../../components/input.vue";
 import SuccessImage from '../../assets/success.png';
 import FailImage from '../../assets/fail.png';
+import { api } from '../../services/api';
 
 interface Props {
     token: string
@@ -27,15 +27,11 @@ const showInput = ref<boolean>(false);
 
 onMounted(async () => {
     try {
-        const result = await fetch(import.meta.env.VITE_API_BASE_URL + `/confirmEmail/${props.token}`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
+        const result = await api.get('/confirmEmail', {
+            params: { token: props.token }
         });
 
-        const output = await result.json();
+        const output = result.data;
 
         if (output == "success") {
             showInput.value = true;
@@ -69,16 +65,12 @@ const changePassword = async () => {
 
     inputLoading.value = true;
     try {
-        const result = await fetch(import.meta.env.VITE_API_BASE_URL + `/resetPassword/${props.token}`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            },
-            body: JSON.stringify({ token: props.token, password: password.value })
-        })
+        const result = await api.post(`/resetPassword`, {
+            token: props.token,
+            password: password.value
+        });
 
-        const output = await result.json();
+        const output = result.data;
 
         if (output == "success") {
             success.value = true;
@@ -117,27 +109,11 @@ const changePassword = async () => {
                         <template v-slot:leftImage>
                             <FontAwesomeIcon :icon="faLock" class="h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
                         </template>
-
-                        <template v-slot:eyeClosed>
-                            <FontAwesomeIcon :icon="faEyeSlash" class="cursor-pointer hover:text-[#22c55e] h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
-                        </template>
-
-                        <template v-slot:eyeOpen>
-                            <FontAwesomeIcon :icon="faEye" class="cursor-pointer hover:text-[#22c55e] h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
-                        </template>
                     </Input>
 
                     <Input class="mt-5 w-full" text="Confirmar Senha" :password="true" v-model="confirmPassword">
                         <template v-slot:leftImage>
                             <FontAwesomeIcon :icon="faLock" class="h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
-                        </template>
-
-                        <template v-slot:eyeClosed>
-                            <FontAwesomeIcon :icon="faEyeSlash" class="cursor-pointer hover:text-[#22c55e] h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
-                        </template>
-
-                        <template v-slot:eyeOpen>
-                            <FontAwesomeIcon :icon="faEye" class="cursor-pointer hover:text-[#22c55e] h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
                         </template>
                     </Input>
 

@@ -4,6 +4,7 @@ import Container from '../../components/container.vue';
 import BgContainer from '../../components/bg-container.vue';
 import { router } from '../../router/index.ts';
 import EmailImg from '../../assets/email-img.png';
+import { api } from '../../services/api';
 
 const { email, password, reason } = history.state;
 
@@ -24,14 +25,7 @@ const reSendEmail = async () => {
     const path = reason == "confirmation" ? "register" : "reset";
 
     try {
-        await fetch(import.meta.env.VITE_API_BASE_URL + `/${path}`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            },
-            body: JSON.stringify({ email: email, password: password })
-        });
+        await api.post(`/${path}`, { email: email, password: password });
     } catch (error) {
         console.log("Erro no reenvio do email: ", error);
     }

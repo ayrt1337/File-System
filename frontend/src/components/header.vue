@@ -5,12 +5,9 @@ import UserImage from '../assets/981d6b2e0ccb5e968a0618c8d47671da.jpg';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faMagnifyingGlass, faXmark, faCamera } from '@fortawesome/free-solid-svg-icons';
 import { router } from '../router';
+import { useUser } from '../composables/use-user.ts';
 
-interface Props {
-    user: any
-};
-
-const props = defineProps<Props>();
+const { showUser } = useUser();
 
 const search = ref<string>('');
 const popup = ref<boolean>(false);
@@ -58,13 +55,13 @@ onUnmounted(() => {
             </div>
             
             <div class="relative mt-2">
-                <img :src="user.profileImg || UserImage" class="rounded-full size-[80px] object-cover" />
+                <img :src="showUser.profileImg || UserImage" class="rounded-full size-[80px] object-cover" />
                 <div class="absolute bottom-[-4px] right-[-4px] cursor-pointer">
                     <FontAwesomeIcon :icon="faCamera" class="scale-y-110 rounded-full bg-[#1f1f1f] p-2 border border-[#333] hover:bg-gray-800 transition-colors text-xs text-[#a8c7fa]" />
                 </div>
             </div>
 
-            <h2 class="text-white text-xl mt-4 font-normal">Olá, {{ user.name }}!</h2>
+            <h2 class="text-white text-xl mt-4 font-normal">Olá, {{ showUser.name }}!</h2>
             
             <button
                 @click="router.push({ name: 'profile' })"

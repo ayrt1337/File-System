@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, ref } from 'vue';
 import MainPageTemplate from '../../components/main-page-template.vue';
 import UserImage from '../../assets/981d6b2e0ccb5e968a0618c8d47671da.jpg';
 import Input from '../../components/input.vue';
@@ -8,80 +8,29 @@ import { faCamera, faUser } from '@fortawesome/free-regular-svg-icons';
 import { faSpinner, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
 import { router } from '../../router/index.ts';
 import Overlay from '../../components/overlay.vue';
+import { api } from '../../services/api';
+import { useUser } from '../../composables/use-user';
+import { useToast } from '../../composables/use-toast';
 
-const loading = ref<boolean>(true);
-const error = ref<boolean>(false);
-const unauthorized = ref<boolean>(false);
-const user = ref<any>({});
+const { showUser } = useUser();
+const { showToast } = useToast();
 const inputLoading = ref<boolean>(false);
-const errorOverlay = ref<boolean>(false);
-const successOverlay = ref<boolean>(false);
 const showDeleteConfirm = ref<boolean>(false);
-
-onMounted(async () => {
-    try {
-        const result = await fetch(import.meta.env.VITE_API_BASE_URL + `/profile`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            },
-            credentials: "include"
-        });
-
-        user.value = await result.json();
-
-        if (result.status == 403) {
-            unauthorized.value = true;
-        }
-        else if (result.status !== 200) {
-            error.value = true;
-        }
-
-        loading.value = false;
-    } catch (messageError) {
-        console.log("Erro em iniciar página: ", messageError);
-        error.value = true;
-        loading.value = false;
-    }
-})
+const name = ref<string>("");
+const computedName = computed({
+    get: () => name.value = showUser.value.name as string,
+    set: (val) => name.value = val
+});
 
 const handleUpdate = async () => {
     inputLoading.value = true;
-    const name = user.value.name;
 
     try {
-        const result = await fetch(import.meta.env.VITE_API_BASE_URL + "/update", {
-            method: "PATCH",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            },
-            credentials: "include",
-            body: JSON.stringify({ name })
-        });
-
-        if (result.status === 200) {
-            successOverlay.value = true;
-
-            setTimeout(() => {
-                successOverlay.value = false;
-            }, 3000);
-        }
-        else {
-            errorOverlay.value = true;
-
-            setTimeout(() => {
-                errorOverlay.value = false;
-            }, 3000);
-        }
+        await api.patch("/update", { name: name.value });
+        showToast("Alterações salvas com sucesso!", "success");
     } catch (error) {
-        console.log("Erro ao atualizar os dados: ", error);
-        errorOverlay.value = true;
-
-        setTimeout(() => {
-            errorOverlay.value = false;
-        }, 3000);
+        console.error("Erro ao atualizar os dados: ", error);
+        showToast("Erro ao atualizar os dados.", "error");
     } finally {
         inputLoading.value = false;
     }
@@ -92,32 +41,12 @@ const confirmDelete = async () => {
     inputLoading.value = true;
     
     try {
-        const result = await fetch(import.meta.env.VITE_API_BASE_URL + "/delete", {
-            method: "PATCH",
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            },
-            credentials: "include",
-        });
-
-        if (result.status === 200) {
-            router.push("/login");
-        }
-        else {
-            errorOverlay.value = true;
-
-            setTimeout(() => {
-                errorOverlay.value = false;
-            }, 3000);
-        }
+        await api.patch("/delete");
+        showToast("Conta excluída com sucesso!", "success");
+        router.push("/login");
     } catch (error) {
-        console.log("Erro ao atualizar os dados: ", error);
-        errorOverlay.value = true;
-
-        setTimeout(() => {
-            errorOverlay.value = false;
-        }, 3000);
+        console.error("Erro ao atualizar os dados: ", error);
+        showToast("Erro ao excluir conta.", "error");
     } finally {
         inputLoading.value = false;
     }
@@ -126,17 +55,10 @@ const confirmDelete = async () => {
 
 <template>
     <MainPageTemplate
-        :user="user"
         title=""
         :sidebar="true"
         :header="false"
-        :loading="loading"
-        :error="error"
-        :errorOverlay="errorOverlay"
-        :successOverlay="successOverlay"
-        :unauthorized="unauthorized"
     >   
-
         <div class="mt-[20px] ml-[25px] text-[#ffffff]">
             <Overlay v-if="showDeleteConfirm">
                 <Transition name="modal-fade" appear>
@@ -176,7 +98,7 @@ const confirmDelete = async () => {
                 <h2 class="text-[20px] font-medium">Foto de Perfil</h2>
                 
                 <div class="relative w-fit mt-2">
-                    <img :src="user.profileImg || UserImage" class="cursor-pointer mt-[10px] rounded-full size-[120px] object-cover">
+                    <img :src="showUser.profileImg || UserImage" class="cursor-pointer mt-[10px] rounded-full size-[120px] object-cover">
                     <div class="absolute bottom-[0px] right-[0px] cursor-pointer">
                         <FontAwesomeIcon :icon="faCamera" class="scale-y-112 scale-x-103 rounded-full bg-[#1f1f1f] p-2 border border-[#333] hover:bg-gray-800 transition-colors text-[20px] text-[#a8c7fa]" />
                     </div>
@@ -185,14 +107,14 @@ const confirmDelete = async () => {
 
             <div class="mt-[60px]">
                 <h2 class="text-[20px] mb-3 font-medium">Email</h2>
-                <p>{{ user.email }}</p>
+                <p>{{ showUser.email }}</p>
             </div>
 
             <div class="mt-[50px]">
                 <h2 class="text-[20px] mb-3 font-medium">Nome</h2>
 
-                <Input class="max-w-[500px]"  
-                    v-model="user.name"
+                <Input class="max-w-[500px]"
+                    v-model="computedName"
                 >
                     <template v-slot:leftImage>
                         <FontAwesomeIcon :icon="faUser" class="h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
