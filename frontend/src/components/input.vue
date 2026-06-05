@@ -1,17 +1,27 @@
 <script setup lang="ts">
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
+import * as far from "@fortawesome/free-regular-svg-icons";
+import * as fas from "@fortawesome/free-solid-svg-icons";
+import * as fab from "@fortawesome/free-brands-svg-icons";
 import { ref } from "vue";
 
 interface Props {
   text?: string;
   password?: boolean;
   error?: string;
+  leftIcon?: string;
 }
 
 const props = defineProps<Props>();
 const model = defineModel<string>();
 const showText = ref<boolean>(false);
+
+const getIcon = (iconName: string | undefined) => {
+  if (!iconName) return undefined;
+  return (far as Record<string, any>)[iconName] || 
+         (fas as Record<string, any>)[iconName] || 
+         (fab as Record<string, any>)[iconName];
+};
 </script>
 
 <template>
@@ -20,17 +30,24 @@ const showText = ref<boolean>(false);
       <div
         class="absolute inset-y-0 left-0 pl-[18px] flex items-center pointer-events-none"
       >
-        <slot name="leftImage"></slot>
+        <FontAwesomeIcon
+          v-if="leftIcon && getIcon(leftIcon)"
+          :icon="getIcon(leftIcon)"
+          :class="[
+            'h-5 w-5 text-gray-500 transition-colors duration-300',
+            error ? 'group-focus-within:text-red-500' : 'group-focus-within:text-[#22c55e]'
+          ]"
+        />
       </div>
       <input
         v-model.trim="model"
         :type="password ? (showText ? 'text' : 'password') : 'text'"
         :placeholder="text"
         :class="[
-          'w-full py-3.5 px-11 bg-[#1a1a1a] border rounded-full focus:outline-none focus:ring-1 transition-all duration-300 placeholder-gray-600 text-white',
+          'w-full py-3.5 px-11 bg-[#1a1a1a] border rounded-full focus:outline-none transition-all duration-300 placeholder-gray-600 text-white',
           error
-            ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-            : 'border-gray-800 focus:border-[#22c55e] focus:ring-[#22c55e]'
+            ? 'border-red-500'
+            : 'border-gray-800 focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e]'
         ]"
       />
       <button
@@ -44,7 +61,7 @@ const showText = ref<boolean>(false);
       >
         <FontAwesomeIcon
           v-if="showText"
-          :icon="faEyeSlash"
+          :icon="far.faEyeSlash"
           :class="[
             'cursor-pointer h-5 w-5 text-gray-500 transition-colors duration-300',
             error
@@ -55,7 +72,7 @@ const showText = ref<boolean>(false);
 
         <FontAwesomeIcon
           v-else
-          :icon="faEye"
+          :icon="far.faEye"
           :class="[
             'cursor-pointer h-5 w-5 text-gray-500 transition-colors duration-300',
             error
@@ -65,17 +82,8 @@ const showText = ref<boolean>(false);
         />
       </button>
     </div>
-    <Transition
-      enter-active-class="transition-all duration-300 ease-out"
-      enter-from-class="transform -translate-y-2 opacity-0"
-      enter-to-class="transform translate-y-0 opacity-100"
-      leave-active-class="transition-all duration-200 ease-in"
-      leave-from-class="transform translate-y-0 opacity-100"
-      leave-to-class="transform -translate-y-2 opacity-0"
-    >
-      <span v-if="error" class="text-red-500 text-xs px-4 mt-0.5 block text-left">
-        {{ error }}
-      </span>
-    </Transition>
+    <span v-if="error" class="text-red-500 text-xs px-4 mt-0.5 block text-left">
+      {{ error }}
+    </span>
   </div>
 </template>

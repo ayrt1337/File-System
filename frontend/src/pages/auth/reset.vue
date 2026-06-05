@@ -2,45 +2,59 @@
 import { ref } from 'vue';
 import { router } from '../../router';
 import Container from '../../components/container.vue';
-import MessageError from '../../components/message-error.vue';
 import BgContainer from '../../components/bg-container.vue';
 import Input from '../../components/input.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { faEnvelope } from '@fortawesome/free-regular-svg-icons';
+import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { api } from '../../services/api'; 
+import * as z from 'zod';
 
-const email = ref<string>("");
+interface ResetData {
+  email: string;
+}
+
+const resetSchema = z.object({
+  email: z.string().min(1, "Preencha o campo!").email("Email inválido!"),
+});
+
+const data = ref<ResetData>({
+  email: "",
+});
+const loading = ref<boolean>(false);
+const formErrors = ref<Record<string, string>>({});
+const errorMessage = ref<string>("");
 
 const sendEmail = async (): Promise<void> => {
-    const errors = document.getElementsByClassName("error");
+    errorMessage.value = "";
+    formErrors.value = {};
 
-    for (const error of errors) {
-        error.classList.add("hidden");
-    }
+    const result = resetSchema.safeParse(data.value);
 
-    if (email.value == "") {
-        errors[0]?.classList.remove("hidden");
+    if (!result.success) {
+        result.error.issues.forEach((issue) => {
+            const field = issue.path[0] as string;
+            if (!formErrors.value[field]) {
+                formErrors.value[field] = issue.message;
+            }
+        });
         return;
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email.value)) {
-        errors[1]?.classList.remove("hidden");
-        return;
-    }
-
+    loading.value = true;
     try {
-        const result = await api.post(`/reset`, { email: email.value });
+        const result = await api.post(`/reset`, { email: data.value.email });
 
         if (result.data == "success") {
             router.push({
                 name: "email",
-                state: { email: email.value, reason: "reset" }
+                state: { email: data.value.email, reason: "reset" }
             });
         }
-    } catch (error) {
-        errors[2]?.classList.remove("hidden");
+    } catch (error: any) {
         console.log("Erro no envio de email: ", error);
+        errorMessage.value = error.response?.data || "Ops! Algo deu errado";
+    } finally {
+        loading.value = false;
     }
 }
 </script>
@@ -50,19 +64,21 @@ const sendEmail = async (): Promise<void> => {
         <BgContainer class="flex flex-col items-center justify-center max-w-[700px] p-15 py-13 pt-14">
             <h1 class="mb-6 text-[18px]">Digite o email da conta que deseja trocar a senha</h1>
 
-            <MessageError>Prencha o campo!</MessageError>
-            <MessageError>Email inválido!</MessageError>
-            <MessageError>Algo de errado aconteceu!</MessageError>
+            <p v-if="errorMessage" class="error text-red-500 text-center mb-4">
+                {{ errorMessage }}
+            </p>
 
-            <Input class="w-full" text="Email" v-model="email">
-                <template v-slot:leftImage>
-                    <FontAwesomeIcon :icon="faEnvelope"
-                        class="h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
-                </template>
-            </Input>
+            <Input 
+                class="w-full" 
+                text="Email" 
+                v-model="data.email"
+                leftIcon="faEnvelope"
+                :error="formErrors.email"
+            />
 
-            <button type="button" @click="sendEmail()"
-                class="mt-6 cursor-pointer flex-1 bg-[#009900] hover:bg-[#22c55e] text-black font-bold py-3.5 px-6 rounded-full transition-all duration-300 transform hover:-translate-y-0.5">
+            <button type="button" :disabled="loading" @click="sendEmail()"
+                class="mt-6 cursor-pointer flex-1 bg-[#009900] hover:bg-[#22c55e] text-black font-bold py-3.5 px-6 rounded-full transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2">
+                <FontAwesomeIcon v-if="loading" :icon="faSpinner" spin />
                 Solicitar Alteração
             </button>
         </BgContainer>

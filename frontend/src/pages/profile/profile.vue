@@ -4,13 +4,14 @@ import MainPageTemplate from '../../components/main-page-template.vue';
 import UserImage from '../../assets/981d6b2e0ccb5e968a0618c8d47671da.jpg';
 import Input from '../../components/input.vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { faCamera, faUser } from '@fortawesome/free-regular-svg-icons';
+import { faCamera } from '@fortawesome/free-regular-svg-icons';
 import { faSpinner, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
 import { router } from '../../router/index.ts';
 import Overlay from '../../components/overlay.vue';
 import { api } from '../../services/api';
 import { useUser } from '../../composables/use-user';
 import { useToast } from '../../composables/use-toast';
+import * as z from 'zod';
 
 const { showUser } = useUser();
 const { showToast } = useToast();
@@ -22,9 +23,26 @@ const computedName = computed({
     set: (val) => name.value = val
 });
 
-const handleUpdate = async () => {
-    inputLoading.value = true;
+const profileSchema = z.object({
+  name: z.string().min(1, "Preencha o campo!"),
+});
 
+const formErrors = ref<Record<string, string>>({});
+
+const handleUpdate = async () => {
+    formErrors.value = {};
+    const result = profileSchema.safeParse({ name: name.value });
+    if (!result.success) {
+        result.error.issues.forEach((issue) => {
+            const field = issue.path[0] as string;
+            if (!formErrors.value[field]) {
+                formErrors.value[field] = issue.message;
+            }
+        });
+        return;
+    }
+
+    inputLoading.value = true;
     try {
         await api.patch("/update", { name: name.value });
         showToast("Alterações salvas com sucesso!", "success");
@@ -115,11 +133,9 @@ const confirmDelete = async () => {
 
                 <Input class="max-w-[500px]"
                     v-model="computedName"
-                >
-                    <template v-slot:leftImage>
-                        <FontAwesomeIcon :icon="faUser" class="h-5 w-5 text-gray-500 group-focus-within:text-[#22c55e] transition-colors duration-300" />
-                    </template>
-                </Input>
+                    leftIcon="faUser"
+                    :error="formErrors.name"
+                />
             </div>
 
             <div class="flex mt-[50px]">
