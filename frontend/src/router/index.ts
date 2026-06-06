@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createWebHistory, RouterView } from "vue-router";
 import { resetPageState } from "../services/page-reset-state";
 import { useUser } from "../composables/use-user";
 import { useLoading } from "../composables/use-loading";
@@ -50,6 +50,23 @@ const routes = [
     component: () => import("../pages/profile/profile.vue"),
     props: true,
     meta: { requiresAuth: true, static: true },
+  },
+  {
+    path: "/convert-files",
+    component: RouterView,
+    meta: { requiresAuth: true, static: true },
+    children: [
+      {
+        path: "",
+        name: "convertFilesOptions",
+        component: () => import("../pages/convert-files/options.vue"),
+      },
+      {
+        path: "upload",
+        name: "convertFilesUpload",
+        component: () => import("../pages/convert-files/upload.vue"),
+      },
+    ],
   },
   {
     path: "/:pathMatch(.*)*",

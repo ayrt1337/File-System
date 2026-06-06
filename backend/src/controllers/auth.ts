@@ -3,7 +3,7 @@ import database from "../config/database.js";
 import * as services from "../services/index.js";
 import { AppError } from "../errors/app-error.js";
 
-export class Auth {
+export class AuthController {
   async register(req: Request, res: Response, next: NextFunction) {
     try {
       const { email, password } = req.body;

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { Auth } from "../controllers/auth.js";
+import { AuthController } from "../controllers/auth.js";
 import { authenticate } from "../middlewares/authenticate-middleware.js";
 import {
   registerSchema,
@@ -9,7 +9,7 @@ import {
 import { validate } from "../middlewares/validate-middleware.js";
 
 const authRoutes = Router();
-const authController = new Auth();
+const authController = new AuthController();
 
 authRoutes.post("/login", authController.login);
 authRoutes.post("/register", validate(registerSchema), authController.register);

@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import database from "../config/database.js";
 
-export class User {
+export class UserController {
   async getProfile(req: Request, res: Response, next: NextFunction) {
     try {
       const user = (req as any).user;

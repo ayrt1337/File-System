@@ -177,8 +177,8 @@ const handleImageChange = async (event: Event) => {
 </script>
 
 <template>
-  <MainPageTemplate title="" :sidebar="true" :header="false">
-    <div class="mt-[20px] ml-[25px] text-[#ffffff]">
+  <MainPageTemplate title="Perfil" :sidebar="true" :header="false">
+    <div class="text-[#ffffff]">
       <Overlay v-if="showDeleteConfirm">
         <Transition name="modal-fade" appear>
           <div
