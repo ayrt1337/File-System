@@ -1,14 +1,20 @@
 import { Router } from "express";
 import { Auth } from "../controllers/auth.js";
-import { authenticate } from "../middlewares/authenticate.js";
+import { authenticate } from "../middlewares/authenticate-middleware.js";
+import {
+  registerSchema,
+  resetPasswordSchema,
+  sendEmailSchema,
+} from "../schemas/auth-schema.js";
+import { validate } from "../middlewares/validate-middleware.js";
 
 const authRoutes = Router();
 const authController = new Auth();
 
 authRoutes.post("/login", authController.login);
-authRoutes.post("/register", authController.register);
-authRoutes.post("/reset", authController.reset);
-authRoutes.post("/resetPassword", authController.resetPassword);
+authRoutes.post("/register", validate(registerSchema), authController.register);
+authRoutes.post("/reset", validate(sendEmailSchema), authController.reset);
+authRoutes.post("/resetPassword", validate(resetPasswordSchema), authController.resetPassword);
 authRoutes.get("/confirmEmail", authController.confirmEmail);
 authRoutes.get("/logout", authenticate, authController.logout);
 

@@ -3,7 +3,7 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import route from "./routes/index.js";
-import { errorMiddleware } from "./middlewares/error.js";
+import { errorMiddleware } from "./middlewares/error-middleware.js";
 import helmet from "helmet";
 
 const options = {
