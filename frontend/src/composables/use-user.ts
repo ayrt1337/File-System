@@ -4,13 +4,13 @@ export interface User {
     id?: string;
     name?: string;
     email?: string;
-    profileImg?: string;
+    avatarUrl?: string;
 }
 
 const showUser = ref<User>({
     name: "",
     email: "",
-    profileImg: ""
+    avatarUrl: ""
 });
 
 export const useUser = () => {

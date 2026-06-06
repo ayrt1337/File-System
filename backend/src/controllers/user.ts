@@ -5,7 +5,7 @@ export class User {
   async getProfile(req: Request, res: Response, next: NextFunction) {
     try {
       const user = (req as any).user;
-      res.status(200).json({ email: user.email, name: user.name });
+      res.status(200).json({ email: user.email, name: user.name, avatarUrl: user.avatarUrl });
     } catch (error: any) {
       next(error);
     }
@@ -14,11 +14,15 @@ export class User {
   async update(req: Request, res: Response, next: NextFunction) {
     try {
       const user = (req as any).user;
-      const { name } = req.body;
+      const { name, avatarUrl } = req.body;
 
       await database.user.update({
         where: { id: user.id },
-        data: { name, lastUpdate: new Date() },
+        data: {
+          name,
+          ...(avatarUrl !== undefined && { avatarUrl }),
+          lastUpdate: new Date(),
+        },
       });
 
       res.status(200).json("success");

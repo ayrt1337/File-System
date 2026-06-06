@@ -16,17 +16,24 @@ import { useUser } from "../../composables/use-user";
 import { useToast } from "../../composables/use-toast";
 import * as z from "zod";
 
+interface UpdateProfile {
+  name: string;
+  avatarUrl?: string;
+}
+
 const { showUser } = useUser();
 const { showToast } = useToast();
 const inputLoading = ref<boolean>(false);
 const showDeleteConfirm = ref<boolean>(false);
-const name = ref<string>("");
+const data = ref<UpdateProfile>({
+  name: "",
+});
 
 watch(
   () => showUser.value.name,
   (newName) => {
     if (newName !== undefined) {
-      name.value = newName;
+      data.value.name = newName;
     }
   },
   { immediate: true },
@@ -43,7 +50,7 @@ const formErrors = ref<Record<string, string>>({});
 
 const handleUpdate = async () => {
   formErrors.value = {};
-  const result = profileSchema.safeParse({ name: name.value });
+  const result = profileSchema.safeParse({ name: data.value.name });
   if (!result.success) {
     result.error.issues.forEach((issue) => {
       const field = issue.path[0] as string;
@@ -56,7 +63,18 @@ const handleUpdate = async () => {
 
   inputLoading.value = true;
   try {
-    await api.patch("/update", { name: name.value });
+    const payload: UpdateProfile = { name: data.value.name };
+    if (data.value.avatarUrl) {
+      payload.avatarUrl = data.value.avatarUrl;
+    }
+    await api.patch("/update", payload);
+    
+    showUser.value.name = data.value.name;
+    if (data.value.avatarUrl) {
+      showUser.value.avatarUrl = data.value.avatarUrl;
+      data.value.avatarUrl = "";
+    }
+    
     showToast("Alterações salvas com sucesso!", "success");
   } catch (error) {
     console.error("Erro ao atualizar os dados: ", error);
@@ -79,6 +97,81 @@ const confirmDelete = async () => {
     showToast("Erro ao excluir conta.", "error");
   } finally {
     inputLoading.value = false;
+  }
+};
+
+const fileInput = ref<HTMLInputElement | null>(null);
+
+const triggerFileInput = () => {
+  fileInput.value?.click();
+};
+
+const compressImage = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          reject(new Error("Não foi possível obter o contexto do canvas"));
+          return;
+        }
+
+        const MAX_WIDTH = 400;
+        const MAX_HEIGHT = 400;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height = Math.round((height * MAX_WIDTH) / width);
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width = Math.round((width * MAX_HEIGHT) / height);
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const dataUrl = canvas.toDataURL("image/webp", 0.8);
+        resolve(dataUrl);
+      };
+      img.onerror = (err) => reject(err);
+    };
+    reader.onerror = (err) => reject(err);
+  });
+};
+
+const handleImageChange = async (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+  if (!file) return;
+
+  const MAX_SIZE = 5 * 1024 * 1024;
+  if (file.size > MAX_SIZE) {
+    showToast("A imagem deve ter no máximo 5MB.", "error");
+    return;
+  }
+
+  inputLoading.value = true;
+  try {
+    const compressedBase64 = await compressImage(file);
+    data.value.avatarUrl = compressedBase64;
+  } catch (error) {
+    console.error("Erro ao processar a imagem: ", error);
+    showToast("Erro ao carregar a imagem.", "error");
+  } finally {
+    inputLoading.value = false;
+    if (target) target.value = "";
   }
 };
 </script>
@@ -131,18 +224,25 @@ const confirmDelete = async () => {
       <div>
         <h2 class="text-[20px] font-medium">Foto de Perfil</h2>
 
-        <div class="relative w-fit mt-2">
+        <div @click="triggerFileInput" class="relative w-fit mt-2 cursor-pointer group">
           <img
-            :src="showUser.profileImg || UserImage"
-            class="cursor-pointer mt-[10px] rounded-full size-[120px] object-cover"
+            :src="data.avatarUrl || showUser.avatarUrl || UserImage"
+            class="mt-[10px] rounded-full size-[120px] object-cover group-hover:opacity-80 transition-opacity duration-300"
           />
-          <div class="absolute bottom-[0px] right-[0px] cursor-pointer">
+          <div class="absolute bottom-[0px] right-[0px]">
             <FontAwesomeIcon
               :icon="faCamera"
               class="scale-y-112 scale-x-103 rounded-full bg-[#1f1f1f] p-2 border border-[#333] hover:bg-gray-800 transition-colors text-[20px] text-[#a8c7fa]"
             />
           </div>
         </div>
+        <input
+          type="file"
+          ref="fileInput"
+          accept="image/*"
+          class="hidden"
+          @change="handleImageChange"
+        />
       </div>
 
       <div class="mt-[60px]">
@@ -155,7 +255,7 @@ const confirmDelete = async () => {
 
         <Input
           class="max-w-[500px]"
-          v-model="name"
+          v-model="data.name"
           leftIcon="faUser"
           :error="formErrors.name"
         />

@@ -44,7 +44,7 @@ onUnmounted(() => {
         </Input>
 
         <div class="mr-8">
-            <img :src="UserImage" class="profile-avatar cursor-pointer rounded-[50%] object-cover" height="50px" width="50px" @click="popup = !popup">
+            <img :src="showUser.avatarUrl || UserImage" class="profile-avatar cursor-pointer rounded-[50%] object-cover" height="50px" width="50px" @click="popup = !popup">
         </div>
 
         <div v-if="popup" ref="popupRef" class="absolute right-8 top-[100px] w-[350px] bg-[#1f1f1f] rounded-[28px] p-5 pb-10 flex flex-col items-center shadow-2xl z-50 border border-[#333]">
@@ -55,7 +55,7 @@ onUnmounted(() => {
             </div>
             
             <div class="relative mt-2">
-                <img :src="showUser.profileImg || UserImage" class="rounded-full size-[80px] object-cover" />
+                <img :src="showUser.avatarUrl || UserImage" class="rounded-full size-[80px] object-cover" />
                 <div class="absolute bottom-[-4px] right-[-4px] cursor-pointer">
                     <FontAwesomeIcon :icon="faCamera" class="scale-y-110 rounded-full bg-[#1f1f1f] p-2 border border-[#333] hover:bg-gray-800 transition-colors text-xs text-[#a8c7fa]" />
                 </div>

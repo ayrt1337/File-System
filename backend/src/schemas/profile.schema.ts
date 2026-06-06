@@ -6,5 +6,6 @@ export const updateProfileSchema = z.object({
       .string()
       .min(1, "Preencha o campo!")
       .min(3, "O nome deve ter no mínimo 3 caracteres!"),
+    avatarUrl: z.string().optional(),
   }),
 });
