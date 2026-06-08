@@ -27,8 +27,8 @@ const conversionOptions = [
   { from: "png", to: "pdf", title: "Imagem para PDF", type: "document" as const },
 
   // Image Section
-  { from: "jpg", to: "png", title: "JPG para PNG", type: "image" as const },
-  { from: "png", to: "jpg", title: "PNG para JPG", type: "image" as const },
+  { to: "png", title: "Converta qualquer formato para PNG", type: "image" as const },
+  { to: "jpeg", title: "Converta qualquer formato para JPEG", type: "image" as const },
 ];
 
 const videoOptions = computed(() => conversionOptions.filter((opt) => opt.type === "video"));
@@ -40,6 +40,7 @@ const handleSelectOption = (option: typeof conversionOptions[0]) => {
   router.push({
     name: "convertFilesUpload",
     query: {
+      type: option.type,
       from: option.from,
       to: option.to
     }
@@ -48,7 +49,7 @@ const handleSelectOption = (option: typeof conversionOptions[0]) => {
 </script>
 
 <template>
-  <MainPageTemplate :header="true" :sidebar="true" title="Conversor de Arquivos">
+  <MainPageTemplate :search-input="false" :header="true" :sidebar="true" title="Conversor de Arquivos">
     <div class="mx-auto text-white">
       <div v-if="videoOptions.length > 0" class="mb-12">
         <div class="flex items-center gap-3 mb-6 pb-3">
@@ -60,7 +61,7 @@ const handleSelectOption = (option: typeof conversionOptions[0]) => {
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           <ConvertOptionCard
             v-for="opt in videoOptions"
-            :key="opt.from + '-' + opt.to"
+            :key="opt.from ? opt.from + '-' + opt.to : opt.to"
             :from="opt.from"
             :to="opt.to"
             :title="opt.title"
@@ -80,7 +81,7 @@ const handleSelectOption = (option: typeof conversionOptions[0]) => {
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           <ConvertOptionCard
             v-for="opt in audioOptions"
-            :key="opt.from + '-' + opt.to"
+            :key="opt.from ? opt.from + '-' + opt.to : opt.to"
             :from="opt.from"
             :to="opt.to"
             :title="opt.title"
@@ -100,7 +101,7 @@ const handleSelectOption = (option: typeof conversionOptions[0]) => {
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           <ConvertOptionCard
             v-for="opt in documentOptions"
-            :key="opt.from + '-' + opt.to"
+            :key="opt.from ? opt.from + '-' + opt.to : opt.to"
             :from="opt.from"
             :to="opt.to"
             :title="opt.title"
@@ -120,7 +121,7 @@ const handleSelectOption = (option: typeof conversionOptions[0]) => {
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           <ConvertOptionCard
             v-for="opt in imageOptions"
-            :key="opt.from + '-' + opt.to"
+            :key="opt.from ? opt.from + '-' + opt.to : opt.to"
             :from="opt.from"
             :to="opt.to"
             :title="opt.title"

@@ -10,12 +10,15 @@ import { useServerError } from '../composables/use-server-error';
 import { useUnauthorized } from '../composables/use-unauthorized';
 
 interface Props {
-    header: boolean,
-    sidebar: boolean,
-    title: string,
-};
+    header: boolean;
+    sidebar: boolean;
+    title: string;
+    searchInput?: boolean;
+}
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+    searchInput: true
+});
 
 const { showLoading } = useLoading();
 const { showError } = useServerError();
@@ -34,7 +37,7 @@ const { showUnauthorized } = useUnauthorized();
             <Sidebar v-if="sidebar"/>
 
             <div class="h-screen flex flex-col w-full">
-                <Header v-if="header" />
+                <Header :search-input="searchInput" v-if="header" />
 
                 <div :class="(!header ? 'mt-[85px] ' : '') + 'px-12 pt-10 pb-5 flex flex-1 flex-col bg-[#1e1e1e] rounded-[24px] mr-8 mb-8 min-h-0'">
                     <h1 v-if="title" class="mb-10 text-[24px] text-white font-medium">{{ title }}</h1>
