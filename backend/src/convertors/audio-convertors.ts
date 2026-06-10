@@ -1,4 +1,6 @@
+import { AppError } from "../errors/app-error.js";
 import { ConvertContext, ConvertResult } from "../types/convert.js";
+import { convertMedia } from "../utils/media-helper.js";
 
 const getBaseName = (filename: string) => {
   const index = filename.lastIndexOf(".");
@@ -6,35 +8,20 @@ const getBaseName = (filename: string) => {
 };
 
 export class AudioConvertors {
-  async mp3ToWav({ file }: ConvertContext): Promise<ConvertResult> {
-    return {
-      buffer: file.buffer,
-      mimeType: "audio/wav",
-      fileName: `${getBaseName(file.originalname)}.wav`
-    };
-  }
+  async audioConverter({ file, to }: ConvertContext): Promise<ConvertResult> {
+    if (!file.mimetype.startsWith("audio") || !file.mimetype.startsWith("video")) {
+      throw new AppError("Formato inválido!", 400);
+    }
 
-  async wavToMp3({ file }: ConvertContext): Promise<ConvertResult> {
+    const buffer = await convertMedia(
+      file.buffer,
+      file.originalname,
+      to.toLowerCase(),
+    );
     return {
-      buffer: file.buffer,
-      mimeType: "audio/mpeg",
-      fileName: `${getBaseName(file.originalname)}.mp3`
-    };
-  }
-
-  async m4aToMp3({ file }: ConvertContext): Promise<ConvertResult> {
-    return {
-      buffer: file.buffer,
-      mimeType: "audio/mpeg",
-      fileName: `${getBaseName(file.originalname)}.mp3`
-    };
-  }
-
-  async flacToMp3({ file }: ConvertContext): Promise<ConvertResult> {
-    return {
-      buffer: file.buffer,
-      mimeType: "audio/mpeg",
-      fileName: `${getBaseName(file.originalname)}.mp3`
+      buffer,
+      mimeType: `audio/${to}`,
+      fileName: `${getBaseName(file.originalname)}.${to.toLowerCase()}`,
     };
   }
 }

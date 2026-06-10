@@ -13,16 +13,12 @@ const imageConvertors = new ImageConvertors();
 
 const convertorsRegistry: Record<string, { instance: any; method: string }> = {
   // Video
-  "mp4-mp3": { instance: videoConvertors, method: "mp4ToMp3" },
-  "mp4-avi": { instance: videoConvertors, method: "mp4ToAvi" },
-  "avi-mp4": { instance: videoConvertors, method: "aviToMp4" },
-  "mp4-gif": { instance: videoConvertors, method: "mp4ToGif" },
+  "mp4": { instance: videoConvertors, method: "videoConverter" },
+  "avi": { instance: videoConvertors, method: "videoConverter" },
 
   // Audio
-  "mp3-wav": { instance: audioConvertors, method: "mp3ToWav" },
-  "wav-mp3": { instance: audioConvertors, method: "wavToMp3" },
-  "m4a-mp3": { instance: audioConvertors, method: "m4aToMp3" },
-  "flac-mp3": { instance: audioConvertors, method: "flacToMp3" },
+  "wav": { instance: audioConvertors, method: "audioConverter" },
+  "mp3": { instance: audioConvertors, method: "audioConverter" },
 
   // Document
   "docx-pdf": { instance: fileConvertors, method: "docxToPdf" },
@@ -49,18 +45,22 @@ export class FileConvertorController {
         throw new AppError("Requisição inválida!", 400);
       }
 
+      if (file.size <= 0) {
+        throw new AppError("Arquivo inválido!", 400);
+      }
+
       if (fileExt === to.toLowerCase()) {
         throw new AppError("O formato de entrada é o mesmo de saída!", 400);
       }
 
       if (from) {
         if (from.toLowerCase() === to.toLowerCase()) {
-            throw new AppError("O formato de entrada é o mesmo de saída!", 400);
+          throw new AppError("O formato de entrada é o mesmo de saída!", 400);
         }
 
         const ext = "." + from.toLowerCase();
         if (!file.originalname.toLowerCase().endsWith(ext)) {
-            throw new AppError("O arquivo enviado não corresponde ao formato de origem selecionado!", 400);
+          throw new AppError("O arquivo enviado não corresponde ao formato de origem selecionado!", 400);
         }
       }
 

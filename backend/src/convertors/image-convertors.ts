@@ -8,13 +8,11 @@ const getBaseName = (filename: string) => {
 };
 
 export class ImageConvertors {
-  async imageConverter(
-    context: ConvertContext
-  ): Promise<ConvertResult> {
+  async imageConverter(context: ConvertContext): Promise<ConvertResult> {
     const { file, to } = context;
 
     if (!file.mimetype.startsWith("image")) {
-        throw new AppError("Formato inválido!", 400);
+      throw new AppError("Formato inválido!", 400);
     }
 
     const format = to.toLowerCase();

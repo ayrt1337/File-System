@@ -1,4 +1,6 @@
+import { AppError } from "../errors/app-error.js";
 import { ConvertContext, ConvertResult } from "../types/convert.js";
+import { convertMedia } from "../utils/media-helper.js";
 
 const getBaseName = (filename: string) => {
   const index = filename.lastIndexOf(".");
@@ -6,35 +8,20 @@ const getBaseName = (filename: string) => {
 };
 
 export class VideoConvertors {
-  async mp4ToMp3({ file }: ConvertContext): Promise<ConvertResult> {
-    return {
-      buffer: file.buffer,
-      mimeType: "audio/mpeg",
-      fileName: `${getBaseName(file.originalname)}.mp3`
-    };
-  }
+  async videoConverter({ file, to }: ConvertContext): Promise<ConvertResult> {
+    if (!file.mimetype.startsWith("video")) {
+      throw new AppError("Formato inválido!", 400);
+    }
 
-  async mp4ToAvi({ file }: ConvertContext): Promise<ConvertResult> {
+    const buffer = await convertMedia(
+      file.buffer,
+      file.originalname,
+      to.toLowerCase(),
+    );
     return {
-      buffer: file.buffer,
-      mimeType: "video/x-msvideo",
-      fileName: `${getBaseName(file.originalname)}.avi`
-    };
-  }
-
-  async aviToMp4({ file }: ConvertContext): Promise<ConvertResult> {
-    return {
-      buffer: file.buffer,
-      mimeType: "video/mp4",
-      fileName: `${getBaseName(file.originalname)}.mp4`
-    };
-  }
-
-  async mp4ToGif({ file }: ConvertContext): Promise<ConvertResult> {
-    return {
-      buffer: file.buffer,
-      mimeType: "image/gif",
-      fileName: `${getBaseName(file.originalname)}.gif`
+      buffer,
+      mimeType: `video/${to}`,
+      fileName: `${getBaseName(file.originalname)}.${to.toLowerCase()}`,
     };
   }
 }
