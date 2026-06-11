@@ -10,25 +10,21 @@ const router = useRouter();
 
 const conversionOptions = [
   // Video Section
-  { from: "mp4", to: "mp3", title: "Vídeo para Áudio", type: "video" as const },
-  { from: "mp4", to: "avi", title: "MP4 para AVI", type: "video" as const },
-  { from: "avi", to: "mp4", title: "AVI para MP4", type: "video" as const },
-  { from: "mp4", to: "gif", title: "Vídeo para GIF", type: "video" as const },
+  { to: "mp4", title: "Converta qualquer vídeo para MP4", type: "video" as const },
+  { to: "avi", title: "Converta qualquer vídeo para AVI", type: "video" as const },
 
   // Audio Section
-  { from: "mp3", to: "wav", title: "MP3 para WAV", type: "audio" as const },
-  { from: "wav", to: "mp3", title: "WAV para MP3", type: "audio" as const },
-  { from: "m4a", to: "mp3", title: "M4A para MP3", type: "audio" as const },
-  { from: "flac", to: "mp3", title: "FLAC para MP3", type: "audio" as const },
+  { to: "mp3", title: "Converta qualquer áudio/vídeo para MP3", type: "audio" as const },
+  { to: "wav", title: "Converta qualquer áudio/vídeo para WAV", type: "audio" as const },
 
   // Document/File Section
   { from: "docx", to: "pdf", title: "Word para PDF", type: "document" as const },
-  { from: "pdf", to: "docx", title: "PDF para Word", type: "document" as const },
   { from: "png", to: "pdf", title: "Imagem para PDF", type: "document" as const },
 
   // Image Section
-  { to: "png", title: "Converta qualquer formato para PNG", type: "image" as const },
-  { to: "jpeg", title: "Converta qualquer formato para JPEG", type: "image" as const },
+  { to: "png", title: "Converta qualquer imagem para PNG", type: "image" as const },
+  { to: "jpeg", title: "Converta qualquer imagem para JPEG", type: "image" as const },
+  { to: "webp", title: "Converta qualquer imagem para WebP", type: "image" as const },
 ];
 
 const videoOptions = computed(() => conversionOptions.filter((opt) => opt.type === "video"));

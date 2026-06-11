@@ -1,3 +1,4 @@
+import { convertDoc } from "../services/convert-docs-api.js";
 import { ConvertContext, ConvertResult } from "../types/convert.js";
 
 const getBaseName = (filename: string) => {
@@ -6,25 +7,23 @@ const getBaseName = (filename: string) => {
 };
 
 export class FileConvertors {
-  async docxToPdf({ file }: ConvertContext): Promise<ConvertResult> {
+  async docxToPdf(context: ConvertContext): Promise<ConvertResult> {
+    const { file } = context;
+    const convertedfile = await convertDoc(context);
+
     return {
-      buffer: file.buffer,
+      buffer: convertedfile,
       mimeType: "application/pdf",
       fileName: `${getBaseName(file.originalname)}.pdf`
     };
   }
 
-  async pdfToDocx({ file }: ConvertContext): Promise<ConvertResult> {
-    return {
-      buffer: file.buffer,
-      mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      fileName: `${getBaseName(file.originalname)}.docx`
-    };
-  }
+  async pngToPdf(context: ConvertContext): Promise<ConvertResult> {
+    const { file } = context;
+    const convertedfile = await convertDoc(context);
 
-  async pngToPdf({ file }: ConvertContext): Promise<ConvertResult> {
     return {
-      buffer: file.buffer,
+      buffer: convertedfile,
       mimeType: "application/pdf",
       fileName: `${getBaseName(file.originalname)}.pdf`
     };

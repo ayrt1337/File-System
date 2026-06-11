@@ -107,7 +107,10 @@ const colorClasses = computed(() => {
         </div>
 
         <div
-          :class="['absolute bottom-0 right-0 text-xl', colorClasses.toColor]"
+          :class="[
+            from ? 'absolute bottom-0 right-0 text-xl' : 'text-2xl',
+            colorClasses.toColor,
+          ]"
         >
           <FontAwesomeIcon :icon="toIcon" />
         </div>

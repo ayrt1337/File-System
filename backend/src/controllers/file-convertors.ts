@@ -22,7 +22,6 @@ const convertorsRegistry: Record<string, { instance: any; method: string }> = {
 
   // Document
   "docx-pdf": { instance: fileConvertors, method: "docxToPdf" },
-  "pdf-docx": { instance: fileConvertors, method: "pdfToDocx" },
   "png-pdf": { instance: fileConvertors, method: "pngToPdf" },
 
   // Image
