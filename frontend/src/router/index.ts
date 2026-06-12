@@ -69,6 +69,23 @@ const routes = [
     ],
   },
   {
+    path: "/download-videos",
+    component: RouterView,
+    meta: { requiresAuth: true, static: true },
+    children: [
+      {
+        path: "",
+        name: "downloadVideosOptions",
+        component: () => import("../pages/download-videos/options.vue"),
+      },
+      {
+        path: "download",
+        name: "downloadVideosForm",
+        component: () => import("../pages/download-videos/options.vue"), // temporarily fallback to options.vue until we build the form page
+      },
+    ],
+  },
+  {
     path: "/:pathMatch(.*)*",
     name: "notFound",
     component: () => import("../pages/not-found/not-found.vue"),

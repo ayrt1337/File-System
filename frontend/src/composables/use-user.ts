@@ -1,11 +1,5 @@
 import { ref } from "vue";
-
-export interface User {
-    id?: string;
-    name?: string;
-    email?: string;
-    avatarUrl?: string;
-}
+import type { User } from "../types/user";
 
 const showUser = ref<User>({
     name: "",

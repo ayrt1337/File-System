@@ -20,7 +20,7 @@ export class VideoConvertors {
     );
     return {
       buffer,
-      mimeType: `video/${to}`,
+      mimeType: `video/${to.toLowerCase()}`,
       fileName: `${getBaseName(file.originalname)}.${to.toLowerCase()}`,
     };
   }

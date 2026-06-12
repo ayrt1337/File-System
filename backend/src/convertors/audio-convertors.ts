@@ -20,7 +20,7 @@ export class AudioConvertors {
     );
     return {
       buffer,
-      mimeType: `audio/${to}`,
+      mimeType: `audio/${to.toLowerCase()}`,
       fileName: `${getBaseName(file.originalname)}.${to.toLowerCase()}`,
     };
   }

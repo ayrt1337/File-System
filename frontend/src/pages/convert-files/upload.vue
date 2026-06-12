@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { api } from "../../services/api";
 import MainPageTemplate from "../../components/main-page-template.vue";
+import DragDropOverlay from "../../components/drag-drop-overlay.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import {
   faArrowLeft,
@@ -45,56 +46,6 @@ const triggerFileInput = () => {
   fileInputRef.value?.click();
 };
 
-let dragCounter = 0;
-
-const onWindowDragEnter = (e: DragEvent) => {
-  if (conversionStatus.value === "converting") return;
-  e.preventDefault();
-  dragCounter++;
-  if (dragCounter === 1) {
-    isDragging.value = true;
-  }
-};
-
-const onWindowDragLeave = (e: DragEvent) => {
-  if (conversionStatus.value === "converting") return;
-  e.preventDefault();
-  dragCounter--;
-  if (dragCounter === 0) {
-    isDragging.value = false;
-  }
-};
-
-const onWindowDragOver = (e: DragEvent) => {
-  if (conversionStatus.value === "converting") return;
-  e.preventDefault();
-};
-
-const onWindowDrop = (e: DragEvent) => {
-  if (conversionStatus.value === "converting") return;
-  e.preventDefault();
-  isDragging.value = false;
-  dragCounter = 0;
-  if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
-    const file = e.dataTransfer.files[0];
-    if (file) validateAndSetFile(file);
-  }
-};
-
-onMounted(() => {
-  window.addEventListener("dragenter", onWindowDragEnter);
-  window.addEventListener("dragleave", onWindowDragLeave);
-  window.addEventListener("dragover", onWindowDragOver);
-  window.addEventListener("drop", onWindowDrop);
-});
-
-onUnmounted(() => {
-  window.removeEventListener("dragenter", onWindowDragEnter);
-  window.removeEventListener("dragleave", onWindowDragLeave);
-  window.removeEventListener("dragover", onWindowDragOver);
-  window.removeEventListener("drop", onWindowDrop);
-});
-
 const onFileChange = (e: Event) => {
   const target = e.target as HTMLInputElement;
   if (target.files && target.files.length > 0) {
@@ -102,6 +53,15 @@ const onFileChange = (e: Event) => {
     if (file) validateAndSetFile(file);
   }
 };
+
+const getTypeName = () => {
+  switch (type.value) {
+    case "image": return "imagem";
+    case "video": return "vídeo";
+    case "audio": return "áudio";
+    case "document": return "documento";
+  }
+}
 
 const validateAndSetFile = (file: File) => {
   if (fromFormat.value) {
@@ -134,7 +94,7 @@ const validateAndSetFile = (file: File) => {
   selectedFile.value = file;
   conversionStatus.value = "idle";
   errorMessage.value = "";
-};
+}
 
 const clearFile = () => {
   selectedFile.value = null;
@@ -219,15 +179,6 @@ const downloadConvertedFile = () => {
   element.click();
   document.body.removeChild(element);
 };
-
-const getTypeName = () => {
-  switch (type.value) {
-    case "image": return "imagem";
-    case "video": return "vídeo";
-    case "audio": return "áudio";
-    case "document": return "documento";
-  }
-}
 </script>
 
 <template>
@@ -237,28 +188,12 @@ const getTypeName = () => {
     :sidebar="true"
     title="Conversor de Arquivos"
   >
-    <div
-      v-if="isDragging"
-      class="fixed inset-0 bg-black/75 border-4 border-dashed border-[#009900] flex flex-col items-center justify-center z-50 transition-all duration-300 pointer-events-none"
-    >
-      <div class="flex flex-col items-center text-center p-6">
-        <div
-          class="w-20 h-20 rounded-full bg-[#009900]/10 flex items-center justify-center text-[#009900] mb-6 animate-bounce"
-        >
-          <FontAwesomeIcon :icon="faUpload" class="text-3xl" />
-        </div>
-        <p class="text-2xl font-bold text-white">
-          Solte o arquivo para iniciar
-        </p>
-        <p class="text-sm text-gray-400 mt-2">
-          Somente arquivos
-          <span class="uppercase font-semibold text-white"
-            >.{{ fromFormat }}</span
-          >
-          de até 10MB
-        </p>
-      </div>
-    </div>
+    <DragDropOverlay
+      :disabled="conversionStatus === 'converting'"
+      :subtitle="`Somente arquivos ${fromFormat ? '.' + fromFormat.toUpperCase() : 'de' + getTypeName()} de até 10MB`"
+      :set-file="validateAndSetFile"
+      :drag-change="() => isDragging = !isDragging"
+    />
 
     <div class="max-w-2xl mx-auto text-white mt-10">
       <div class="flex items-center gap-4 mb-8">
@@ -315,10 +250,10 @@ const getTypeName = () => {
             </p>
             <p class="text-[15px] text-gray-500 mt-2 max-w-xs leading-relaxed">
               Ou clique para escolher do dispositivo. Apenas arquivos
-              <span class="text-gray-300 font-semibold uppercase"
+              <span v-if="fromFormat" class="text-gray-300 font-semibold uppercase"
                 >.{{ fromFormat }}</span
               >
-              de até 10MB.
+              {{ !fromFormat ? "de " + getTypeName() : "" }} de até 10MB.
             </p>
           </div>
         </div>
@@ -343,7 +278,7 @@ const getTypeName = () => {
             </button>
           </div>
 
-          <div class="flex justify-end gap-3">
+          <div class="flex justify-center gap-3">
             <button
               @click="clearFile"
               class="px-6 py-3 border border-[#333] hover:border-gray-600 hover:bg-gray-800/40 text-gray-300 font-semibold text-sm rounded-full transition-all duration-300 cursor-pointer"
@@ -352,7 +287,7 @@ const getTypeName = () => {
             </button>
             <button
               @click="startConversion"
-              class="px-8 py-3 bg-[#009900] hover:bg-[#22c55e] text-black font-bold text-sm rounded-full transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer shadow-lg shadow-green-900/15"
+              class="px-8 py-3 bg-[#009900] hover:bg-[#22c55e] text-black font-bold text-sm rounded-full transition-all duration-300 transform cursor-pointer shadow-lg shadow-green-900/15"
             >
               Converter para {{ toFormat.toUpperCase() }}
             </button>
@@ -371,10 +306,10 @@ const getTypeName = () => {
             />
           </div>
 
-          <p class="font-semibold text-base text-gray-200 mb-1">
+          <p class="font-semibold text-[17px] text-gray-200 mb-1">
             Processando seu arquivo...
           </p>
-          <p class="text-xs text-gray-500">Isso pode levar alguns instantes.</p>
+          <p class="text-[13px] text-gray-500">Isso pode levar alguns instantes.</p>
 
           <div class="w-full max-w-sm mt-8">
             <div
@@ -402,10 +337,10 @@ const getTypeName = () => {
             <FontAwesomeIcon :icon="faCircleCheck" />
           </div>
 
-          <h3 class="font-bold text-lg text-white mb-1">
+          <h3 class="font-bold text-[17px] text-white mb-1">
             Conversão Concluída!
           </h3>
-          <p class="text-xs text-gray-400 mb-6 max-w-md">
+          <p class="text-[14px] text-gray-400 mb-6 max-w-md">
             Seu arquivo foi convertido com sucesso para o formato
             <span class="uppercase text-gray-200 font-semibold">{{
               toFormat
@@ -417,10 +352,10 @@ const getTypeName = () => {
             class="w-full max-w-sm flex items-center gap-4 p-4 border border-[#222] bg-[#1a1a1a]/30 rounded-2xl mb-8 text-left"
           >
             <div class="flex-1 min-w-0">
-              <p class="font-semibold text-sm text-gray-200 truncate">
+              <p class="font-semibold text-[15px] text-gray-200 truncate">
                 {{ convertedFileName }}
               </p>
-              <p class="text-xs text-gray-500 mt-1">Disponível para download</p>
+              <p class="text-[13px] text-gray-500 mt-1">Disponível para download</p>
             </div>
           </div>
 
@@ -435,7 +370,7 @@ const getTypeName = () => {
             </button>
             <button
               @click="downloadConvertedFile"
-              class="px-8 py-3 bg-[#009900] hover:bg-[#22c55e] text-black font-bold text-sm rounded-full transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-green-900/15"
+              class="px-8 py-3 bg-[#009900] hover:bg-[#22c55e] text-black font-bold text-sm rounded-full transition-all duration-300 transform cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-green-900/15"
             >
               <FontAwesomeIcon :icon="faDownload" />
               Baixar Arquivo
@@ -460,7 +395,7 @@ const getTypeName = () => {
 
           <button
             @click="resetConversion"
-            class="px-8 py-3 bg-red-600 hover:bg-red-500 text-white font-semibold text-sm rounded-full transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer"
+            class="px-8 py-3 bg-red-600 hover:bg-red-500 text-white font-semibold text-sm rounded-full transition-all cursor-pointer"
           >
             Tentar Novamente
           </button>

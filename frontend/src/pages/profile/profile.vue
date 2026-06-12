@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, watch, computed } from "vue";
 import MainPageTemplate from "../../components/main-page-template.vue";
 import UserImage from "../../assets/981d6b2e0ccb5e968a0618c8d47671da.jpg";
 import Input from "../../components/input.vue";
@@ -15,25 +15,30 @@ import { api } from "../../services/api";
 import { useUser } from "../../composables/use-user";
 import { useToast } from "../../composables/use-toast";
 import * as z from "zod";
-
-interface UpdateProfile {
-  name: string;
-  avatarUrl?: string;
-}
+import type { User } from "../../types/user.ts";
 
 const { showUser } = useUser();
 const { showToast } = useToast();
 const inputLoading = ref<boolean>(false);
 const showDeleteConfirm = ref<boolean>(false);
-const data = ref<UpdateProfile>({
+const data = ref<User>({
   name: "",
+  email: "",
+  avatarUrl: ""
+});
+
+const hasChanges = computed(() => {
+  if (!showUser.value) return false;
+  return Object.keys(data.value).some(
+    (key) => data.value[key as keyof User] !== showUser.value[key as keyof User]
+  );
 });
 
 watch(
-  () => showUser.value.name,
-  (newName) => {
-    if (newName !== undefined) {
-      data.value.name = newName;
+  () => showUser.value,
+  (newValue) => {
+    if (newValue !== undefined) {
+      data.value = { ...newValue };
     }
   },
   { immediate: true },
@@ -63,7 +68,7 @@ const handleUpdate = async () => {
 
   inputLoading.value = true;
   try {
-    const payload: UpdateProfile = { name: data.value.name };
+    const payload: Partial<User> = { name: data.value.name };
     if (data.value.avatarUrl) {
       payload.avatarUrl = data.value.avatarUrl;
     }
@@ -226,7 +231,7 @@ const handleImageChange = async (event: Event) => {
 
         <div @click="triggerFileInput" class="relative w-fit mt-2 cursor-pointer group">
           <img
-            :src="data.avatarUrl || showUser.avatarUrl || UserImage"
+            :src="data.avatarUrl || UserImage"
             class="mt-[10px] rounded-full size-[120px] object-cover group-hover:opacity-80 transition-opacity duration-300"
           />
           <div class="absolute bottom-[0px] right-[0px]">
@@ -247,7 +252,7 @@ const handleImageChange = async (event: Event) => {
 
       <div class="mt-[60px]">
         <h2 class="text-[20px] mb-3 font-medium">Email</h2>
-        <p>{{ showUser.email }}</p>
+        <p>{{ data.email }}</p>
       </div>
 
       <div class="mt-[50px]">
@@ -266,8 +271,8 @@ const handleImageChange = async (event: Event) => {
           <button
             @click="handleUpdate()"
             type="submit"
-            :disabled="inputLoading"
-            class="cursor-pointer text-[15px] flex-1 bg-[#009900] hover:bg-[#22c55e] text-black font-bold py-2.5 px-6 rounded-full transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+            :disabled="inputLoading || !hasChanges"
+            class="cursor-pointer text-[15px] flex-1 bg-[#009900] hover:bg-[#22c55e] text-black font-bold py-2.5 px-6 rounded-full transition-all duration-300 transform disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
           >
             <FontAwesomeIcon v-if="inputLoading" :icon="faSpinner" spin />
             Salvar Alterações
@@ -278,7 +283,7 @@ const handleImageChange = async (event: Event) => {
           <button
             @click="showDeleteConfirm = true"
             type="submit"
-            class="cursor-pointer flex-1 bg-red-600 hover:bg-red-500 text-black font-bold text-[15px] py-2.5 px-6 rounded-full transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+            class="cursor-pointer flex-1 bg-red-600 hover:bg-red-500 text-black font-bold text-[15px] py-2.5 px-6 rounded-full transition-all duration-300 transform disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
           >
             Excluir Conta
           </button>

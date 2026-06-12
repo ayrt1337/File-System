@@ -72,6 +72,8 @@ const handleLogout = async () => {
                 </div>
 
                 <div
+                    @click="router.push({ name: 'downloadVideosOptions' })"
+                    :style="route.path.startsWith('/download-videos') ? 'background-color: #009900; color: white;' : ''"
                     class="gap-2 py-2 px-3 hover:bg-[#363333ac] hover:text-white rounded-full transition-all duration-300 text-[17px] cursor-pointer flex items-center">
                     <FontAwesomeIcon :icon="faDownload" />
                     <p>Baixar Vídeos</p>
