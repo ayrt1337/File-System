@@ -1,3 +1,4 @@
+import { AppError } from "../errors/app-error.js";
 import { convertDoc } from "../services/convert-docs-api.js";
 import { ConvertContext, ConvertResult } from "../types/convert.js";
 
@@ -9,23 +10,32 @@ const getBaseName = (filename: string) => {
 export class FileConvertors {
   async docxToPdf(context: ConvertContext): Promise<ConvertResult> {
     const { file } = context;
+    const docxMimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    if (!file.mimetype.startsWith(docxMimeType)) {
+      throw new AppError("Formato inválido!", 400);
+    }
+
     const convertedfile = await convertDoc(context);
 
     return {
       buffer: convertedfile,
       mimeType: "application/pdf",
-      fileName: `${getBaseName(file.originalname)}.pdf`
+      fileName: `${getBaseName(file.originalname)}.pdf`,
     };
   }
 
   async pngToPdf(context: ConvertContext): Promise<ConvertResult> {
     const { file } = context;
+    if (!file.mimetype.startsWith("image")) {
+      throw new AppError("Formato inválido!", 400);
+    }
+
     const convertedfile = await convertDoc(context);
 
     return {
       buffer: convertedfile,
       mimeType: "application/pdf",
-      fileName: `${getBaseName(file.originalname)}.pdf`
+      fileName: `${getBaseName(file.originalname)}.pdf`,
     };
   }
 }

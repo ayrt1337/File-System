@@ -153,19 +153,8 @@ const startConversion = async () => {
     }, 200);
   } catch (error: any) {
     console.error("Erro na conversão:", error);
-    let errorMsg = "Erro na conversão do arquivo. Tente novamente.";
-    if (error.response?.data) {
-      try {
-        const text = await error.response.data.text();
-        const parsed = JSON.parse(text);
-        if (parsed.error) {
-          errorMsg = parsed.error;
-        }
-      } catch (e) {
-        // Fallback
-      }
-    }
-    errorMessage.value = errorMsg;
+    const apiMessage = error.response?.data;
+    errorMessage.value = apiMessage || "Erro na conversão do arquivo. Tente novamente.";
     conversionStatus.value = "error";
   }
 };
