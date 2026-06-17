@@ -12,19 +12,21 @@ const conversionOptions = [
   // Video Section
   { to: "mp4", title: "Converta qualquer vídeo para MP4", type: "video" as const },
   { to: "avi", title: "Converta qualquer vídeo para AVI", type: "video" as const },
+  { to: "mp3", title: "Converta qualquer vídeo para MP3", type: "video" as const },
+  { to: "wav", title: "Converta qualquer vídeo para WAV", type: "video" as const },
 
   // Audio Section
-  { to: "mp3", title: "Converta qualquer áudio/vídeo para MP3", type: "audio" as const },
-  { to: "wav", title: "Converta qualquer áudio/vídeo para WAV", type: "audio" as const },
+  { to: "mp3", title: "Converta qualquer áudio MP3", type: "audio" as const },
+  { to: "wav", title: "Converta qualquer áudio WAV", type: "audio" as const },
 
   // Document/File Section
   { from: "docx", to: "pdf", title: "Word para PDF", type: "document" as const },
-  { from: "png", to: "pdf", title: "Imagem para PDF", type: "document" as const },
 
   // Image Section
   { to: "png", title: "Converta qualquer imagem para PNG", type: "image" as const },
   { to: "jpeg", title: "Converta qualquer imagem para JPEG", type: "image" as const },
-  { to: "webp", title: "Converta qualquer imagem para WebP", type: "image" as const },
+  { to: "webp", title: "Converta qualquer imagem para WEBP", type: "image" as const },
+  { from: "png", to: "pdf", title: "Imagem para PDF", type: "image" as const },
 ];
 
 const videoOptions = computed(() => conversionOptions.filter((opt) => opt.type === "video"));

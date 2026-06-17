@@ -36,12 +36,12 @@ const fromIcon = computed(() => {
 
 const toIcon = computed(() => {
   const ext = props.to.toLowerCase();
+  if (ext === "docx" || ext === "doc") return faFileWord;
+  if (ext === "pdf") return faFilePdf;
   if (props.type === "video" && ext !== "mp3") return faFileVideo;
   if (props.type === "audio" || ext === "mp3") return faFileAudio;
   if (props.type === "image" || ext === "jpg" || ext === "png")
     return faFileImage;
-  if (ext === "docx" || ext === "doc") return faFileWord;
-  if (ext === "pdf") return faFilePdf;
   return faFile;
 });
 

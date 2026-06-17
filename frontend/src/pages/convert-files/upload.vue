@@ -153,8 +153,7 @@ const startConversion = async () => {
     }, 200);
   } catch (error: any) {
     console.error("Erro na conversão:", error);
-    const apiMessage = error.response?.data;
-    errorMessage.value = apiMessage || "Erro na conversão do arquivo. Tente novamente.";
+    errorMessage.value = "Erro na conversão do arquivo. Tente novamente.";
     conversionStatus.value = "error";
   }
 };
@@ -229,9 +228,9 @@ const downloadConvertedFile = () => {
             />
 
             <div
-              class="rounded-full bg-[#009900]/10 flex items-center justify-center text-[#009900] mb-4"
+              class="rounded-full size-13 bg-[#009900]/10 flex items-center justify-center text-[#009900] mb-4"
             >
-              <FontAwesomeIcon :icon="faUpload" class="text-[30px]" />
+              <FontAwesomeIcon :icon="faUpload" class="text-[27px]" />
             </div>
 
             <p class="font-semibold text-[17px] text-gray-200">

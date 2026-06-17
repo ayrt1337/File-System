@@ -9,7 +9,7 @@ const getBaseName = (filename: string) => {
 
 export class AudioConvertors {
   async audioConverter({ file, to }: ConvertContext): Promise<ConvertResult> {
-    if (!file.mimetype.startsWith("audio") || !file.mimetype.startsWith("video")) {
+    if (!file.mimetype.startsWith("audio") && !file.mimetype.startsWith("video")) {
       throw new AppError("Formato inválido!", 400);
     }
 

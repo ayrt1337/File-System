@@ -39,10 +39,10 @@ const { showUnauthorized } = useUnauthorized();
             <div class="h-screen flex flex-col w-full">
                 <Header :search-input="searchInput" v-if="header" />
 
-                <div :class="(!header ? 'mt-[85px] ' : '') + 'px-12 pt-10 pb-5 flex flex-1 flex-col bg-[#1e1e1e] rounded-[24px] mr-8 mb-8 min-h-0'">
+                <div :class="(!header ? 'mt-[85px] ' : '') + 'overflow-y-auto custom-scrollbar px-12 pt-10 pb-5 flex flex-1 flex-col bg-[#1e1e1e] rounded-[24px] mr-8 mb-8 min-h-0'">
                     <h1 v-if="title" class="mb-10 text-[24px] text-white font-medium">{{ title }}</h1>
 
-                    <div class="overflow-y-auto custom-scrollbar">
+                    <div>
                         <slot />
                     </div>
                 </div>
