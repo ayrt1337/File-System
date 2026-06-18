@@ -7,7 +7,9 @@ import { useRoute } from 'vue-router';
 import { useLoading } from '../composables/use-loading';
 import { useToast } from '../composables/use-toast';
 import { api } from '../services/api';
+import { useAuthStore } from '../stores/auth';
 
+const authStore = useAuthStore();
 const { showToast } = useToast();
 const { showLoadingPage } = useLoading();
 const route = useRoute();
@@ -17,6 +19,7 @@ const handleLogout = async () => {
 
     try {
         await api.get('/logout');
+        authStore.logout();
         router.push("/login");
     } catch (error) {
         console.error("Erro em deslogar: ", error);

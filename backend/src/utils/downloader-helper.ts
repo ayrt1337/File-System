@@ -12,11 +12,11 @@ export const downloadMedia = async (url: string): Promise<Buffer> => {
       chunks.push(chunk);
     });
 
-    subprocess.on("error", (error) => {
+    subprocess.on("error", (error: any) => {
       reject(error);
     });
 
-    subprocess.on("close", (code) => {
+    subprocess.on("close", (code: any) => {
       if (code === 0) {
         resolve(Buffer.concat(chunks));
       } else {

@@ -1,9 +1,8 @@
 import { createRouter, createWebHistory, RouterView } from "vue-router";
 import { resetPageState } from "../services/page-reset-state";
-import { useUser } from "../composables/use-user";
-import { useLoading } from "../composables/use-loading";
-import { verifyApiError } from "../services/verify-api-error";
-import { api } from "../services/api";
+import { useUnauthorized } from "../composables/use-unauthorized.ts";
+import { useServerError } from "../composables/use-server-error.ts";
+import { hasValidSessionStored } from "../stores/auth.ts";
 
 const routes = [
   {
@@ -97,26 +96,17 @@ export const router = createRouter({
   routes,
 });
 
-router.beforeEach(() => {
+router.beforeEach((to) => {
   resetPageState();
-  return;
-});
+  const { showUnauthorizedPage } = useUnauthorized();
+  const { showServerErrorPage } = useServerError();
 
-router.afterEach(async (current, before) => {
-  const { setUser } = useUser();
-  const { showLoadingPage } = useLoading();
-
-  if (current.meta.requiresAuth && current.path !== before.path) {
-    if (current.meta.static) showLoadingPage(true);
-
+  if (to.meta.requiresAuth) {
     try {
-      const response = await api("/profile");
-      setUser(response.data);
+      if (!hasValidSessionStored()) showUnauthorizedPage(true);
     } catch (error: any) {
       console.error("Erro ao verificar usuário:", error);
-      verifyApiError(error.response?.status);
-    } finally {
-      if (current.meta.static) showLoadingPage(false);
+      showServerErrorPage(true);
     }
   }
 });

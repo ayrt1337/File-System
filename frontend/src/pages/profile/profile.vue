@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, computed } from "vue";
+import { ref, onMounted, computed } from "vue";
 import MainPageTemplate from "../../components/main-page-template.vue";
 import UserImage from "../../assets/981d6b2e0ccb5e968a0618c8d47671da.jpg";
 import Input from "../../components/input.vue";
@@ -12,12 +12,16 @@ import {
 import { router } from "../../router/index.ts";
 import Overlay from "../../components/overlay.vue";
 import { api } from "../../services/api";
-import { useUser } from "../../composables/use-user";
 import { useToast } from "../../composables/use-toast";
 import * as z from "zod";
 import type { User } from "../../types/user.ts";
+import { useAuthStore } from "../../stores/auth.ts";
+import { useLoading } from "../../composables/use-loading.ts";
+import { verifyApiError } from "../../services/verify-api-error.ts";
 
-const { showUser } = useUser();
+const { showLoadingPage } = useLoading();
+
+const authStore = useAuthStore();
 const { showToast } = useToast();
 const inputLoading = ref<boolean>(false);
 const showDeleteConfirm = ref<boolean>(false);
@@ -28,21 +32,25 @@ const data = ref<User>({
 });
 
 const hasChanges = computed(() => {
-  if (!showUser.value) return false;
+  if (!authStore.getUser) return false;
   return Object.keys(data.value).some(
-    (key) => data.value[key as keyof User] !== showUser.value[key as keyof User]
+    (key) => data.value[key as keyof User] !== (authStore.getUser as User)[key as keyof User]
   );
 });
 
-watch(
-  () => showUser.value,
-  (newValue) => {
-    if (newValue !== undefined) {
-      data.value = { ...newValue };
-    }
-  },
-  { immediate: true },
-);
+const getProfile = async () => {
+  showLoadingPage(true);
+
+  try {
+    const response = await api.get("/profile");
+    data.value = response.data;
+  } catch (error: any) {
+    console.error("Erro ao buscar usuário: ", error);
+    verifyApiError(error.response?.status);
+  } finally {
+    showLoadingPage(false);
+  }
+};
 
 const profileSchema = z.object({
   name: z
@@ -73,13 +81,7 @@ const handleUpdate = async () => {
       payload.avatarUrl = data.value.avatarUrl;
     }
     await api.patch("/update", payload);
-    
-    showUser.value.name = data.value.name;
-    if (data.value.avatarUrl) {
-      showUser.value.avatarUrl = data.value.avatarUrl;
-      data.value.avatarUrl = "";
-    }
-    
+    authStore.updateUser(payload as User);
     showToast("Alterações salvas com sucesso!", "success");
   } catch (error) {
     console.error("Erro ao atualizar os dados: ", error);
@@ -96,6 +98,7 @@ const confirmDelete = async () => {
   try {
     await api.patch("/delete");
     showToast("Conta excluída com sucesso!", "success");
+    authStore.logout();
     router.push("/login");
   } catch (error) {
     console.error("Erro ao atualizar os dados: ", error);
@@ -179,6 +182,8 @@ const handleImageChange = async (event: Event) => {
     if (target) target.value = "";
   }
 };
+
+onMounted(() => getProfile());
 </script>
 
 <template>

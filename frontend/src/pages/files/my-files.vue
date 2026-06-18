@@ -7,9 +7,9 @@ import { verifyApiError } from '../../services/verify-api-error';
 onMounted(async () => {
     try {
         await api.get(`/my-files`);
-    } catch (messageError: any) {
-        console.log("Erro em iniciar página: ", messageError);
-        verifyApiError(messageError.response?.status);
+    } catch (error: any) {
+        console.log("Erro em iniciar página: ", error);
+        verifyApiError(error.response?.status);
     }
 })
 </script>

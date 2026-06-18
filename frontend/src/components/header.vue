@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Input from "./input.vue";
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, computed } from "vue";
 import UserImage from "../assets/981d6b2e0ccb5e968a0618c8d47671da.jpg";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import {
@@ -8,15 +8,16 @@ import {
   faCamera,
 } from "@fortawesome/free-solid-svg-icons";
 import { router } from "../router";
-import { useUser } from "../composables/use-user.ts";
+import { useAuthStore } from "../stores/auth.ts";
+
+const authStore = useAuthStore();
+const user = computed(() => authStore.getUser);
 
 interface Props {
   searchInput: boolean;
 }
 
 const props = defineProps<Props>();
-
-const { showUser } = useUser();
 
 const search = ref<string>("");
 const popup = ref<boolean>(false);
@@ -63,7 +64,7 @@ onUnmounted(() => {
 
     <div class="mr-8">
       <img
-        :src="showUser.avatarUrl || UserImage"
+        :src="user?.avatarUrl || UserImage"
         class="profile-avatar cursor-pointer rounded-[50%] object-cover"
         height="50px"
         width="50px"
@@ -87,7 +88,7 @@ onUnmounted(() => {
 
       <div class="relative mt-2">
         <img
-          :src="showUser.avatarUrl || UserImage"
+          :src="user?.avatarUrl || UserImage"
           class="rounded-full size-[80px] object-cover"
         />
         <div class="absolute bottom-[-4px] right-[-4px] cursor-pointer">
@@ -99,7 +100,7 @@ onUnmounted(() => {
       </div>
 
       <h2 class="text-white text-xl mt-4 font-normal">
-        Olá, {{ showUser.name }}!
+        Olá, {{ user?.name }}!
       </h2>
 
       <button

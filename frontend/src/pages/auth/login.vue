@@ -9,6 +9,9 @@ import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import Image from "../../assets/unnamed.jpg";
 import { api } from "../../services/api";
 import * as z from "zod";
+import { useAuthStore } from "../../stores/auth.ts";
+
+const authStore = useAuthStore();
 
 interface LoginData {
   email: string;
@@ -46,12 +49,18 @@ const handleLogin = async () => {
   }
   loading.value = true;
   try {
-    await api.post(`/login`, {
+    const response = await api.post(`/login`, {
       email: data.value.email,
       password: data.value.password,
       rememberMe: data.value.rememberMe,
     });
 
+    if (!response || !response.data.token || !response.data.user) {
+      errorMessage.value = "Ops! Algo deu errado";
+      return;
+    }
+
+    authStore.setToken(response.data);
     router.push({ name: "myFiles" });
   } catch (error: any) {
     console.error("Erro no login: ", error);

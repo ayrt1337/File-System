@@ -42,15 +42,19 @@ export class AuthController {
 
       const user = await database.user.findUnique({
         where: { email: email, inactive: false },
-        select: { password: true, id: true },
       });
-      
+
       if (!user || !(await services.compareHash(password, user.password))) {
         throw new AppError("Dados incorretos!", 400);
       }
 
       const maxAge = rememberMe ? 3600000 * 8766 : 3600000 * 24;
-      const sessionId = services.genToken({ id: user.id }, maxAge);
+      const sessionId = services.genToken(
+        {
+          id: user.id,
+        },
+        maxAge,
+      );
 
       res.cookie("sessionId", sessionId, {
         maxAge,
@@ -58,7 +62,15 @@ export class AuthController {
         httpOnly: true,
         sameSite: true,
       });
-      res.status(200).json("success");
+      res.status(200).json({
+        token: sessionId,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          avatarUrl: user.avatarUrl,
+        },
+      });
     } catch (error: any) {
       next(error);
     }
@@ -84,7 +96,10 @@ export class AuthController {
 
       res.status(200).json("success");
     } catch (error: any) {
-      console.log("Erro no envio de email de alteração de senha: ", error.message);
+      console.log(
+        "Erro no envio de email de alteração de senha: ",
+        error.message,
+      );
       res.status(200).json("success");
     }
   }
@@ -93,7 +108,9 @@ export class AuthController {
     try {
       const { password, token } = req.body;
 
-      const decoded = services.decodeToken(token) as { data: { email: string } };
+      const decoded = services.decodeToken(token) as {
+        data: { email: string };
+      };
 
       if (!decoded) {
         throw new AppError("Bad Request", 400);
@@ -114,7 +131,9 @@ export class AuthController {
     try {
       const { token } = req.query as { token: string };
 
-      const decoded = services.verifyToken(token) as { data: { email: string, password: string } }
+      const decoded = services.verifyToken(token) as {
+        data: { email: string; password: string };
+      };
 
       if (!decoded) {
         throw new AppError("Bad Request", 400);
