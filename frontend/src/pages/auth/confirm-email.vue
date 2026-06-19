@@ -19,7 +19,7 @@ const success = ref<boolean>(false);
 
 onMounted(async () => {
   try {
-    await api.get("/confirmEmail", {
+    await api.get("/confirm-email", {
       params: { token: props.token },
     });
 

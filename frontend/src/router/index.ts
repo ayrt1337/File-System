@@ -2,7 +2,10 @@ import { createRouter, createWebHistory, RouterView } from "vue-router";
 import { resetPageState } from "../services/page-reset-state";
 import { useUnauthorized } from "../composables/use-unauthorized.ts";
 import { useServerError } from "../composables/use-server-error.ts";
+import { useLoading } from "../composables/use-loading.ts";
 import { hasValidSessionStored } from "../stores/auth.ts";
+import { verifyApiError } from "../services/verify-api-error.ts";
+import { api } from "../services/api.ts";
 
 const routes = [
   {
@@ -21,7 +24,7 @@ const routes = [
     component: () => import("../pages/auth/email-sent.vue"),
   },
   {
-    path: "/confirmEmail/:token",
+    path: "/confirm-email/:token",
     name: "confirmEmail",
     component: () => import("../pages/auth/confirm-email.vue"),
     props: true,
@@ -32,7 +35,7 @@ const routes = [
     component: () => import("../pages/auth/reset.vue"),
   },
   {
-    path: "/confirmPassword/:token",
+    path: "/confirm-password/:token",
     name: "confirmPassword",
     component: () => import("../pages/auth/confirm-password.vue"),
     props: true,
@@ -107,6 +110,22 @@ router.beforeEach((to) => {
     } catch (error: any) {
       console.error("Erro ao verificar usuário:", error);
       showServerErrorPage(true);
+    }
+  }
+});
+
+router.afterEach(async (to) => {
+  if (to.meta.static) {
+    const { showLoadingPage } = useLoading();
+    showLoadingPage(true);
+
+    try {
+      await api.get("/me");
+    } catch (error: any) {
+      console.error("Erro ao verificar usuário: ", error);
+      verifyApiError(error.response?.status);
+    } finally {
+      showLoadingPage(false);
     }
   }
 });

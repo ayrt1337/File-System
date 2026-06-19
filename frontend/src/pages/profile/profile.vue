@@ -43,7 +43,8 @@ const getProfile = async () => {
 
   try {
     const response = await api.get("/profile");
-    data.value = response.data;
+    data.value = { ...response.data };
+    authStore.updateUser(response.data);
   } catch (error: any) {
     console.error("Erro ao buscar usuário: ", error);
     verifyApiError(error.response?.status);

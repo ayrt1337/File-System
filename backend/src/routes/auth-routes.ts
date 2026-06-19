@@ -14,8 +14,9 @@ const authController = new AuthController();
 authRoutes.post("/login", authController.login);
 authRoutes.post("/register", validate(registerSchema), authController.register);
 authRoutes.post("/reset", validate(sendEmailSchema), authController.reset);
-authRoutes.post("/resetPassword", validate(resetPasswordSchema), authController.resetPassword);
-authRoutes.get("/confirmEmail", authController.confirmEmail);
+authRoutes.post("/reset-password", validate(resetPasswordSchema), authController.resetPassword);
+authRoutes.get("/confirm-email", authController.confirmEmail);
 authRoutes.get("/logout", authenticate, authController.logout);
+authRoutes.get("/me", authenticate, authController.verify);
 
 export default authRoutes;

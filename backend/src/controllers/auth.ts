@@ -24,7 +24,7 @@ export class AuthController {
         services.sendEmail({
           to: email,
           subject: "Confirmação de Email",
-          path: "confirmEmail",
+          path: "confirm-email",
           token: token,
         });
       }
@@ -89,7 +89,7 @@ export class AuthController {
         services.sendEmail({
           to: email,
           subject: "Alteração de Senha",
-          path: "confirmPassword",
+          path: "confirm-password",
           token: token,
         });
       }
@@ -169,6 +169,14 @@ export class AuthController {
     try {
       res.clearCookie("sessionId");
       res.status(200).json("success");
+    } catch (error: any) {
+      next(error);
+    }
+  }
+
+  async verify(req: Request, res: Response, next: NextFunction) {
+    try {
+      res.status(200).json("authenticated");
     } catch (error: any) {
       next(error);
     }

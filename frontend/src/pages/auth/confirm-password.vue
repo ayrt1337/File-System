@@ -59,7 +59,7 @@ const showInput = ref<boolean>(false);
 
 onMounted(async () => {
   try {
-    await api.get("/confirmEmail", {
+    await api.get("/confirm-email", {
       params: { token: props.token },
     });
 
@@ -89,7 +89,7 @@ const changePassword = async () => {
 
   inputLoading.value = true;
   try {
-    const result = await api.post(`/resetPassword`, {
+    const result = await api.post(`/reset-password`, {
       token: props.token,
       password: data.value.password,
     });
