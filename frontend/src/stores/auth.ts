@@ -11,7 +11,7 @@ const decodeStoredToken = (token: string) => {
 };
 
 export const hasValidSessionStored = () => {
-  const token = localStorage.getItem("token");
+  const token = useAuthStore().token || localStorage.getItem("token");
   if (!token) return false;
 
   const decodedToken = decodeStoredToken(token) as { exp?: number } | null;

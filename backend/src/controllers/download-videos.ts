@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { AppError } from "../errors/app-error.js";
 import { downloadMedia } from "../utils/downloader-helper.js";
 
-const platforms: string[] = ["youtube", "instagram", "twitter", "x"];
+const platforms: string[] = ["youtube", "twitter", "x"];
 
 export class DownloadVideosController {
   async download(req: Request, res: Response, next: NextFunction) {

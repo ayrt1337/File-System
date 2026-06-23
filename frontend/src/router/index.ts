@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory, RouterView } from "vue-router";
 import { resetPageState } from "../services/page-reset-state";
-import { useUnauthorized } from "../composables/use-unauthorized.ts";
 import { useServerError } from "../composables/use-server-error.ts";
 import { useLoading } from "../composables/use-loading.ts";
 import { hasValidSessionStored } from "../stores/auth.ts";
@@ -51,7 +50,7 @@ const routes = [
     name: "profile",
     component: () => import("../pages/profile/profile.vue"),
     props: true,
-    meta: { requiresAuth: true, static: true },
+    meta: { requiresAuth: true },
   },
   {
     path: "/convert-files",
@@ -83,7 +82,7 @@ const routes = [
       {
         path: "download",
         name: "downloadVideosForm",
-        component: () => import("../pages/download-videos/options.vue"), // temporarily fallback to options.vue until we build the form page
+        component: () => import("../pages/download-videos/download.vue"),
       },
     ],
   },
@@ -101,12 +100,12 @@ export const router = createRouter({
 
 router.beforeEach((to) => {
   resetPageState();
-  const { showUnauthorizedPage } = useUnauthorized();
-  const { showServerErrorPage } = useServerError();
 
   if (to.meta.requiresAuth) {
+    const { showServerErrorPage } = useServerError();
+
     try {
-      if (!hasValidSessionStored()) showUnauthorizedPage(true);
+      if (!hasValidSessionStored()) router.push("/login");
     } catch (error: any) {
       console.error("Erro ao verificar usuário:", error);
       showServerErrorPage(true);
@@ -115,7 +114,7 @@ router.beforeEach((to) => {
 });
 
 router.afterEach(async (to) => {
-  if (to.meta.static) {
+  if ((to.meta.static && to.meta.requiresAuth) && hasValidSessionStored()) {
     const { showLoadingPage } = useLoading();
     showLoadingPage(true);
 
