@@ -23,6 +23,8 @@ export class DownloadVideosController {
       }
 
       const output = await downloadMedia(source);
+      res.setHeader("Content-Type", "video/mp4");
+      res.send(output);
     } catch (error) {
       next(error);
     }

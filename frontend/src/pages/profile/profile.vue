@@ -278,7 +278,7 @@ onMounted(() => getProfile());
             @click="handleUpdate()"
             type="submit"
             :disabled="inputLoading || !hasChanges"
-            class="cursor-pointer text-[15px] flex-1 bg-[#009900] hover:bg-[#22c55e] text-black font-bold py-2.5 px-6 rounded-full transition-all duration-300 transform disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+            class="text-white cursor-pointer text-[15px] flex-1 bg-[#009900] hover:bg-[#22c55e] text-black font-bold py-2.5 px-6 rounded-full transition-all duration-300 transform disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
           >
             <FontAwesomeIcon v-if="inputLoading" :icon="faSpinner" spin />
             Salvar Alterações
@@ -289,7 +289,7 @@ onMounted(() => getProfile());
           <button
             @click="showDeleteConfirm = true"
             type="submit"
-            class="cursor-pointer flex-1 bg-red-600 hover:bg-red-500 text-black font-bold text-[15px] py-2.5 px-6 rounded-full transition-all duration-300 transform disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+            class="text-white cursor-pointer flex-1 bg-red-600 hover:bg-red-500 text-black font-bold text-[15px] py-2.5 px-6 rounded-full transition-all duration-300 transform disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
           >
             Excluir Conta
           </button>

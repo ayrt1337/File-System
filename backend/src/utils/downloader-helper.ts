@@ -7,9 +7,14 @@ export const downloadMedia = async (url: string): Promise<Buffer> => {
     });
 
     const chunks: Buffer[] = [];
+    const stderrChunks: Buffer[] = [];
 
     subprocess.stdout?.on("data", (chunk: Buffer) => {
       chunks.push(chunk);
+    });
+
+    subprocess.stderr?.on("data", (chunk: Buffer) => {
+      stderrChunks.push(chunk);
     });
 
     subprocess.on("error", (error: any) => {
@@ -20,7 +25,13 @@ export const downloadMedia = async (url: string): Promise<Buffer> => {
       if (code === 0) {
         resolve(Buffer.concat(chunks));
       } else {
-        reject(new Error(`O download falhou. yt-dlp finalizou com código de saída ${code}`));
+        const errorMsg = Buffer.concat(stderrChunks).toString("utf-8").trim();
+        console.error("yt-dlp error:", errorMsg);
+        reject(
+          new Error(
+            `O download falhou. yt-dlp finalizou com código de saída ${code}. Detalhes: ${errorMsg}`,
+          ),
+        );
       }
     });
   });

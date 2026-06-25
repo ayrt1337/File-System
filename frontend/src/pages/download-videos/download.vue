@@ -6,14 +6,18 @@ import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import {
   faArrowLeft,
   faSpinner,
-  faCircleInfo,
   faDownload,
 } from "@fortawesome/free-solid-svg-icons";
-import { faYoutube, faXTwitter, faInstagram } from "@fortawesome/free-brands-svg-icons";
+import {
+  faYoutube,
+  faXTwitter,
+  faInstagram,
+} from "@fortawesome/free-brands-svg-icons";
 import { getPreview } from "../../services/get-preview-from-oembed";
 import { useToast } from "../../composables/use-toast";
 import { api } from "../../services/api";
 import type { Preview } from "../../types/video-preview.ts";
+import Input from "../../components/input.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -64,7 +68,7 @@ const platformColorClass = computed(() => {
 });
 
 const url = ref("");
-const preview = ref<Partial<Preview>>({});
+const preview = ref<Preview | null>(null);
 const isLoadingPreview = ref(false);
 const isDownloading = ref(false);
 
@@ -74,25 +78,11 @@ const handleFetchPreview = async () => {
     return;
   }
 
-  // Normalização de URLs do YouTube (ex: converter youtu.be para formato padrão para o oEmbed)
-  // let normalizedUrl = url.value.trim();
-  // if (platform.value === "youtube" && normalizedUrl.includes("youtu.be/")) {
-  //   const videoId = normalizedUrl.split("youtu.be/")[1]?.split(/[?#]/)[0];
-  //   if (videoId) {
-  //     normalizedUrl = `https://www.youtube.com/watch?v=${videoId}`;
-  //   }
-  // } else if (
-  //   (platform.value === "x" || platform.value === "twitter") &&
-  //   normalizedUrl.includes("twitter.com/")
-  // ) {
-  //   normalizedUrl = normalizedUrl.replace("twitter.com/", "x.com/");
-  // }
-
   isLoadingPreview.value = true;
-  preview.value = {};
+  preview.value = null;
 
   try {
-    const result = await getPreview(platform.value, url.value) as Preview;
+    const result = (await getPreview(platform.value, url.value)) as Preview;
     if (result) {
       preview.value = result;
     } else {
@@ -147,7 +137,12 @@ const handleDownload = async () => {
 </script>
 
 <template>
-  <MainPageTemplate :search-input="false" :header="true" :sidebar="true" title="Baixar Vídeos">
+  <MainPageTemplate
+    :search-input="false"
+    :header="true"
+    :sidebar="true"
+    title="Baixar Vídeos"
+  >
     <div class="max-w-3xl mx-auto text-white mt-10">
       <div class="flex items-center gap-4 mb-8">
         <button
@@ -157,7 +152,9 @@ const handleDownload = async () => {
           <FontAwesomeIcon :icon="faArrowLeft" />
         </button>
         <div>
-          <h2 class="text-xl font-bold text-white leading-none flex items-center gap-2">
+          <h2
+            class="text-xl font-bold text-white leading-none flex items-center gap-2"
+          >
             <span :class="platformColorClass">
               <FontAwesomeIcon v-if="platformIcon" :icon="platformIcon" />
             </span>
@@ -169,52 +166,54 @@ const handleDownload = async () => {
         </div>
       </div>
 
-      <div class="bg-[#141414]/80 border border-[#222] rounded-3xl p-8 shadow-xl">
-        <div class="flex flex-col sm:flex-row gap-3">
+      <div class="flex flex-col items-center bg-[#141414]/80 border border-[#222] rounded-[15px] p-8">
+        <div class="w-full flex flex-col sm:flex-row gap-3">
           <div class="flex-1 relative">
-            <input
+            <Input
               v-model="url"
-              type="text"
-              placeholder="Insira a URL do conteúdo aqui..."
-              class="w-full py-4 px-6 bg-white text-black font-medium text-[15px] border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400"
-              @keydown.enter="handleFetchPreview"
+              text="Link do vídeo"
+              :on-key-enter="!isLoadingPreview ? handleFetchPreview : undefined"
+              left-icon="faVideo"
             />
           </div>
           <button
             @click="handleFetchPreview"
-            :disabled="isLoadingPreview"
-            class="px-8 py-4 bg-[#007bff] hover:bg-[#0056b3] disabled:bg-blue-800/50 text-white font-bold text-[15px] rounded-lg tracking-wider transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-md"
+            :disabled="isLoadingPreview || isDownloading"
+            class="disabled:cursor-not-allowed px-6 py-2 bg-[#009900] hover:bg-[#22c55e] disabled:opacity-70 text-white font-bold text-[15px] rounded-full tracking-wider transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-md"
           >
-            <FontAwesomeIcon v-if="isLoadingPreview" :icon="faSpinner" spin />
-            <span>BAIXAR</span>
+            <span>Baixar</span>
           </button>
         </div>
 
-        <p
-          class="text-[13px] text-gray-400 mt-5 text-center flex items-center justify-center gap-2 leading-relaxed"
+        <div
+          v-if="isLoadingPreview"
+          class="mt-8 py-10 flex flex-col items-center justify-center"
         >
-          <span>
-            Certifique-se de não violar os direitos de terceiros com os arquivos que baixar.<br />
-            Músicas protegidas por direitos autorais não podem ser baixadas com esta ferramenta.
-          </span>
-          <FontAwesomeIcon :icon="faCircleInfo" class="text-gray-500 text-sm" />
-        </p>
-
-        <div v-if="isLoadingPreview" class="mt-8 py-10 flex flex-col items-center justify-center">
-          <FontAwesomeIcon :icon="faSpinner" class="text-3xl text-blue-500 animate-spin" />
-          <p class="text-sm text-gray-500 mt-3">Buscando informações do vídeo...</p>
+          <FontAwesomeIcon
+            :icon="faSpinner"
+            class="text-3xl text-emerald-500 animate-spin"
+          />
+          <p class="text-sm text-gray-500 mt-3">
+            Buscando informações do vídeo...
+          </p>
         </div>
 
         <div
           v-else-if="preview"
-          class="mt-8 border border-[#222] bg-[#1a1a1a]/40 rounded-2xl p-6 transition-all duration-300 hover:border-[#333]"
+          class="mt-8 border border-gray-800 bg-[#1a1a1a]/40 rounded-[15px] p-6 transition-all duration-300"
         >
-          <div class="flex flex-col md:flex-row gap-5 items-center md:items-start">
+          <div
+            class="flex flex-col md:flex-row gap-5 items-center md:items-start"
+          >
             <div
               v-if="preview.thumbnail"
-              class="w-full md:w-56 shrink-0 aspect-video rounded-xl overflow-hidden shadow-lg border border-[#2c2c2c] relative bg-black/40 flex items-center justify-center"
+              class="w-full md:w-56 shrink-0 aspect-video rounded-[15px] overflow-hidden shadow-lg border border-[#2c2c2c] relative bg-black/40 flex items-center justify-center"
             >
-              <img :src="preview.thumbnail" alt="Video Thumbnail" class="w-full h-full object-cover" />
+              <img
+                :src="preview.thumbnail"
+                alt="Video Thumbnail"
+                class="w-full h-full object-cover"
+              />
             </div>
 
             <div class="flex-1 flex flex-col justify-between min-w-0">
@@ -224,27 +223,25 @@ const handleDownload = async () => {
                 >
                   {{ preview.title }}
                 </h3>
-                <p class="text-sm text-gray-500">
-                  Plataforma:
-                  <span class="capitalize text-gray-300 font-semibold">{{ platform }}</span>
-                </p>
-              </div>
-
-              <div class="mt-6 flex flex-wrap gap-3">
-                <button
-                  @click="handleDownload"
-                  :disabled="isDownloading"
-                  class="px-6 py-3 bg-[#009900] hover:bg-[#22c55e] disabled:bg-green-950/50 disabled:text-gray-500 text-black font-bold text-[14px] rounded-full transition-all duration-300 flex items-center gap-2 cursor-pointer shadow-lg shadow-green-900/15"
-                >
-                  <FontAwesomeIcon
-                    :icon="isDownloading ? faSpinner : faDownload"
-                    :spin="isDownloading"
-                  />
-                  <span>{{ isDownloading ? "Baixando..." : "Salvar no Dispositivo" }}</span>
-                </button>
               </div>
             </div>
           </div>
+        </div>
+
+        <div v-if="preview" class="mt-6 flex flex-wrap gap-3">
+          <button
+            @click="handleDownload"
+            :disabled="isDownloading"
+            class="text-white px-6 py-3 bg-[#009900] hover:bg-[#22c55e] disabled:bg-green-950/50 disabled:text-gray-500 text-black font-bold text-[14px] rounded-full transition-all duration-300 flex items-center gap-2 cursor-pointer"
+          >
+            <FontAwesomeIcon
+              :icon="isDownloading ? faSpinner : faDownload"
+              :spin="isDownloading"
+            />
+            <span>{{
+              isDownloading ? "Baixando..." : "Baixar"
+            }}</span>
+          </button>
         </div>
       </div>
     </div>

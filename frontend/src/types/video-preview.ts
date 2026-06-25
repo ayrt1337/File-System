@@ -1,4 +1,4 @@
 export interface Preview {
-  thumbnail: string;
+  thumbnail?: string;
   title: string;
 }

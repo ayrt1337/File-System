@@ -10,6 +10,7 @@ interface Props {
   password?: boolean;
   error?: string;
   leftIcon?: string;
+  onKeyEnter?: () => void; 
 }
 
 const props = defineProps<Props>();
@@ -43,6 +44,7 @@ const getIcon = (iconName: string | undefined) => {
         v-model.trim="model"
         :type="password ? (showText ? 'text' : 'password') : 'text'"
         :placeholder="text"
+        @keydown.enter="onKeyEnter ? onKeyEnter() : null"
         :class="[
           'w-full py-3.5 px-11 bg-[#1a1a1a] border rounded-full focus:outline-none transition-all duration-300 placeholder-gray-600 text-white',
           error
