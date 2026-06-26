@@ -1,38 +1,61 @@
 import ytDlpExec from "yt-dlp-exec";
+import ffmpegPath from "@ffmpeg-installer/ffmpeg";
+import path from "path";
+import os from "os";
+import { promises as fs } from "fs";
+import {
+  qualityMapping,
+  outputFormatMapping,
+} from "../controllers/download-videos.js";
 
-export const downloadMedia = async (url: string): Promise<Buffer> => {
-  return new Promise((resolve, reject) => {
-    const subprocess = (ytDlpExec as any).exec(url, {
-      output: "-",
-    });
+export const downloadMedia = async (
+  url: string,
+  quality: string,
+  outputFormat: string,
+): Promise<Buffer> => {
+  const tempDir = os.tmpdir();
+  const timestamp = Date.now();
 
-    const chunks: Buffer[] = [];
-    const stderrChunks: Buffer[] = [];
+  const cleanUrl = url.replace(/[^a-zA-Z0-9._-]/g, "_") || "temp_media";
+  const safeBase = path.basename(cleanUrl).substring(0, 50);
 
-    subprocess.stdout?.on("data", (chunk: Buffer) => {
-      chunks.push(chunk);
-    });
+  const tempFilePath = path.join(
+    tempDir,
+    `download_${timestamp}_${safeBase}.${outputFormat}`,
+  );
+  const ffmpegDir = path.dirname(ffmpegPath.path);
 
-    subprocess.stderr?.on("data", (chunk: Buffer) => {
-      stderrChunks.push(chunk);
-    });
+  try {
+    let options: Record<string, any> = {
+      output: tempFilePath,
+      ffmpegLocation: ffmpegDir,
+    };
 
-    subprocess.on("error", (error: any) => {
-      reject(error);
-    });
+    if (outputFormatMapping[outputFormat].includes("audio")) {
+      options = {
+        ...options,
+        format: "bestaudio/best",
+        extractAudio: true,
+        audioFormat: outputFormat,
+      };
+    } else {
+      const height = (qualityMapping[quality] && qualityMapping[quality].height) || 360;
 
-    subprocess.on("close", (code: any) => {
-      if (code === 0) {
-        resolve(Buffer.concat(chunks));
-      } else {
-        const errorMsg = Buffer.concat(stderrChunks).toString("utf-8").trim();
-        console.error("yt-dlp error:", errorMsg);
-        reject(
-          new Error(
-            `O download falhou. yt-dlp finalizou com código de saída ${code}. Detalhes: ${errorMsg}`,
-          ),
-        );
-      }
-    });
-  });
+      options = {
+        ...options,
+        format: `bestvideo[height<=${height}]+bestaudio/best/best[height<=${height}]/best`,
+        mergeOutputFormat: outputFormat,
+        postprocessorArgs: "Merger+ffmpeg:-strict -2",
+      };
+    }
+
+    await ytDlpExec(url, options);
+
+    const buffer = await fs.readFile(tempFilePath);
+    return buffer;
+  } finally {
+    try {
+      await fs.unlink(tempFilePath);
+    } catch {}
+  }
 };

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import MainPageTemplate from "../../components/main-page-template.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
@@ -7,6 +7,7 @@ import {
   faArrowLeft,
   faSpinner,
   faDownload,
+  faChevronDown,
 } from "@fortawesome/free-solid-svg-icons";
 import {
   faYoutube,
@@ -67,10 +68,51 @@ const platformColorClass = computed(() => {
   }
 });
 
+
 const url = ref("");
 const preview = ref<Preview | null>(null);
 const isLoadingPreview = ref(false);
 const isDownloading = ref(false);
+const isOpen = ref(false);
+const dropdownRef = ref<HTMLElement | null>(null);
+
+interface DownloadOption {
+  format: string;
+  quality?: string;
+  formatName: string;
+  resolution: string;
+  type: string;
+}
+
+const downloadOptionsList: DownloadOption[] = [
+  { format: "mp4", quality: "1080p", formatName: "MP4 Widescreen", resolution: "1080p", type: "VÍDEO" },
+  { format: "mp4", quality: "720p", formatName: "MP4 Widescreen", resolution: "720p", type: "VÍDEO" },
+  { format: "mp4", quality: "480p", formatName: "MP4 Widescreen", resolution: "480p", type: "VÍDEO" },
+  { format: "mp4", quality: "360p", formatName: "MP4 Widescreen", resolution: "360p", type: "VÍDEO" },
+  { format: "mp3", formatName: "Áudio MP3", resolution: "Estéreo", type: "ÁUDIO" },
+];
+
+const selectedOption = ref<DownloadOption>(downloadOptionsList[3]!);
+watch(() => preview.value, () => selectedOption.value = downloadOptionsList[3]!);
+
+const selectOption = (opt: DownloadOption) => {
+  selectedOption.value = opt;
+  isOpen.value = false;
+};
+
+const closeDropdown = (e: MouseEvent) => {
+  if (dropdownRef.value && !dropdownRef.value.contains(e.target as Node)) {
+    isOpen.value = false;
+  }
+};
+
+onMounted(() => {
+  document.addEventListener("click", closeDropdown);
+});
+
+onUnmounted(() => {
+  document.removeEventListener("click", closeDropdown);
+});
 
 const handleFetchPreview = async () => {
   if (!url.value) {
@@ -99,13 +141,18 @@ const handleFetchPreview = async () => {
   }
 };
 
-const handleDownload = async () => {
+const handleDownload = async (option: DownloadOption) => {
   if (!url.value) return;
   isDownloading.value = true;
+  isOpen.value = false;
 
   try {
     const response = await api.get("/download-video", {
-      params: { source: url.value },
+      params: {
+        source: url.value,
+        format: option.format,
+        quality: option.quality,
+      },
       responseType: "blob",
     });
 
@@ -117,7 +164,7 @@ const handleDownload = async () => {
 
       const title = preview.value?.title || "video";
       const cleanTitle = title.replace(/[^a-zA-Z0-9]/g, "_");
-      link.download = `${cleanTitle}.mp4`;
+      link.download = `${cleanTitle}.${option.format}`;
 
       document.body.appendChild(link);
       link.click();
@@ -229,19 +276,50 @@ const handleDownload = async () => {
         </div>
 
         <div v-if="preview" class="mt-6 flex flex-wrap gap-3">
-          <button
-            @click="handleDownload"
-            :disabled="isDownloading"
-            class="text-white px-6 py-3 bg-[#009900] hover:bg-[#22c55e] disabled:bg-green-950/50 disabled:text-gray-500 text-black font-bold text-[14px] rounded-full transition-all duration-300 flex items-center gap-2 cursor-pointer"
-          >
-            <FontAwesomeIcon
-              :icon="isDownloading ? faSpinner : faDownload"
-              :spin="isDownloading"
-            />
-            <span>{{
-              isDownloading ? "Baixando..." : "Baixar"
-            }}</span>
-          </button>
+          <div ref="dropdownRef" class="relative inline-flex items-stretch shadow-lg">
+            <button
+              @click="handleDownload(selectedOption)"
+              :disabled="isDownloading"
+              class="text-white px-6 py-3 bg-[#009900] hover:bg-[#22c55e] disabled:bg-green-950/50 disabled:text-gray-500 font-bold text-[14px] rounded-l-full border-r border-[#008000]/30 transition-all duration-300 flex items-center gap-2 cursor-pointer select-none"
+            >
+              <FontAwesomeIcon
+                :icon="isDownloading ? faSpinner : faDownload"
+                :spin="isDownloading"
+              />
+              <span>{{ isDownloading ? "Baixando..." : "Baixar" }}</span>
+            </button>
+
+            <button
+              @click="isOpen = !isOpen"
+              :disabled="isDownloading"
+              class="bg-[#1a1a1a] hover:bg-[#222] border border-gray-800 text-[#009900] font-bold text-[14px] px-4 py-3 rounded-r-full flex items-center gap-2 cursor-pointer transition-all duration-300 select-none min-w-[110px] justify-between"
+            >
+              <span class="truncate">{{ selectedOption.format.toUpperCase() }} {{ selectedOption.quality || "" }}</span>
+              <FontAwesomeIcon :icon="faChevronDown" class="text-[11px] shrink-0" />
+            </button>
+
+            <transition name="fade">
+              <div
+                v-if="isOpen"
+                class="overflow-y-auto h-[200px] absolute right-0 top-full mt-2 w-64 rounded-[15px] bg-[#1a1a1a] border border-gray-800 py-2 z-50"
+              >
+                <button
+                  v-for="opt in downloadOptionsList"
+                  :key="opt.resolution + opt.format"
+                  @click="selectOption(opt)"
+                  class="w-full text-left px-4 py-3 hover:bg-[#222] transition-colors flex items-center justify-between text-gray-200 hover:text-white cursor-pointer"
+                >
+                  <div class="flex flex-col">
+                    <span class="font-bold text-[14px]">{{ opt.formatName }}</span>
+                    <span class="text-xs text-gray-500">{{ opt.resolution }}</span>
+                  </div>
+                  <span class="text-[10px] font-bold text-[#009900] bg-[#009900]/10 border border-[#009900]/20 px-2 py-0.5 rounded-full">
+                    {{ opt.type }}
+                  </span>
+                </button>
+              </div>
+            </transition>
+          </div>
         </div>
       </div>
     </div>
