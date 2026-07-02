@@ -6,28 +6,31 @@ datasource db {
   provider = "postgresql"
 }
 
-model User{
-  id  String @id @default(uuid())
-  name String
-  email String @unique
-  password String
-  avatarUrl String?
-  createdAt DateTime @default(now())
+model User {
+  id         String    @id @default(uuid())
+  name       String
+  email      String    @unique
+  password   String
+  avatarUrl  String?
+  createdAt  DateTime  @default(now())
   lastUpdate DateTime?
-  inactive Boolean @default(false)
-  files Files[]
+  inactive   Boolean   @default(false)
+  files      Files[]
 
   @@map("users")
 }
 
-model Files{
-  id String @id @default(uuid())
-  name String
-  format String
-  createdAt DateTime @default(now())
+model Files {
+  id         String    @id @default(uuid())
+  name       String
+  format     String
+  size       Int       @default(0)
+  s3Key      String    @unique
+  isPublic   Boolean   @default(false)
+  createdAt  DateTime  @default(now())
   lastUpdate DateTime?
-  user User @relation(fields: [userId], references: [id])
-  userId String
+  user       User      @relation(fields: [userId], references: [id])
+  userId     String
 
   @@map("files")
 }

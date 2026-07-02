@@ -17,5 +17,6 @@ fileRoutes.use(authenticate);
 fileRoutes.get("/my-files", fileController.getMyFiles);
 fileRoutes.get("/download-video", downloadVideosController.download);
 fileRoutes.post("/convert", upload.single("file"), fileConvertorController.convert);
+fileRoutes.post("/upload-url", fileController.getUploadUrl);
 
 export default fileRoutes;

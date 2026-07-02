@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ref } from 'vue';
+import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faFile, faStar } from '@fortawesome/free-regular-svg-icons';
 import { faUsers, faArrowRightArrowLeft, faTrash, faArrowRightFromBracket, faDownload, faGear, faUser } from '@fortawesome/free-solid-svg-icons';
@@ -27,6 +29,44 @@ const handleLogout = async () => {
         showToast("Algo deu errado!", "error");
     }
 }
+
+const fileInputRef = ref<HTMLInputElement | null>(null);
+const isUploading = ref(false);
+
+const triggerFileInput = () => {
+    fileInputRef.value?.click();
+};
+
+const handleFileChange = async (event: Event) => {
+    const target = event.target as HTMLInputElement;
+    const file = target.files?.[0];
+    if (!file) return;
+
+    isUploading.value = true;
+
+    try {
+        const { data } = await api.post("/upload-url", {
+            fileName: file.name,
+            contentType: file.type,
+        });
+
+        await axios.put(data.url, file, {
+            headers: {
+                "Content-Type": file.type,
+            },
+        });
+
+        showToast("Arquivo enviado com sucesso!", "success");
+    } catch (error) {
+        console.error("Erro no upload do arquivo:", error);
+        showToast("Falha ao enviar arquivo.", "error");
+    } finally {
+        isUploading.value = false;
+        if (fileInputRef.value) {
+            fileInputRef.value.value = "";
+        }
+    }
+};
 </script>
 
 <template>
@@ -36,17 +76,30 @@ const handleLogout = async () => {
                 <p class="text-[20px]">MyFileSystem</p>
             </div>
 
-            <div class="cursor-pointer w-auto py-4 px-7 mt-5 inline-block bg-[#363333ac] rounded-[10px]">
+            <div 
+                @click="!isUploading ? triggerFileInput() : null" 
+                :class="[
+                    isUploading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer',
+                    'w-auto py-4 px-7 mt-5 inline-block bg-[#363333ac] rounded-[10px] select-none transition-all duration-300'
+                ]"
+            >
                 <div class="flex items-center">
-                    <p class="text-[30px] mr-3">+</p>
-                    <p class="text-[25px]">Novo</p>
+                    <p v-if="!isUploading" class="text-[30px] mr-3">+</p>
+                    <div v-else class="mr-3 animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                    <p class="text-[25px]">{{ isUploading ? "Enviando..." : "Novo" }}</p>
                 </div>
             </div>
+            <input 
+                type="file" 
+                ref="fileInputRef" 
+                style="display: none" 
+                @change="handleFileChange" 
+            />
 
             <div class="flex flex-col mt-10">
                 <div
-                    @click="router.push({ name: 'myFiles' })"
-                    :style="route.path == '/my-files' ? 'background-color: #009900; color: white;' : ''"
+                    @click="!route.path.startsWith('/my-files') ? router.push({ name: 'myFiles' }) : null"
+                    :style="route.path.startsWith('/my-files') ? 'background-color: #009900; color: white;' : ''"
                     class="gap-2 py-2 px-3 hover:bg-[#363333ac] hover:text-white rounded-full transition-all duration-300 text-[17px] cursor-pointer flex items-center">
                     <FontAwesomeIcon :icon="faFile" />
                     <p>Meus Arquivos</p>
@@ -67,15 +120,15 @@ const handleLogout = async () => {
 
             <div class="flex flex-col mt-10">
                 <div
-                    @click="router.push({ name: 'convertFilesOptions' })"
-                    :style="route.path == '/convert-files' ? 'background-color: #009900; color: white;' : ''"
+                    @click="!route.path.startsWith('/convert-files') ? router.push({ name: 'convertFilesOptions' }) : null"
+                    :style="route.path.startsWith('/convert-files') ? 'background-color: #009900; color: white;' : ''"
                     class="gap-2 py-2 px-3 hover:bg-[#363333ac] hover:text-white rounded-full transition-all duration-300 text-[17px] cursor-pointer flex items-center">
                     <FontAwesomeIcon :icon="faArrowRightArrowLeft" />
                     <p>Converter Arquivos</p>
                 </div>
 
                 <div
-                    @click="router.push({ name: 'downloadVideosOptions' })"
+                    @click="!route.path.startsWith('/download-videos') ? router.push({ name: 'downloadVideosOptions' }) : null"
                     :style="route.path.startsWith('/download-videos') ? 'background-color: #009900; color: white;' : ''"
                     class="gap-2 py-2 px-3 hover:bg-[#363333ac] hover:text-white rounded-full transition-all duration-300 text-[17px] cursor-pointer flex items-center">
                     <FontAwesomeIcon :icon="faDownload" />
@@ -97,8 +150,8 @@ const handleLogout = async () => {
                 </div>
 
                 <div
-                    @click="router.push({ name: 'profile' })"
-                    :style="route.path == '/profile' ? 'background-color: #009900; color: white;' : ''"
+                    @click="!route.path.startsWith('/profile') ? router.push({ name: 'profile' }) : null"
+                    :style="route.path.startsWith('/profile') ? 'background-color: #009900; color: white;' : ''"
                     class="gap-2 py-2 px-3 hover:bg-[#363333ac] hover:text-white rounded-full transition-all duration-300 text-[17px] cursor-pointer flex items-center">
                     <FontAwesomeIcon :icon="faUser" />
                     <p>Perfil</p>

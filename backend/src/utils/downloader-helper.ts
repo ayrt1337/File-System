@@ -29,6 +29,7 @@ export const downloadMedia = async (
     let options: Record<string, any> = {
       output: tempFilePath,
       ffmpegLocation: ffmpegDir,
+      extractorArgs: "youtube:player_client=default,-android_sdkless",
     };
 
     if (outputFormatMapping[outputFormat].includes("audio")) {
