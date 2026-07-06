@@ -17,8 +17,8 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+const query = defineModel<string>();
 
-const search = ref<string>("");
 const popup = ref<boolean>(false);
 const popupRef = ref<HTMLElement | null>(null);
 
@@ -58,7 +58,7 @@ onUnmounted(() => {
       leftIcon="faMagnifyingGlass"
       class="w-full max-w-[700px]"
       text="Pesquisar"
-      v-model="search"
+      v-model="query"
     />
 
     <div class="mr-8">

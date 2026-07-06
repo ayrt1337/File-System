@@ -11,6 +11,12 @@ import { useToast } from '../composables/use-toast';
 import { api } from '../services/api';
 import { useAuthStore } from '../stores/auth';
 
+interface Props {
+    getFiles?: () => Promise<void>;
+}
+
+const props = defineProps<Props>();
+
 const authStore = useAuthStore();
 const { showToast } = useToast();
 const { showLoadingPage } = useLoading();
@@ -48,6 +54,7 @@ const handleFileChange = async (event: Event) => {
         const { data } = await api.post("/upload-url", {
             fileName: file.name,
             contentType: file.type,
+            size: file.size
         });
 
         await axios.put(data.url, file, {
@@ -55,6 +62,8 @@ const handleFileChange = async (event: Event) => {
                 "Content-Type": file.type,
             },
         });
+
+        if (props.getFiles) await props.getFiles();
 
         showToast("Arquivo enviado com sucesso!", "success");
     } catch (error) {

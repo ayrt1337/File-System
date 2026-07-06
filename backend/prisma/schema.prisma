@@ -27,6 +27,7 @@ model Files {
   size       Int       @default(0)
   s3Key      String    @unique
   isPublic   Boolean   @default(false)
+  status     String
   createdAt  DateTime  @default(now())
   lastUpdate DateTime?
   user       User      @relation(fields: [userId], references: [id])

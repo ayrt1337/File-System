@@ -24,9 +24,3 @@ import Container from '../components/container.vue';
             </div>
     </Container>
 </template>
-
-<style scoped>
-h1 {
-    filter: drop-shadow(0 0 10px rgba(34, 197, 94, 0.2));
-}
-</style>
