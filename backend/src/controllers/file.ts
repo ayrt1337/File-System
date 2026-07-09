@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { AppError } from "../errors/app-error.js";
-import { getUploadPresignedUrl } from "../services/s3-service.js";
+import { getUploadPresignedUrl, getDownloadPresignedUrl } from "../services/s3-service.js";
 import database from "../config/database.js";
 
 export class FileController {
@@ -13,6 +13,7 @@ export class FileController {
           status: "ACTIVE"
         },
         select: {
+          id: true,
           name: true,
           size: true,
           format: true,
@@ -62,6 +63,33 @@ export class FileController {
         }
       });
       res.status(200).json(result);
+    } catch (error: any) {
+      next(error);
+    }
+  }
+
+  async getDownloadUrl(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = (req as any).user;
+      const id = req.params.id as string;
+      if (!id) {
+        throw new AppError("ID do arquivo é obrigatório!", 400);
+      }
+
+      const file = await database.files.findFirst({
+        where: {
+          id,
+          userId: user.id,
+          status: "ACTIVE",
+        },
+      });
+
+      if (!file) {
+        throw new AppError("Arquivo não encontrado!", 404);
+      }
+
+      const url = await getDownloadPresignedUrl(file.s3Key, file.name);
+      res.status(200).json({ url });
     } catch (error: any) {
       next(error);
     }

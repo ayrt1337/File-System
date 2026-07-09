@@ -10,7 +10,7 @@ import { startUploadWorker } from "./services/upload-worker.js";
 const options = {
   origin: process.env.CORS_ORIGIN,
   credentials: true,
- };
+};
 
 const app = express();
 
