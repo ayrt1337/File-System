@@ -14,6 +14,11 @@ import {
   faTriangleExclamation,
   faDownload,
 } from "@fortawesome/free-solid-svg-icons";
+import axios from "axios";
+import { useToast } from "../../composables/use-toast.ts";
+import { getFilePreview } from "../../utils/get-file-preview";
+
+const { showToast } = useToast();
 
 const route = useRoute();
 const router = useRouter();
@@ -33,6 +38,7 @@ const progress = ref(0);
 const errorMessage = ref("");
 const convertedFileName = ref("");
 const convertedBlob = ref<Blob | null>(null);
+const isUploading = ref<boolean>(false);
 
 const formatSize = (bytes: number) => {
   if (bytes === 0) return "0 Bytes";
@@ -56,12 +62,16 @@ const onFileChange = (e: Event) => {
 
 const getTypeName = () => {
   switch (type.value) {
-    case "image": return "imagem";
-    case "video": return "vídeo";
-    case "audio": return "áudio";
-    case "document": return "documento";
+    case "image":
+      return "imagem";
+    case "video":
+      return "vídeo";
+    case "audio":
+      return "áudio";
+    case "document":
+      return "documento";
   }
-}
+};
 
 const validateAndSetFile = (file: File) => {
   if (fromFormat.value) {
@@ -94,7 +104,7 @@ const validateAndSetFile = (file: File) => {
   selectedFile.value = file;
   conversionStatus.value = "idle";
   errorMessage.value = "";
-}
+};
 
 const clearFile = () => {
   selectedFile.value = null;
@@ -167,6 +177,41 @@ const downloadConvertedFile = () => {
   element.click();
   document.body.removeChild(element);
 };
+
+const handleSaveFile = async () => {
+  const fileBlob = convertedBlob.value;
+  if (!fileBlob) return;
+
+  isUploading.value = true;
+
+  try {
+    const file = new File([fileBlob], convertedFileName.value, { type: fileBlob.type });
+    const filePreview = await getFilePreview(file);
+
+    const { data } = await api.post("/upload-url", {
+      fileName: file.name,
+      contentType: file.type,
+      size: file.size,
+      preview: filePreview,
+    });
+
+    await axios.put(data.url, file, {
+      headers: {
+        "Content-Type": file.type,
+      },
+    });
+
+    showToast("Arquivo salvo com sucesso!", "success");
+  } catch (error) {
+    console.error("Erro no upload do arquivo:", error);
+    showToast("Falha ao salvar arquivo.", "error");
+  } finally {
+    isUploading.value = false;
+    if (fileInputRef.value) {
+      fileInputRef.value.value = "";
+    }
+  }
+};
 </script>
 
 <template>
@@ -180,7 +225,7 @@ const downloadConvertedFile = () => {
       :disabled="conversionStatus === 'converting'"
       :subtitle="`Somente arquivos ${fromFormat ? '.' + fromFormat.toUpperCase() : 'de' + getTypeName()} de até 10MB`"
       :set-file="validateAndSetFile"
-      :drag-change="() => isDragging = !isDragging"
+      :drag-change="() => (isDragging = !isDragging)"
     />
 
     <div class="max-w-2xl mx-auto text-white mt-10">
@@ -238,7 +283,9 @@ const downloadConvertedFile = () => {
             </p>
             <p class="text-[15px] text-gray-500 mt-2 max-w-xs leading-relaxed">
               Ou clique para escolher do dispositivo. Apenas arquivos
-              <span v-if="fromFormat" class="text-gray-300 font-semibold uppercase"
+              <span
+                v-if="fromFormat"
+                class="text-gray-300 font-semibold uppercase"
                 >.{{ fromFormat }}</span
               >
               {{ !fromFormat ? "de " + getTypeName() : "" }} de até 10MB.
@@ -297,7 +344,9 @@ const downloadConvertedFile = () => {
           <p class="font-semibold text-[17px] text-gray-200 mb-1">
             Processando seu arquivo...
           </p>
-          <p class="text-[13px] text-gray-500">Isso pode levar alguns instantes.</p>
+          <p class="text-[13px] text-gray-500">
+            Isso pode levar alguns instantes.
+          </p>
 
           <div class="w-full max-w-sm mt-8">
             <div
@@ -339,30 +388,44 @@ const downloadConvertedFile = () => {
           <div
             class="w-full max-w-sm flex items-center gap-4 p-4 border border-[#222] bg-[#1a1a1a]/30 rounded-2xl mb-8 text-left"
           >
-            <div class="flex-1 min-w-0">
+            <div class="flex-1 min-w-0 text-center">
               <p class="font-semibold text-[15px] text-gray-200 truncate">
                 {{ convertedFileName }}
               </p>
-              <p class="text-[13px] text-gray-500 mt-1">Disponível para download</p>
+              <p class="text-[13px] text-gray-500 mt-1">
+                Disponível para download
+              </p>
             </div>
           </div>
 
           <div
-            class="flex flex-col sm:flex-row gap-3 w-full max-w-sm justify-center"
+            class="flex flex-col gap-3 w-full max-w-sm items-center"
           >
-            <button
-              @click="resetConversion"
-              class="px-6 py-3 border border-[#333] hover:border-gray-600 hover:bg-gray-800/40 text-gray-300 font-semibold text-sm rounded-full transition-all duration-300 cursor-pointer"
+            <div class="flex gap-2">
+              <button
+                @click="downloadConvertedFile"
+                class="disabled:bg-green-950/50 disabled:text-gray-500 px-8 py-3 bg-[#009900] hover:bg-[#22c55e] text-black font-bold text-sm rounded-full transition-all duration-300 transform cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-green-900/15"
+                :disabled="isUploading"
+              >
+                <FontAwesomeIcon :icon="faDownload" />
+                <span>{{ isUploading ? "Baixando..." : "Baixar Arquivo" }}</span>
+              </button>
+
+              <button
+                @click="resetConversion"
+                class="px-6 py-3 border border-[#333] hover:border-gray-600 hover:bg-gray-800/40 text-gray-300 font-semibold text-sm rounded-full transition-all duration-300 cursor-pointer"
+                :disabled="isUploading"
+              >
+                Converter Outro
+              </button>
+            </div>
+
+            <p
+              @click="!isUploading ? handleSaveFile() : null"
+              class="underline text-[#009900] cursor-pointer"
             >
-              Converter Outro
-            </button>
-            <button
-              @click="downloadConvertedFile"
-              class="px-8 py-3 bg-[#009900] hover:bg-[#22c55e] text-black font-bold text-sm rounded-full transition-all duration-300 transform cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-green-900/15"
-            >
-              <FontAwesomeIcon :icon="faDownload" />
-              Baixar Arquivo
-            </button>
+              Salvar Arquivo
+            </p>
           </div>
         </div>
 

@@ -17,6 +17,7 @@ export class FileController {
           name: true,
           size: true,
           format: true,
+          preview: true,
           createdAt: true,
           lastUpdate: true,
         },
@@ -41,7 +42,7 @@ export class FileController {
   async getUploadUrl(req: Request, res: Response, next: NextFunction) {
     try {
       const user = (req as any).user;
-      const { fileName, contentType, size } = req.body;
+      const { fileName, contentType, size, preview } = req.body;
       if (!size || typeof size !== "number") {
         throw new AppError("Tamanho do arquivo é obrigatório!", 400);
       }
@@ -56,13 +57,14 @@ export class FileController {
         data: {
           name: fileName ? fileName : "",
           format: contentType ? contentType : "",
+          preview: preview ? preview : "",
           status: "PENDING",
           s3Key: result.s3Key,
           userId: user.id,
           size,
         }
       });
-      res.status(200).json(result);
+      res.status(200).json({ url: result.url });
     } catch (error: any) {
       next(error);
     }

@@ -4,6 +4,7 @@ import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faFile, faStar } from '@fortawesome/free-regular-svg-icons';
 import { faUsers, faArrowRightArrowLeft, faTrash, faArrowRightFromBracket, faDownload, faGear, faUser } from '@fortawesome/free-solid-svg-icons';
+import { getFilePreview } from '../utils/get-file-preview';
 import { router } from '../router';
 import { useRoute } from 'vue-router';
 import { useLoading } from '../composables/use-loading';
@@ -51,10 +52,12 @@ const handleFileChange = async (event: Event) => {
     isUploading.value = true;
 
     try {
+        const filePreview = await getFilePreview(file);
         const { data } = await api.post("/upload-url", {
             fileName: file.name,
             contentType: file.type,
-            size: file.size
+            size: file.size,
+            preview: filePreview
         });
 
         await axios.put(data.url, file, {

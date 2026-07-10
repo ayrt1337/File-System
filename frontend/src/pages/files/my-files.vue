@@ -29,6 +29,7 @@ const { showLoadingPage } = useLoading();
 interface UserFile {
   id: string;
   name: string;
+  preview?: string | null;
   format: string;
   size: number;
   createdAt: string;
@@ -319,7 +320,14 @@ const handleModalMouseup = (event: MouseEvent) => {
             </div>
 
             <div class="flex-1 bg-[#121212]/80 border border-white/5 rounded-xl flex items-center justify-center relative overflow-hidden">
+              <img 
+                v-if="file.preview" 
+                :src="file.preview" 
+                class="w-full h-full object-cover" 
+                alt="File preview"
+              />
               <div 
+                v-else
                 class="w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-300"
                 :class="getFileBgClass(file.format)"
               >

@@ -23,6 +23,7 @@ model User {
 model Files {
   id         String    @id @default(uuid())
   name       String
+  preview    String?
   format     String
   size       Int       @default(0)
   s3Key      String    @unique
