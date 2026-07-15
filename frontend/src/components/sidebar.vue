@@ -124,6 +124,8 @@ const handleFileChange = async (event: Event) => {
                 </div>
 
                 <div
+                    @click="!route.path.startsWith('/favorites') ? router.push({ name: 'favorites' }) : null"
+                    :style="route.path.startsWith('/favorites') ? 'background-color: #009900; color: white;' : ''"
                     class="gap-2 py-2 px-3 hover:bg-[#363333ac] hover:text-white rounded-full transition-all duration-300 text-[17px] cursor-pointer flex items-center">
                     <FontAwesomeIcon :icon="faStar" />
                     <p>Favoritos</p>
@@ -148,6 +150,8 @@ const handleFileChange = async (event: Event) => {
                 </div>
 
                 <div
+                    @click="!route.path.startsWith('/trash') ? router.push({ name: 'trash' }) : null"
+                    :style="route.path.startsWith('/trash') ? 'background-color: #009900; color: white;' : ''"
                     class="gap-2 py-2 px-3 hover:bg-[#363333ac] hover:text-white rounded-full transition-all duration-300 text-[17px] cursor-pointer flex items-center">
                     <FontAwesomeIcon :icon="faTrash" />
                     <p>Lixeira</p>

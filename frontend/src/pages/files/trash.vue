@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import MainPageTemplate from "../../components/main-page-template.vue";
 import Overlay from "../../components/overlay.vue";
-import Input from "../../components/input.vue";
 import { ref, computed, onMounted, onUnmounted } from "vue";
-import { api } from "../../services/api";
-import { verifyApiError } from "../../services/verify-api-error";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import {
   faFile,
@@ -15,21 +12,18 @@ import {
   faFileWord,
   faFileExcel,
   faFileCode,
-  faTriangleExclamation,
   faXmark,
-  faDownload,
   faEllipsis,
-  faShareNodes,
   faCircleInfo,
   faTrashCan,
-  faPen,
-  faSpinner,
-  faStar,
+  faRotateLeft,
 } from "@fortawesome/free-solid-svg-icons";
-import { faStar as faStarRegular } from "@fortawesome/free-regular-svg-icons";
-import { useLoading } from "../../composables/use-loading.ts";
 import { useToast } from "../../composables/use-toast.ts";
+import { useLoading } from "../../composables/use-loading.ts";
+import { api } from "../../services/api.ts";
+import { verifyApiError } from "../../services/verify-api-error.ts";
 
+const { showToast } = useToast();
 const { showLoadingPage } = useLoading();
 
 interface UserFile {
@@ -38,22 +32,20 @@ interface UserFile {
   preview?: string | null;
   format: string;
   size: number;
-  isFavorite?: boolean;
   createdAt: string;
   lastUpdate: string | null;
 }
 
-const files = ref<UserFile[]>([]);
 const searchQuery = ref("");
 const isLoadingFiles = ref<boolean>(false);
-const hasProcessingFiles = ref<boolean>(false);
 const selectedFile = ref<UserFile | null>(null);
+const isInfoModalOpen = ref(false);
+const files = ref<UserFile[]>([]);
 
 const fetchFiles = async () => {
   isLoadingFiles.value = true;
-  const { data } = await api.get(`/my-files?status=ACTIVE`);
+  const { data } = await api.get(`/my-files?status=TRASH`);
   files.value = data.files || [];
-  hasProcessingFiles.value = data.hasProcessingFiles || false;
   isLoadingFiles.value = false;
 };
 
@@ -126,23 +118,6 @@ const formatDate = (dateString: string) => {
   });
 };
 
-const { showToast } = useToast();
-
-const downloadFile = async (fileId: string) => {
-  try {
-    const { data } = await api.get(`/files/download/${fileId}`);
-    const link = document.createElement("a");
-    link.href = data.url;
-    link.setAttribute("download", "");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  } catch (error) {
-    console.error("Erro ao baixar arquivo:", error);
-    showToast("Erro ao baixar o arquivo.", "error");
-  }
-};
-
 const getFileBgClass = (format: string) => {
   const fmt = format.toLowerCase();
   if (["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(fmt)) return "bg-[#60a5fa]";
@@ -172,12 +147,6 @@ const getFileBgClass = (format: string) => {
 };
 
 const openMenuIndex = ref<number | null>(null);
-const isInfoModalOpen = ref(false);
-
-const isRenameModalOpen = ref(false);
-const newFileName = ref("");
-const isRenaming = ref(false);
-const renameError = ref("");
 
 const toggleMenu = (index: number) => {
   if (openMenuIndex.value === index) {
@@ -199,15 +168,27 @@ onUnmounted(() => {
   window.removeEventListener("click", closeMenu);
 });
 
-const handleDownload = (file: UserFile) => {
-  downloadFile(file.id);
+const handleRestore = async (file: UserFile) => {
+  const originalFiles = [...files.value];
+  files.value = files.value.filter((f) => f.id !== file.id);
+  showToast("Arquivo restaurado com sucesso!", "success");
   openMenuIndex.value = null;
+
+  try {
+    await api.patch("/files/status", { fileId: file.id, status: "ACTIVE" });
+  } catch (error: any) {
+    console.error("Erro ao restaurar arquivo:", error);
+    files.value = originalFiles;
+    showToast(
+      error.response?.data?.message || "Erro ao restaurar o arquivo.",
+      "error"
+    );
+  }
 };
 
-const handleShare = (file: UserFile) => {
-  const shareUrl = `${window.location.origin}/share/${file.id}`;
-  navigator.clipboard.writeText(shareUrl);
-  showToast("Link de compartilhamento copiado com sucesso!", "success");
+const handlePermanentDelete = (file: UserFile) => {
+  files.value = files.value.filter((f) => f.id !== file.id);
+  showToast("Arquivo excluído permanentemente!", "success");
   openMenuIndex.value = null;
 };
 
@@ -216,110 +197,22 @@ const handleInfo = (file: UserFile) => {
   isInfoModalOpen.value = true;
   openMenuIndex.value = null;
 };
-
-const handleDelete = async (file: UserFile) => {
-  const originalFiles = [...files.value];
-  files.value = files.value.filter((f) => f.id !== file.id);
-  showToast("Arquivo movido para a lixeira!", "success");
-  openMenuIndex.value = null;
-
-  try {
-    await api.patch("/files/status", { fileId: file.id, status: "TRASH" });
-  } catch (error: any) {
-    console.error("Erro ao mover arquivo para a lixeira:", error);
-    files.value = originalFiles;
-    showToast(
-      error.response?.data?.message || "Erro ao mover o arquivo para a lixeira.",
-      "error"
-    );
-  }
-};
-
-const handleToggleFavorite = async (file: UserFile) => {
-  const originalFiles = files.value.map(f => ({ ...f }));
-  
-  file.isFavorite = !file.isFavorite;
-  const statusText = file.isFavorite ? "adicionado aos favoritos" : "removido dos favoritos";
-  showToast(`Arquivo ${statusText}!`, "success");
-
-  try {
-    await api.patch("/files/favorite", { fileId: file.id, isFavorite: file.isFavorite });
-  } catch (error: any) {
-    console.error("Erro ao atualizar favorito:", error);
-    files.value = originalFiles;
-    showToast(
-      error.response?.data?.message || "Erro ao atualizar favorito.",
-      "error"
-    );
-  }
-};
-
-const handleRenameClick = (file: UserFile) => {
-  selectedFile.value = file;
-  newFileName.value = file.name;
-  renameError.value = "";
-  isRenameModalOpen.value = true;
-  openMenuIndex.value = null;
-};
-
-const submitRename = async () => {
-  if (!selectedFile.value) return;
-  if (!newFileName.value.trim()) {
-    renameError.value = "O nome do arquivo não pode ser vazio!";
-    return;
-  }
-  isRenaming.value = true;
-  renameError.value = "";
-  try {
-    await api.patch("/files/rename", {
-      fileId: selectedFile.value.id,
-      newName: newFileName.value.trim(),
-    });
-    showToast("Arquivo renomeado com sucesso!", "success");
-    isRenameModalOpen.value = false;
-    await fetchFiles();
-  } catch (error: any) {
-    console.error("Erro ao renomear arquivo:", error);
-    renameError.value = error.response?.data?.message || "Erro ao renomear o arquivo.";
-    showToast(renameError.value, "error");
-  } finally {
-    isRenaming.value = false;
-  }
-};
 </script>
 
 <template>
   <MainPageTemplate
     v-model="searchQuery"
-    :get-files="fetchFiles"
     :header="true"
     :sidebar="true"
-    title="Meus Arquivos"
+    title="Lixeira"
   >
     <div class="flex flex-col gap-6 py-6">
-      <div 
-        v-if="hasProcessingFiles" 
-        class="relative bg-[#fbbf24]/10 border border-[#fbbf24]/20 text-[#fbbf24] rounded-2xl p-4 pr-12 flex items-center gap-3 select-none transition-all duration-300"
-      >
-        <FontAwesomeIcon :icon="faTriangleExclamation" class="text-[22px] mt-0.5 shrink-0" />
-        <div class="flex flex-col gap-0.5">
-          <p class="text-[17px] font-semibold text-white">Arquivos em processamento</p>
-          <p class="text-[14px] text-[#fbbf24]/80">Um ou mais arquivos estão sendo processados e em breve estarão visíveis na sua listagem.</p>
-        </div>
-        <button 
-          @click="hasProcessingFiles = false" 
-          class="absolute top-1/2 -translate-y-1/2 right-4 text-[#fbbf24]/60 hover:text-[#fbbf24] transition-colors p-1.5 hover:bg-[#fbbf24]/10 rounded-lg cursor-pointer"
-        >
-          <FontAwesomeIcon :icon="faXmark" class="h-4 w-4" />
-        </button>
-      </div>
-
       <div
         v-if="isLoadingFiles"
         class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
       >
         <div
-          v-for="n in 8"
+          v-for="n in 4"
           :key="n"
           class="bg-[#1e1e1e]/40 border border-white/5 rounded-2xl p-5 h-44 animate-pulse flex flex-col justify-between"
         >
@@ -343,11 +236,11 @@ const submitRename = async () => {
           <div
             class="size-30 rounded-full bg-[#1e1e1e] flex items-center justify-center border border-white/5 text-gray-500"
           >
-            <FontAwesomeIcon :icon="faFile" class="text-5xl" />
+            <FontAwesomeIcon :icon="faTrashCan" class="text-5xl" />
           </div>
           <div>
             <h3 class="text-white text-[20px] font-semibold">
-              Nenhum arquivo encontrado
+              A lixeira está vazia
             </h3>
           </div>
         </div>
@@ -358,7 +251,7 @@ const submitRename = async () => {
         >
           <div
             v-for="(file, index) in filteredFiles"
-            :key="index"
+            :key="file.id"
             class="relative flex flex-col gap-3 h-64 p-4 bg-[#1e1e1e]/60 backdrop-blur-md border border-white/10 rounded-2xl hover:border-white/20 transition-all duration-300 group cursor-default"
           >
             <div class="flex items-center justify-between w-full min-w-0 gap-2">
@@ -373,13 +266,6 @@ const submitRename = async () => {
                   {{ file.name }}
                 </h4>
               </div>
-              <button 
-                @click.stop="handleToggleFavorite(file)" 
-                class="p-1 rounded-lg hover:bg-white/5 cursor-pointer shrink-0 transition-colors"
-                :class="file.isFavorite ? 'text-[#fbbf24]' : 'text-gray-400 hover:text-white'"
-              >
-                <FontAwesomeIcon :icon="file.isFavorite ? faStar : faStarRegular" class="h-4 w-4" />
-              </button>
               <button 
                 @click.stop="toggleMenu(index)" 
                 class="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-white/5 cursor-pointer shrink-0 transition-colors"
@@ -412,27 +298,11 @@ const submitRename = async () => {
               class="absolute right-4 top-12 w-56 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl z-40 py-1.5 flex flex-col overflow-hidden"
             >
               <button 
-                @click.stop="handleDownload(file)" 
+                @click.stop="handleRestore(file)" 
                 class="w-full px-4 py-2 text-left text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer"
               >
-                <FontAwesomeIcon :icon="faDownload" class="w-4 h-4 text-gray-400" />
-                <span>Baixar</span>
-              </button>
-              
-              <button 
-                @click.stop="handleRenameClick(file)" 
-                class="w-full px-4 py-2 text-left text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer"
-              >
-                <FontAwesomeIcon :icon="faPen" class="w-4 h-4 text-gray-400" />
-                <span>Renomear</span>
-              </button>
-              
-              <button 
-                @click.stop="handleShare(file)" 
-                class="w-full px-4 py-2 text-left text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer"
-              >
-                <FontAwesomeIcon :icon="faShareNodes" class="w-4 h-4 text-gray-400" />
-                <span>Compartilhar</span>
+                <FontAwesomeIcon :icon="faRotateLeft" class="w-4 h-4 text-gray-400" />
+                <span>Restaurar</span>
               </button>
               
               <button 
@@ -440,17 +310,17 @@ const submitRename = async () => {
                 class="w-full px-4 py-2 text-left text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer"
               >
                 <FontAwesomeIcon :icon="faCircleInfo" class="w-4 h-4 text-gray-400" />
-                <span>Informações sobre o arquivo</span>
+                <span>Informações</span>
               </button>
               
               <div class="h-px bg-white/5 my-1"></div>
               
               <button 
-                @click.stop="handleDelete(file)" 
+                @click.stop="handlePermanentDelete(file)" 
                 class="w-full px-4 py-2 text-left text-sm text-[#ef4444] hover:bg-[#ef4444]/10 flex items-center gap-3 transition-colors cursor-pointer"
               >
                 <FontAwesomeIcon :icon="faTrashCan" class="w-4 h-4" />
-                <span>Mover para a lixeira</span>
+                <span>Excluir permanentemente</span>
               </button>
             </div>
           </div>
@@ -510,50 +380,5 @@ const submitRename = async () => {
         </div>
       </div>
     </div>
-  </Overlay>
-
-  <Overlay v-if="isRenameModalOpen">
-    <Transition name="modal-fade" appear>
-      <div 
-        class="bg-[#1e1e1e] border border-white/10 rounded-2xl w-full max-w-[450px] p-6 relative shadow-2xl overflow-hidden text-left"
-      >
-        <button 
-          @click="isRenameModalOpen = false"
-          :disabled = "isRenaming"
-          class="disabled:cursor-not-allowed absolute top-4 right-4 text-gray-400 hover:text-white cursor-pointer p-1.5 hover:bg-white/5 rounded-lg transition-colors"
-        >
-          <FontAwesomeIcon :icon="faXmark" class="w-4 h-4" />
-        </button>
-        
-        <h3 class="text-white text-lg font-semibold mb-6">Renomear Arquivo</h3>
-        
-        <div class="flex flex-col gap-5">
-          <Input
-            v-model="newFileName" 
-            text="Digite o novo nome do arquivo" 
-            :error="renameError" 
-            :onKeyEnter="submitRename" 
-          />
-          
-          <div class="flex gap-3 w-full mt-2">
-            <button 
-              @click="isRenameModalOpen = false"
-              :disabled="isRenaming"
-              class="disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex-1 px-6 py-3 rounded-full bg-[#333] hover:bg-[#444] text-white font-semibold transition-all duration-300"
-            >
-              Cancelar
-            </button>
-            <button 
-              :disabled="isRenaming" 
-              @click="submitRename" 
-              class="cursor-pointer flex-1 px-6 py-3 rounded-full bg-[#009900] hover:bg-[#22c55e] text-white font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <FontAwesomeIcon v-if="isRenaming" :icon="faSpinner" spin class="mr-2" />
-              <span>Salvar</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </Transition>
   </Overlay>
 </template>

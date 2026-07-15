@@ -98,7 +98,7 @@ onUnmounted(() => {
 
       <button
         @click="router.push({ name: 'profile' })"
-        class="cursor-pointer mt-5 px-6 py-2 border border-[#444] rounded-full text-[#a8c7fa] text-sm font-medium hover:bg-gray-800 transition-all duration-200"
+        class="cursor-pointer mt-5 px-6 py-2 border border-[#444] rounded-full text-[#22c55e] text-sm font-medium hover:bg-gray-800 transition-all duration-200"
       >
         Gerenciar sua Conta
       </button>

@@ -46,6 +46,18 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: "/trash",
+    name: "trash",
+    component: () => import("../pages/files/trash.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/favorites",
+    name: "favorites",
+    component: () => import("../pages/files/favorites.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
     path: "/profile",
     name: "profile",
     component: () => import("../pages/profile/profile.vue"),

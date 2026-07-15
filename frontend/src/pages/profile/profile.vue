@@ -243,7 +243,7 @@ onMounted(() => getProfile());
           <div class="absolute bottom-[0px] right-[0px]">
             <FontAwesomeIcon
               :icon="faCamera"
-              class="scale-y-112 scale-x-103 rounded-full bg-[#1f1f1f] p-2 border border-[#333] hover:bg-gray-800 transition-colors text-[20px] text-[#a8c7fa]"
+              class="scale-y-112 scale-x-103 rounded-full bg-[#1f1f1f] p-2 border border-[#333] hover:bg-gray-800 transition-colors text-[20px] text-[#22c55e]"
             />
           </div>
         </div>

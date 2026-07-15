@@ -46,14 +46,18 @@ interface UserFile {
 const files = ref<UserFile[]>([]);
 const searchQuery = ref("");
 const isLoadingFiles = ref<boolean>(false);
-const hasProcessingFiles = ref<boolean>(false);
 const selectedFile = ref<UserFile | null>(null);
+const isInfoModalOpen = ref(false);
+
+const isRenameModalOpen = ref(false);
+const newFileName = ref("");
+const isRenaming = ref(false);
+const renameError = ref("");
 
 const fetchFiles = async () => {
   isLoadingFiles.value = true;
-  const { data } = await api.get(`/my-files?status=ACTIVE`);
+  const { data } = await api.get(`/my-files?status=ACTIVE&isFavorite=true`);
   files.value = data.files || [];
-  hasProcessingFiles.value = data.hasProcessingFiles || false;
   isLoadingFiles.value = false;
 };
 
@@ -172,12 +176,6 @@ const getFileBgClass = (format: string) => {
 };
 
 const openMenuIndex = ref<number | null>(null);
-const isInfoModalOpen = ref(false);
-
-const isRenameModalOpen = ref(false);
-const newFileName = ref("");
-const isRenaming = ref(false);
-const renameError = ref("");
 
 const toggleMenu = (index: number) => {
   if (openMenuIndex.value === index) {
@@ -238,12 +236,13 @@ const handleDelete = async (file: UserFile) => {
 const handleToggleFavorite = async (file: UserFile) => {
   const originalFiles = files.value.map(f => ({ ...f }));
   
-  file.isFavorite = !file.isFavorite;
-  const statusText = file.isFavorite ? "adicionado aos favoritos" : "removido dos favoritos";
-  showToast(`Arquivo ${statusText}!`, "success");
+  // Since we are in the Favorites page, clicking the star always unfavorites and removes it
+  files.value = files.value.filter((f) => f.id !== file.id);
+  showToast("Arquivo removido dos favoritos!", "success");
+  openMenuIndex.value = null;
 
   try {
-    await api.patch("/files/favorite", { fileId: file.id, isFavorite: file.isFavorite });
+    await api.patch("/files/favorite", { fileId: file.id, isFavorite: false });
   } catch (error: any) {
     console.error("Erro ao atualizar favorito:", error);
     files.value = originalFiles;
@@ -291,35 +290,17 @@ const submitRename = async () => {
 <template>
   <MainPageTemplate
     v-model="searchQuery"
-    :get-files="fetchFiles"
     :header="true"
     :sidebar="true"
-    title="Meus Arquivos"
+    title="Favoritos"
   >
     <div class="flex flex-col gap-6 py-6">
-      <div 
-        v-if="hasProcessingFiles" 
-        class="relative bg-[#fbbf24]/10 border border-[#fbbf24]/20 text-[#fbbf24] rounded-2xl p-4 pr-12 flex items-center gap-3 select-none transition-all duration-300"
-      >
-        <FontAwesomeIcon :icon="faTriangleExclamation" class="text-[22px] mt-0.5 shrink-0" />
-        <div class="flex flex-col gap-0.5">
-          <p class="text-[17px] font-semibold text-white">Arquivos em processamento</p>
-          <p class="text-[14px] text-[#fbbf24]/80">Um ou mais arquivos estão sendo processados e em breve estarão visíveis na sua listagem.</p>
-        </div>
-        <button 
-          @click="hasProcessingFiles = false" 
-          class="absolute top-1/2 -translate-y-1/2 right-4 text-[#fbbf24]/60 hover:text-[#fbbf24] transition-colors p-1.5 hover:bg-[#fbbf24]/10 rounded-lg cursor-pointer"
-        >
-          <FontAwesomeIcon :icon="faXmark" class="h-4 w-4" />
-        </button>
-      </div>
-
       <div
         v-if="isLoadingFiles"
         class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
       >
         <div
-          v-for="n in 8"
+          v-for="n in 4"
           :key="n"
           class="bg-[#1e1e1e]/40 border border-white/5 rounded-2xl p-5 h-44 animate-pulse flex flex-col justify-between"
         >
@@ -343,11 +324,11 @@ const submitRename = async () => {
           <div
             class="size-30 rounded-full bg-[#1e1e1e] flex items-center justify-center border border-white/5 text-gray-500"
           >
-            <FontAwesomeIcon :icon="faFile" class="text-5xl" />
+            <FontAwesomeIcon :icon="faStar" class="text-5xl text-[#fbbf24]" />
           </div>
           <div>
             <h3 class="text-white text-[20px] font-semibold">
-              Nenhum arquivo encontrado
+              Nenhum arquivo favorito
             </h3>
           </div>
         </div>
@@ -358,7 +339,7 @@ const submitRename = async () => {
         >
           <div
             v-for="(file, index) in filteredFiles"
-            :key="index"
+            :key="file.id"
             class="relative flex flex-col gap-3 h-64 p-4 bg-[#1e1e1e]/60 backdrop-blur-md border border-white/10 rounded-2xl hover:border-white/20 transition-all duration-300 group cursor-default"
           >
             <div class="flex items-center justify-between w-full min-w-0 gap-2">
@@ -375,10 +356,9 @@ const submitRename = async () => {
               </div>
               <button 
                 @click.stop="handleToggleFavorite(file)" 
-                class="p-1 rounded-lg hover:bg-white/5 cursor-pointer shrink-0 transition-colors"
-                :class="file.isFavorite ? 'text-[#fbbf24]' : 'text-gray-400 hover:text-white'"
+                class="p-1 rounded-lg hover:bg-white/5 cursor-pointer shrink-0 transition-colors text-[#fbbf24]"
               >
-                <FontAwesomeIcon :icon="file.isFavorite ? faStar : faStarRegular" class="h-4 w-4" />
+                <FontAwesomeIcon :icon="faStar" class="h-4 w-4" />
               </button>
               <button 
                 @click.stop="toggleMenu(index)" 
@@ -528,7 +508,7 @@ const submitRename = async () => {
         <h3 class="text-white text-lg font-semibold mb-6">Renomear Arquivo</h3>
         
         <div class="flex flex-col gap-5">
-          <Input
+          <Input 
             v-model="newFileName" 
             text="Digite o novo nome do arquivo" 
             :error="renameError" 

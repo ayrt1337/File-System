@@ -365,7 +365,7 @@ const handleSaveFile = async () => {
                 <button
                   @click="handleDownload()"
                   :disabled="isDownloading"
-                  class="text-white px-6 py-3 bg-[#009900] hover:bg-[#22c55e] disabled:bg-green-950/50 disabled:text-gray-500 font-bold text-[14px] rounded-l-full border-r border-[#008000]/30 transition-all duration-300 flex items-center gap-2 cursor-pointer select-none"
+                  class="disabled:cursor-not-allowed text-white px-6 py-3 bg-[#009900] hover:bg-[#22c55e] disabled:bg-green-950/50 disabled:text-gray-500 font-bold text-[14px] rounded-l-full border-r border-[#008000]/30 transition-all duration-300 flex items-center gap-2 cursor-pointer select-none"
                 >
                   <FontAwesomeIcon
                     :icon="isDownloading ? faSpinner : faDownload"
@@ -377,7 +377,7 @@ const handleSaveFile = async () => {
                 <button
                   @click="isOpen = !isOpen"
                   :disabled="isDownloading"
-                  class="bg-[#1a1a1a] hover:bg-[#222] border border-gray-800 text-[#009900] font-bold text-[14px] px-4 py-3 rounded-r-full flex items-center gap-2 cursor-pointer transition-all duration-300 select-none min-w-[110px] justify-between"
+                  class="disabled:cursor-not-allowed bg-[#1a1a1a] hover:bg-[#222] border border-gray-800 text-[#009900] font-bold text-[14px] px-4 py-3 rounded-r-full flex items-center gap-2 cursor-pointer transition-all duration-300 select-none min-w-[110px] justify-between"
                 >
                   <span class="truncate"
                     >{{ selectedOption.format.toUpperCase() }}

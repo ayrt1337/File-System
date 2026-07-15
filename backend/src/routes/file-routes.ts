@@ -19,5 +19,8 @@ fileRoutes.get("/download-video", downloadVideosController.download);
 fileRoutes.post("/convert", upload.single("file"), fileConvertorController.convert);
 fileRoutes.post("/upload-url", fileController.getUploadUrl);
 fileRoutes.get("/files/download/:id", fileController.getDownloadUrl);
+fileRoutes.patch("/files/rename", fileController.renameFile);
+fileRoutes.patch("/files/status", fileController.updateFileStatus);
+fileRoutes.patch("/files/favorite", fileController.updateFavoriteStatus);
 
 export default fileRoutes;

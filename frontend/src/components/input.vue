@@ -46,7 +46,13 @@ const getIcon = (iconName: string | undefined) => {
         :placeholder="text"
         @keydown.enter="onKeyEnter ? onKeyEnter() : null"
         :class="[
-          'w-full py-3.5 px-11 bg-[#1a1a1a] border rounded-full focus:outline-none transition-all duration-300 placeholder-gray-600 text-white',
+          'w-full py-3.5 bg-[#1a1a1a] border rounded-full focus:outline-none transition-all duration-300 placeholder-gray-600 text-white',
+          leftIcon
+            ? 'pl-11'
+            : 'pl-6',
+          password
+            ? 'pr-11'
+            : 'pr-6',
           error
             ? 'border-red-500'
             : 'border-gray-800 focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e]'

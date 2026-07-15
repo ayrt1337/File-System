@@ -4,6 +4,7 @@ import {
 } from "@aws-sdk/client-sqs";
 import { sqsClient, QUEUE_URL } from "../config/sqs-client.js";
 import database from "../config/database.js";
+import { FileStatus } from "../types/file.js";
 
 export async function startUploadWorker() {
   console.log("Worker do SQS iniciado com sucesso. Escutando novos eventos...");
@@ -65,7 +66,7 @@ export async function startUploadWorker() {
                   },
                   update: {
                     size: size,
-                    status: "ACTIVE",
+                    status: "ACTIVE" as FileStatus,
                   },
                   create: {
                     name: originalName,
@@ -73,7 +74,7 @@ export async function startUploadWorker() {
                     size: size,
                     s3Key: s3Key,
                     userId: userId,
-                    status: "ACTIVE",
+                    status: "ACTIVE" as FileStatus,
                   },
                 });
               } else {

@@ -56,23 +56,34 @@ export function useToast() {
   ) => {
     if (timeoutId) {
       clearTimeout(timeoutId);
+      timeoutId = null;
     }
 
-    toastCounter++;
+    const triggerNewToast = () => {
+      toastCounter++;
+      state.value = {
+        show: true,
+        message,
+        type,
+        id: toastCounter,
+        duration,
+        redirect,
+      };
 
-    state.value = {
-      show: true,
-      message,
-      type,
-      id: toastCounter,
-      duration,
-      redirect,
+      if (!redirect) {
+        timeoutId = window.setTimeout(() => {
+          state.value.show = false;
+        }, duration);
+      }
     };
 
-    if (!redirect) {
+    if (state.value.show) {
+      state.value.show = false;
       timeoutId = window.setTimeout(() => {
-        state.value.show = false;
-      }, duration);
+        triggerNewToast();
+      }, 300);
+    } else {
+      triggerNewToast();
     }
   };
 

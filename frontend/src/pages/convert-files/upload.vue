@@ -322,7 +322,7 @@ const handleSaveFile = async () => {
             </button>
             <button
               @click="startConversion"
-              class="px-8 py-3 bg-[#009900] hover:bg-[#22c55e] text-black font-bold text-sm rounded-full transition-all duration-300 transform cursor-pointer shadow-lg shadow-green-900/15"
+              class="px-8 py-3 bg-[#009900] hover:bg-[#22c55e] text-black font-bold text-sm rounded-full transition-all duration-300 transform cursor-pointer"
             >
               Converter para {{ toFormat.toUpperCase() }}
             </button>
@@ -404,7 +404,7 @@ const handleSaveFile = async () => {
             <div class="flex gap-2">
               <button
                 @click="downloadConvertedFile"
-                class="disabled:bg-green-950/50 disabled:text-gray-500 px-8 py-3 bg-[#009900] hover:bg-[#22c55e] text-black font-bold text-sm rounded-full transition-all duration-300 transform cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-green-900/15"
+                class="disabled:cursor-not-allowed disabled:bg-green-950/50 disabled:text-gray-500 px-8 py-3 bg-[#009900] hover:bg-[#22c55e] text-black font-bold text-sm rounded-full transition-all duration-300 transform cursor-pointer flex items-center justify-center gap-2"
                 :disabled="isUploading"
               >
                 <FontAwesomeIcon :icon="faDownload" />
@@ -413,7 +413,7 @@ const handleSaveFile = async () => {
 
               <button
                 @click="resetConversion"
-                class="px-6 py-3 border border-[#333] hover:border-gray-600 hover:bg-gray-800/40 text-gray-300 font-semibold text-sm rounded-full transition-all duration-300 cursor-pointer"
+                class="disabled:cursor-not-allowed px-6 py-3 border border-[#333] hover:border-gray-600 hover:bg-gray-800/40 text-gray-300 font-semibold text-sm rounded-full transition-all duration-300 cursor-pointer"
                 :disabled="isUploading"
               >
                 Converter Outro
