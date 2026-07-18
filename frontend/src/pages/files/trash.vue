@@ -22,6 +22,7 @@ import { useToast } from "../../composables/use-toast.ts";
 import { useLoading } from "../../composables/use-loading.ts";
 import { api } from "../../services/api.ts";
 import { verifyApiError } from "../../services/verify-api-error.ts";
+import { API_ROUTES } from "../../routing/routes";
 
 const { showToast } = useToast();
 const { showLoadingPage } = useLoading();
@@ -44,7 +45,7 @@ const files = ref<UserFile[]>([]);
 
 const fetchFiles = async () => {
   isLoadingFiles.value = true;
-  const { data } = await api.get(`/my-files?status=TRASH`);
+  const { data } = await api.get(`${API_ROUTES.FILE.MY_FILES}?status=TRASH`);
   files.value = data.files || [];
   isLoadingFiles.value = false;
 };
@@ -175,7 +176,7 @@ const handleRestore = async (file: UserFile) => {
   openMenuIndex.value = null;
 
   try {
-    await api.patch("/files/status", { fileId: file.id, status: "ACTIVE" });
+    await api.patch(API_ROUTES.FILE.STATUS, { fileId: file.id, status: "ACTIVE" });
   } catch (error: any) {
     console.error("Erro ao restaurar arquivo:", error);
     files.value = originalFiles;

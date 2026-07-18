@@ -14,6 +14,7 @@ import Overlay from "../../components/overlay.vue";
 import { api } from "../../services/api";
 import { useToast } from "../../composables/use-toast";
 import * as z from "zod";
+import { API_ROUTES } from "../../routing/routes";
 import type { User } from "../../types/user.ts";
 import { useAuthStore } from "../../stores/auth.ts";
 import { useLoading } from "../../composables/use-loading.ts";
@@ -42,7 +43,7 @@ const getProfile = async () => {
   showLoadingPage(true);
 
   try {
-    const response = await api.get("/profile");
+    const response = await api.get(API_ROUTES.USER.PROFILE);
     data.value = { ...response.data };
     authStore.updateUser(response.data);
   } catch (error: any) {
@@ -81,7 +82,7 @@ const handleUpdate = async () => {
     if (data.value.avatarUrl) {
       payload.avatarUrl = data.value.avatarUrl;
     }
-    await api.patch("/update", payload);
+    await api.patch(API_ROUTES.USER.UPDATE, payload);
     authStore.updateUser(payload as User);
     showToast("Alterações salvas com sucesso!", "success");
   } catch (error) {
@@ -97,7 +98,7 @@ const confirmDelete = async () => {
   inputLoading.value = true;
 
   try {
-    await api.patch("/delete");
+    await api.patch(API_ROUTES.USER.DELETE);
     showToast("Conta excluída com sucesso!", "success");
     authStore.logout();
     router.push("/login");

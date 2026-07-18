@@ -15,7 +15,6 @@ import {
   faFileWord,
   faFileExcel,
   faFileCode,
-  faTriangleExclamation,
   faXmark,
   faDownload,
   faEllipsis,
@@ -26,9 +25,9 @@ import {
   faSpinner,
   faStar,
 } from "@fortawesome/free-solid-svg-icons";
-import { faStar as faStarRegular } from "@fortawesome/free-regular-svg-icons";
 import { useLoading } from "../../composables/use-loading.ts";
 import { useToast } from "../../composables/use-toast.ts";
+import { API_ROUTES, PARAMS, getRouteWithPathParams } from "../../routing/routes";
 
 const { showLoadingPage } = useLoading();
 
@@ -56,7 +55,7 @@ const renameError = ref("");
 
 const fetchFiles = async () => {
   isLoadingFiles.value = true;
-  const { data } = await api.get(`/my-files?status=ACTIVE&isFavorite=true`);
+  const { data } = await api.get(`${API_ROUTES.FILE.MY_FILES}?status=ACTIVE&isFavorite=true`);
   files.value = data.files || [];
   isLoadingFiles.value = false;
 };
@@ -134,7 +133,8 @@ const { showToast } = useToast();
 
 const downloadFile = async (fileId: string) => {
   try {
-    const { data } = await api.get(`/files/download/${fileId}`);
+    const path = getRouteWithPathParams(API_ROUTES.FILE.DOWNLOAD, { [PARAMS.ID]: fileId });
+    const { data } = await api.get(path);
     const link = document.createElement("a");
     link.href = data.url;
     link.setAttribute("download", "");
@@ -222,7 +222,7 @@ const handleDelete = async (file: UserFile) => {
   openMenuIndex.value = null;
 
   try {
-    await api.patch("/files/status", { fileId: file.id, status: "TRASH" });
+    await api.patch(API_ROUTES.FILE.STATUS, { fileId: file.id, status: "TRASH" });
   } catch (error: any) {
     console.error("Erro ao mover arquivo para a lixeira:", error);
     files.value = originalFiles;
@@ -242,7 +242,7 @@ const handleToggleFavorite = async (file: UserFile) => {
   openMenuIndex.value = null;
 
   try {
-    await api.patch("/files/favorite", { fileId: file.id, isFavorite: false });
+    await api.patch(API_ROUTES.FILE.FAVORITE, { fileId: file.id, isFavorite: false });
   } catch (error: any) {
     console.error("Erro ao atualizar favorito:", error);
     files.value = originalFiles;
@@ -270,7 +270,7 @@ const submitRename = async () => {
   isRenaming.value = true;
   renameError.value = "";
   try {
-    await api.patch("/files/rename", {
+    await api.patch(API_ROUTES.FILE.RENAME, {
       fileId: selectedFile.value.id,
       newName: newFileName.value.trim(),
     });

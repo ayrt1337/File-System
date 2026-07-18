@@ -19,6 +19,7 @@ import { useToast } from "../../composables/use-toast";
 import { api } from "../../services/api";
 import type { Preview } from "../../types/video-preview.ts";
 import Input from "../../components/input.vue";
+import { API_ROUTES } from "../../routing/routes";
 import axios from "axios";
 import { getFilePreview } from "../../utils/get-file-preview";
 
@@ -181,7 +182,7 @@ const handleDownload = async () => {
   isOpen.value = false;
 
   try {
-    const response = await api.get("/download-video", {
+    const response = await api.get(API_ROUTES.FILE.DOWNLOAD_VIDEO, {
       params: {
         source: url.value,
         format: option.format,
@@ -223,7 +224,7 @@ const handleSaveFile = async () => {
   isOpen.value = false;
 
   try {
-    const response = await api.get("/download-video", {
+    const response = await api.get(API_ROUTES.FILE.DOWNLOAD_VIDEO, {
       params: {
         source: url.value,
         format: option.format,
@@ -240,7 +241,7 @@ const handleSaveFile = async () => {
       const file = new File([response.data], fileName, { type: contentType });
 
       const filePreview = await getFilePreview(file);
-      const { data } = await api.post("/upload-url", {
+      const { data } = await api.post(API_ROUTES.FILE.UPLOAD_URL, {
         fileName: file.name,
         contentType: file.type,
         size: file.size,

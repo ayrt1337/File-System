@@ -5,6 +5,7 @@ import BgContainer from '../../components/bg-container.vue';
 import { router } from '../../router/index.ts';
 import EmailImg from '../../assets/email-img.png';
 import { api } from '../../services/api';
+import { API_ROUTES } from '../../routing/routes';
 
 const { email, password, reason } = history.state;
 
@@ -22,10 +23,10 @@ const reSendEmail = async () => {
         popup.value = false;
     }, 2000);
 
-    const path = reason == "confirmation" ? "register" : "reset";
+    const path = reason == "confirmation" ? API_ROUTES.AUTH.REGISTER : API_ROUTES.AUTH.RESET;
 
     try {
-        await api.post(`/${path}`, { email: email, password: password });
+        await api.post(path, { email: email, password: password });
     } catch (error) {
         console.log("Erro no reenvio do email: ", error);
     }

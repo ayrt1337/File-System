@@ -29,6 +29,7 @@ import {
 import { faStar as faStarRegular } from "@fortawesome/free-regular-svg-icons";
 import { useLoading } from "../../composables/use-loading.ts";
 import { useToast } from "../../composables/use-toast.ts";
+import { API_ROUTES, PARAMS, getRouteWithPathParams } from "../../routing/routes";
 
 const { showLoadingPage } = useLoading();
 
@@ -51,7 +52,7 @@ const selectedFile = ref<UserFile | null>(null);
 
 const fetchFiles = async () => {
   isLoadingFiles.value = true;
-  const { data } = await api.get(`/my-files?status=ACTIVE`);
+  const { data } = await api.get(`${API_ROUTES.FILE.MY_FILES}?status=ACTIVE`);
   files.value = data.files || [];
   hasProcessingFiles.value = data.hasProcessingFiles || false;
   isLoadingFiles.value = false;
@@ -130,7 +131,8 @@ const { showToast } = useToast();
 
 const downloadFile = async (fileId: string) => {
   try {
-    const { data } = await api.get(`/files/download/${fileId}`);
+    const path = getRouteWithPathParams(API_ROUTES.FILE.DOWNLOAD, { [PARAMS.ID]: fileId });
+    const { data } = await api.get(path);
     const link = document.createElement("a");
     link.href = data.url;
     link.setAttribute("download", "");
@@ -224,7 +226,7 @@ const handleDelete = async (file: UserFile) => {
   openMenuIndex.value = null;
 
   try {
-    await api.patch("/files/status", { fileId: file.id, status: "TRASH" });
+    await api.patch(API_ROUTES.FILE.STATUS, { fileId: file.id, status: "TRASH" });
   } catch (error: any) {
     console.error("Erro ao mover arquivo para a lixeira:", error);
     files.value = originalFiles;
@@ -243,7 +245,7 @@ const handleToggleFavorite = async (file: UserFile) => {
   showToast(`Arquivo ${statusText}!`, "success");
 
   try {
-    await api.patch("/files/favorite", { fileId: file.id, isFavorite: file.isFavorite });
+    await api.patch(API_ROUTES.FILE.FAVORITE, { fileId: file.id, isFavorite: file.isFavorite });
   } catch (error: any) {
     console.error("Erro ao atualizar favorito:", error);
     files.value = originalFiles;
@@ -271,7 +273,7 @@ const submitRename = async () => {
   isRenaming.value = true;
   renameError.value = "";
   try {
-    await api.patch("/files/rename", {
+    await api.patch(API_ROUTES.FILE.RENAME, {
       fileId: selectedFile.value.id,
       newName: newFileName.value.trim(),
     });

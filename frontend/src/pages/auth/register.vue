@@ -9,6 +9,7 @@ import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import Image from "../../assets/unnamed.jpg";
 import { api } from "../../services/api";
 import * as z from "zod";
+import { API_ROUTES } from "../../routing/routes";
 
 interface RegisterData {
   email: string;
@@ -68,7 +69,7 @@ const handleRegister = async () => {
 
   loading.value = true;
   try {
-    await api.post(`/register`, {
+    await api.post(API_ROUTES.AUTH.REGISTER, {
       email: data.value.email,
       password: data.value.password,
     });

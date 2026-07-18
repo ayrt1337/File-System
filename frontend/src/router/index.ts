@@ -5,6 +5,7 @@ import { useLoading } from "../composables/use-loading.ts";
 import { hasValidSessionStored } from "../stores/auth.ts";
 import { verifyApiError } from "../services/verify-api-error.ts";
 import { api } from "../services/api.ts";
+import { API_ROUTES } from "../routing/routes";
 
 const routes = [
   {
@@ -131,7 +132,7 @@ router.afterEach(async (to) => {
     showLoadingPage(true);
 
     try {
-      await api.get("/me");
+      await api.get(API_ROUTES.AUTH.ME);
     } catch (error: any) {
       console.error("Erro ao verificar usuário: ", error);
       verifyApiError(error.response?.status);

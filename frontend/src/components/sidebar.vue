@@ -11,6 +11,7 @@ import { useLoading } from '../composables/use-loading';
 import { useToast } from '../composables/use-toast';
 import { api } from '../services/api';
 import { useAuthStore } from '../stores/auth';
+import { API_ROUTES } from '../routing/routes';
 
 interface Props {
     getFiles?: () => Promise<void>;
@@ -27,7 +28,7 @@ const handleLogout = async () => {
     showLoadingPage(true);
 
     try {
-        await api.get('/logout');
+        await api.get(API_ROUTES.AUTH.LOGOUT);
         authStore.logout();
         router.push("/login");
     } catch (error) {
@@ -53,7 +54,7 @@ const handleFileChange = async (event: Event) => {
 
     try {
         const filePreview = await getFilePreview(file);
-        const { data } = await api.post("/upload-url", {
+        const { data } = await api.post(API_ROUTES.FILE.UPLOAD_URL, {
             fileName: file.name,
             contentType: file.type,
             size: file.size,

@@ -7,6 +7,7 @@ import BgContainer from "../../components/bg-container.vue";
 import SuccessImage from "../../assets/success.png";
 import FailImage from "../../assets/fail.png";
 import { api } from "../../services/api";
+import { API_ROUTES } from "../../routing/routes";
 
 interface Props {
   token: string;
@@ -19,7 +20,7 @@ const success = ref<boolean>(false);
 
 onMounted(async () => {
   try {
-    await api.get("/confirm-email", {
+    await api.get(API_ROUTES.AUTH.CONFIRM_EMAIL, {
       params: { token: props.token },
     });
 

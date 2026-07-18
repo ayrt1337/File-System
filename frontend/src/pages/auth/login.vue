@@ -10,6 +10,7 @@ import Image from "../../assets/unnamed.jpg";
 import { api } from "../../services/api";
 import * as z from "zod";
 import { useAuthStore } from "../../stores/auth.ts";
+import { API_ROUTES } from "../../routing/routes";
 
 const authStore = useAuthStore();
 
@@ -49,7 +50,7 @@ const handleLogin = async () => {
   }
   loading.value = true;
   try {
-    const response = await api.post(`/login`, {
+    const response = await api.post(API_ROUTES.AUTH.LOGIN, {
       email: data.value.email,
       password: data.value.password,
       rememberMe: data.value.rememberMe,

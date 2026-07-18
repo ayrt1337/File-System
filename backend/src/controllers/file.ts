@@ -6,6 +6,7 @@ import {
 } from "../services/s3-service.js";
 import database from "../config/database.js";
 import { FileStatus } from "../types/file.js";
+import { PARAMS } from "../routing/routes.js";
 
 export class FileController {
   async getMyFiles(req: Request, res: Response, next: NextFunction) {
@@ -98,7 +99,7 @@ export class FileController {
   async getDownloadUrl(req: Request, res: Response, next: NextFunction) {
     try {
       const user = (req as any).user;
-      const id = req.params.id as string;
+      const id = req.params[PARAMS.ID] as string;
       if (!id) {
         throw new AppError("ID do arquivo é obrigatório!", 400);
       }
@@ -132,6 +133,10 @@ export class FileController {
         fileId: string;
         newName: string;
       };
+
+      if (!newName) {
+        throw new AppError("O nome do arquivo não pode ser vazio!", 400);
+      }
 
       const file = await database.files.findFirst({
         where: {

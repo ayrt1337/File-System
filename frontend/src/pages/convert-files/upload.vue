@@ -3,6 +3,7 @@ import { ref, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { api } from "../../services/api";
 import MainPageTemplate from "../../components/main-page-template.vue";
+import { API_ROUTES } from "../../routing/routes";
 import DragDropOverlay from "../../components/drag-drop-overlay.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import {
@@ -134,7 +135,7 @@ const startConversion = async () => {
     const formData = new FormData();
     formData.append("file", selectedFile.value);
 
-    const response = await api.post("/convert", formData, {
+    const response = await api.post(API_ROUTES.FILE.CONVERT, formData, {
       params: {
         from: fromFormat.value,
         to: toFormat.value,
@@ -188,7 +189,7 @@ const handleSaveFile = async () => {
     const file = new File([fileBlob], convertedFileName.value, { type: fileBlob.type });
     const filePreview = await getFilePreview(file);
 
-    const { data } = await api.post("/upload-url", {
+    const { data } = await api.post(API_ROUTES.FILE.UPLOAD_URL, {
       fileName: file.name,
       contentType: file.type,
       size: file.size,

@@ -11,6 +11,7 @@ import SuccessImage from "../../assets/success.png";
 import FailImage from "../../assets/fail.png";
 import { api } from "../../services/api";
 import * as z from "zod";
+import { API_ROUTES } from "../../routing/routes";
 
 interface ConfirmPasswordData {
   password: string;
@@ -59,7 +60,7 @@ const showInput = ref<boolean>(false);
 
 onMounted(async () => {
   try {
-    await api.get("/confirm-email", {
+    await api.get(API_ROUTES.AUTH.CONFIRM_EMAIL, {
       params: { token: props.token },
     });
 
@@ -89,7 +90,7 @@ const changePassword = async () => {
 
   inputLoading.value = true;
   try {
-    const result = await api.post(`/reset-password`, {
+    const result = await api.post(API_ROUTES.AUTH.RESET_PASSWORD, {
       token: props.token,
       password: data.value.password,
     });

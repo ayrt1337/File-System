@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { api } from "../../services/api";
 import * as z from "zod";
+import { API_ROUTES } from "../../routing/routes";
 
 interface ResetData {
   email: string;
@@ -42,7 +43,7 @@ const sendEmail = async (): Promise<void> => {
 
   loading.value = true;
   try {
-    await api.post(`/reset`, { email: data.value.email });
+    await api.post(API_ROUTES.AUTH.RESET, { email: data.value.email });
 
     router.push({
       name: "email",
