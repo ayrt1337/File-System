@@ -1,8 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { AppError } from "../errors/app-error.js";
 import { downloadMedia } from "../utils/downloader-helper.js";
-
-const platforms: string[] = ["youtube", "twitter", "x"];
+import { formatAndValidateUrl } from "../utils/url-formatter.js";
 
 export const qualityMapping: Record<string, { width: number; height: number }> = {
   "360p": { width: 640, height: 360 },
@@ -25,24 +24,17 @@ export class DownloadVideosController {
         format?: string;
       };
 
-      const match = source.match(
-        /^(?:https?:\/\/)?(?:www\.|m\.|mobile\.)?([a-zA-Z0-9-]+)\.[a-z]+/i,
-      );
-
-      if (!match) {
+      if (!source) {
         throw new AppError("Endereço inválido!", 400);
       }
 
-      const platform = match[1].toLowerCase();
-      if (!platforms.includes(platform)) {
-        throw new AppError(`A plataforma ${platform} não é suportada!`, 400);
-      }
+      const formattedUrl = formatAndValidateUrl(source);
 
       const outputFormat = format && outputFormatMapping[format] ? format : "mp4";
       const outputQuality = quality && qualityMapping[quality] ? quality : "360p";
-      const output = await downloadMedia(source, outputQuality, outputFormat);
+      const output = await downloadMedia(formattedUrl, outputQuality, outputFormat);
 
-      const safeFilename = source.replace(/[^a-zA-Z0-9._-]/g, "_");
+      const safeFilename = formattedUrl.replace(/[^a-zA-Z0-9._-]/g, "_");
 
       res.setHeader("Content-Type", outputFormatMapping[outputFormat]);
       res.setHeader("Content-Disposition", `attachment; filename="${safeFilename}"`);

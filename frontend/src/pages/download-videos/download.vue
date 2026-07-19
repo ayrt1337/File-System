@@ -158,7 +158,7 @@ const handleFetchPreview = async () => {
   preview.value = null;
 
   try {
-    const result = (await getPreview(platform.value, url.value)) as Preview;
+    const result = await getPreview(platform.value, url.value) as Preview;
     if (result) {
       preview.value = result;
     } else {
