@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import MainPageTemplate from "../../components/main-page-template.vue";
+import HomePageTemplate from "../../components/home-page-template.vue";
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { api } from "../../services/api";
 import { verifyApiError } from "../../services/verify-api-error";
@@ -140,9 +140,8 @@ const handleDroppedFile = (file: File | FileList) => {
 </script>
 
 <template>
-  <MainPageTemplate
+  <HomePageTemplate
     v-model="searchQuery"
-    :get-files="fetchFiles"
     :header="true"
     :sidebar="true"
     title="Meus Arquivos"
@@ -218,7 +217,7 @@ const handleDroppedFile = (file: File | FileList) => {
         </div>
       </template>
     </div>
-  </MainPageTemplate>
+  </HomePageTemplate>
 
   <FileInfoModal
     :isOpen="isInfoModalOpen"

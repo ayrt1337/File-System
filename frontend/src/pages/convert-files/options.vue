@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useRouter } from "vue-router";
-import MainPageTemplate from "../../components/main-page-template.vue";
+import HomePageTemplate from "../../components/home-page-template.vue";
 import ConvertOptionCard from "../../components/convert-option-card.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { faVideo, faMusic, faFileLines, faFileImage } from "@fortawesome/free-solid-svg-icons";
@@ -47,7 +47,7 @@ const handleSelectOption = (option: typeof conversionOptions[0]) => {
 </script>
 
 <template>
-  <MainPageTemplate :search-input="false" :header="true" :sidebar="true" title="Conversor de Arquivos">
+  <HomePageTemplate :search-input="false" :header="true" :sidebar="true" title="Conversor de Arquivos">
     <div class="mx-auto text-white">
       <div v-if="videoOptions.length > 0" class="mb-12">
         <div class="flex items-center gap-3 mb-6 pb-3">
@@ -129,5 +129,5 @@ const handleSelectOption = (option: typeof conversionOptions[0]) => {
         </div>
       </div>
     </div>
-  </MainPageTemplate>
+  </HomePageTemplate>
 </template>

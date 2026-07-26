@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from "vue-router";
-import MainPageTemplate from "../../components/main-page-template.vue";
+import HomePageTemplate from "../../components/home-page-template.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { faYoutube, faXTwitter } from "@fortawesome/free-brands-svg-icons";
 
@@ -32,7 +32,7 @@ const handleSelectWebsite = (siteId: string) => {
 </script>
 
 <template>
-  <MainPageTemplate :search-input="false" :header="true" :sidebar="true" title="Baixar Vídeos">
+  <HomePageTemplate :search-input="false" :header="true" :sidebar="true" title="Baixar Vídeos">
     <div class="text-white">
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         <div
@@ -59,5 +59,5 @@ const handleSelectWebsite = (siteId: string) => {
         </div>
       </div>
     </div>
-  </MainPageTemplate>
+  </HomePageTemplate>
 </template>

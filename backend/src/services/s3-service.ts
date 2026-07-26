@@ -52,7 +52,7 @@ export async function getDownloadPresignedUrl(s3Key: string, fileName: string) {
   return await getSignedUrl(s3Client, command, { expiresIn: 900 });
 }
 
-export async function getPreviewPresignedUrl(s3Key: string) {
+export async function getFilePresignedUrl(s3Key: string) {
   const command = new GetObjectCommand({
     Bucket: BUCKET_NAME,
     Key: s3Key,

@@ -19,6 +19,7 @@ fileRoutes.get(ROUTES.FILE.MY_FILES, fileController.getMyFiles);
 fileRoutes.get(ROUTES.FILE.DOWNLOAD_VIDEO, downloadVideosController.download);
 fileRoutes.post(ROUTES.FILE.CONVERT, upload.single("file"), fileConvertorController.convert);
 fileRoutes.post(ROUTES.FILE.UPLOAD_URL, fileController.getUploadUrl);
+fileRoutes.get(ROUTES.FILE.GET_FILE, fileController.getFile);
 fileRoutes.get(ROUTES.FILE.DOWNLOAD, fileController.getDownloadUrl);
 fileRoutes.patch(ROUTES.FILE.RENAME, fileController.renameFile);
 fileRoutes.patch(ROUTES.FILE.STATUS, fileController.updateFileStatus);

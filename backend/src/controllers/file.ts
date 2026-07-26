@@ -3,7 +3,7 @@ import { AppError } from "../errors/app-error.js";
 import {
   getUploadPresignedUrl,
   getDownloadPresignedUrl,
-  getPreviewPresignedUrl,
+  getFilePresignedUrl,
   getTotalUserFiles,
 } from "../services/s3-service.js";
 import database from "../config/database.js";
@@ -56,7 +56,7 @@ export class FileController {
 
       const databaseUserFiles = await database.files.count({
         where: {
-          userId: user.id
+          userId: user.id,
         },
       });
 
@@ -67,16 +67,19 @@ export class FileController {
           let signedPreviewUrl = null;
           if (file.preview) {
             try {
-              signedPreviewUrl = await getPreviewPresignedUrl(file.preview);
+              signedPreviewUrl = await getFilePresignedUrl(file.preview);
             } catch (err) {
-              console.error(`Erro ao gerar URL do preview para ${file.preview}:`, err);
+              console.error(
+                `Erro ao gerar URL do preview para ${file.preview}:`,
+                err,
+              );
             }
           }
           return {
             ...file,
             preview: signedPreviewUrl,
           };
-        })
+        }),
       );
 
       res.status(200).json({
@@ -100,12 +103,12 @@ export class FileController {
         user.id,
         fileName,
         contentType,
-        !!preview
+        !!preview,
       );
 
       res.status(200).json({
         url: result.url,
-        previewUrl: result.previewUrl
+        previewUrl: result.previewUrl,
       });
     } catch (error: any) {
       next(error);
@@ -320,27 +323,46 @@ export class FileController {
       let signedPreviewUrl = null;
       if (file.preview) {
         try {
-          signedPreviewUrl = await getPreviewPresignedUrl(file.preview);
+          signedPreviewUrl = await getFilePresignedUrl(file.preview);
         } catch (err) {
-          console.error(`Erro ao gerar URL do preview para ${file.preview}:`, err);
+          console.error(
+            `Erro ao gerar URL do preview para ${file.preview}:`,
+            err,
+          );
         }
       }
 
-      const obj = {
-        file: {
-          id: file.id,
-          name: file.name,
-          preview: signedPreviewUrl,
-          format: file.format,
-          size: file.size,
-          createdAt: file.createdAt,
-          updatedAt: file.lastUpdate
-        },
+      let signedFileUrl = null;
+      if (
+        file.format &&
+        ["mp4", "webm", "mkv", "avi", "mov"].includes(file.format.toLowerCase())
+      ) {
+        try {
+          signedFileUrl = await getFilePresignedUrl(file.s3Key);
+        } catch (err) {
+          console.error(
+            `Erro ao gerar URL de visualização para ${file.s3Key}:`,
+            err,
+          );
+        }
+      }
+
+      const fileResponse = {
+        id: file.id,
+        name: file.name,
+        preview: signedPreviewUrl,
+        url: signedFileUrl,
+        format: file.format,
+        size: file.size,
+        createdAt: file.createdAt,
+        updatedAt: file.lastUpdate,
       };
 
-      file.userId !== user.id ? obj["isFavorite"] = file.isFavorite : null;
+      file.userId !== user.id
+        ? (fileResponse["isFavorite"] = file.isFavorite)
+        : null;
 
-      res.status(200).json({ obj });
+      res.status(200).json({ fileResponse });
     } catch (error) {
       next(error);
     }

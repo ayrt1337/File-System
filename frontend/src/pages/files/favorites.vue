@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import MainPageTemplate from "../../components/main-page-template.vue";
+import HomePageTemplate from "../../components/home-page-template.vue";
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { api } from "../../services/api";
 import { verifyApiError } from "../../services/verify-api-error";
@@ -126,7 +126,7 @@ const handleRenameClick = (file: UserFile) => {
 </script>
 
 <template>
-  <MainPageTemplate
+  <HomePageTemplate
     v-model="searchQuery"
     :header="true"
     :sidebar="true"
@@ -173,7 +173,7 @@ const handleRenameClick = (file: UserFile) => {
         </div>
       </template>
     </div>
-  </MainPageTemplate>
+  </HomePageTemplate>
 
   <FileInfoModal
     :isOpen="isInfoModalOpen"

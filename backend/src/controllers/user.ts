@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import database from "../config/database.js";
+import { AppError } from "../errors/app-error.js";
 
 export class UserController {
   async getProfile(req: Request, res: Response, next: NextFunction) {
@@ -42,6 +43,35 @@ export class UserController {
 
       res.clearCookie("sessionId");
       res.status(200).json("success");
+    } catch (error: any) {
+      next(error);
+    }
+  }
+
+  async checkUserEmail(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { email } = req.query;
+      if (!email || typeof email !== "string") {
+        throw new AppError("E-mail é obrigatório!", 400);
+      }
+
+      const targetUser = await database.user.findFirst({
+        where: {
+          email: email.toLowerCase(),
+          inactive: false,
+        },
+        select: {
+          email: true,
+          name: true,
+          avatarUrl: true,
+        },
+      });
+
+      if (!targetUser) {
+        throw new AppError("Usuário não encontrado!", 404);
+      }
+
+      res.status(200).json(targetUser);
     } catch (error: any) {
       next(error);
     }

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
+import { useRouter } from "vue-router";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import {
   faEllipsis,
@@ -40,6 +41,11 @@ const props = withDefaults(
 
 const { getFileIcon, getFileBgClass } = useFilesUtils();
 const hasImageError = ref(false);
+const router = useRouter();
+
+const navigateToDetail = () => {
+  router.push(`/file/${props.file.id}`);
+};
 
 watch(() => props.file, () => {
   hasImageError.value = false;
@@ -48,7 +54,9 @@ watch(() => props.file, () => {
 
 <template>
   <div
-    class="relative flex flex-col gap-3 h-64 p-4 bg-[#1e1e1e]/60 backdrop-blur-md border border-white/10 rounded-2xl hover:border-white/20 transition-all duration-300 group cursor-default"
+    tabindex="0"
+    @dblclick="navigateToDetail"
+    class="relative flex flex-col gap-3 h-64 p-4 bg-[#1e1e1e]/60 backdrop-blur-md border border-white/10 rounded-2xl hover:border-white/20 focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e]/30 focus:outline-none transition-all duration-300 group cursor-pointer"
   >
     <div class="flex items-center justify-between w-full min-w-0 gap-2">
       <div class="flex items-center gap-2 min-w-0 flex-1">

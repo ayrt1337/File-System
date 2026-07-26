@@ -2,7 +2,7 @@
 import { ref, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { api } from "../../services/api";
-import MainPageTemplate from "../../components/main-page-template.vue";
+import HomePageTemplate from "../../components/home-page-template.vue";
 import { API_ROUTES } from "../../routing/routes";
 import DragDropOverlay from "../../components/drag-drop-overlay.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
@@ -207,7 +207,7 @@ const handleSaveFile = async () => {
 </script>
 
 <template>
-  <MainPageTemplate
+  <HomePageTemplate
     :search-input="false"
     :header="true"
     :sidebar="true"
@@ -445,5 +445,5 @@ const handleSaveFile = async () => {
         </div>
       </div>
     </div>
-  </MainPageTemplate>
+  </HomePageTemplate>
 </template>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
-import MainPageTemplate from "../../components/main-page-template.vue";
+import HomePageTemplate from "../../components/home-page-template.vue";
 import UserImage from "../../assets/981d6b2e0ccb5e968a0618c8d47671da.jpg";
 import Input from "../../components/input.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
@@ -189,7 +189,7 @@ onMounted(() => getProfile());
 </script>
 
 <template>
-  <MainPageTemplate title="Perfil" :sidebar="true" :header="false">
+  <HomePageTemplate title="Perfil" :sidebar="true" :header="false">
     <div class="text-[#ffffff]">
       <Overlay v-if="showDeleteConfirm">
         <Transition name="modal-fade" appear>
@@ -297,7 +297,7 @@ onMounted(() => getProfile());
         </div>
       </div>
     </div>
-  </MainPageTemplate>
+  </HomePageTemplate>
 </template>
 
 <style scoped>

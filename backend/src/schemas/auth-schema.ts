@@ -24,3 +24,9 @@ export const sendEmailSchema = z.object({
     email: z.string().min(1, "Preencha o campo!").email("Email inválido!"),
   }),
 });
+
+export const checkEmailSchema = z.object({
+  query: z.object({
+    email: z.string().min(1, "Preencha o campo!").email("Email inválido!"),
+  }),
+});

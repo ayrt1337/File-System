@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import MainPageTemplate from "../../components/main-page-template.vue";
+import HomePageTemplate from "../../components/home-page-template.vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import {
   faArrowLeft,
@@ -252,7 +252,7 @@ const handleSaveFile = async () => {
 </script>
 
 <template>
-  <MainPageTemplate
+  <HomePageTemplate
     :search-input="false"
     :header="true"
     :sidebar="true"
@@ -416,5 +416,5 @@ const handleSaveFile = async () => {
         </div>
       </div>
     </div>
-  </MainPageTemplate>
+  </HomePageTemplate>
 </template>

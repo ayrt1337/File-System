@@ -12,12 +12,6 @@ import { useAuthStore } from '../stores/auth';
 import { useUploadStore } from '../stores/upload';
 import { API_ROUTES } from '../routing/routes';
 
-interface Props {
-    getFiles?: () => Promise<void>;
-}
-
-const props = defineProps<Props>();
-
 const authStore = useAuthStore();
 const uploadStore = useUploadStore();
 const { showToast } = useToast();

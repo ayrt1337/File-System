@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import MainPageTemplate from "../../components/main-page-template.vue";
+import HomePageTemplate from "../../components/home-page-template.vue";
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { faTrashCan } from "@fortawesome/free-solid-svg-icons";
@@ -100,7 +100,7 @@ const handleInfo = (file: UserFile) => {
 </script>
 
 <template>
-  <MainPageTemplate
+  <HomePageTemplate
     v-model="searchQuery"
     :header="true"
     :sidebar="true"
@@ -146,7 +146,7 @@ const handleInfo = (file: UserFile) => {
         </div>
       </template>
     </div>
-  </MainPageTemplate>
+  </HomePageTemplate>
   <FileInfoModal
     :isOpen="isInfoModalOpen"
     :file="selectedFile"

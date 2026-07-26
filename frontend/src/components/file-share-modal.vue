@@ -5,14 +5,18 @@ import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import {
   faLock,
   faChevronDown,
-  faCircleQuestion,
-  faGear,
   faLink,
   faGlobe,
-  faCheck
+  faCheck,
+  faXmark,
+  faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
 import { useAuthStore } from "../stores/auth.ts";
 import type { UserFile } from "../types/file.ts";
+import Input from "./input.vue";
+import UserImage from "../assets/981d6b2e0ccb5e968a0618c8d47671da.jpg";
+import { api } from "../services/api";
+import { API_ROUTES } from "../routing/routes";
 
 const props = defineProps<{
   isOpen: boolean;
@@ -23,16 +27,50 @@ const props = defineProps<{
 const authStore = useAuthStore();
 const user = computed(() => authStore.getUser);
 
-const generalAccess = ref<'restricted' | 'public'>('restricted');
+const generalAccess = ref<"restricted" | "public">("restricted");
 const isAccessDropdownOpen = ref(false);
 const isCopied = ref(false);
+const isSalving = ref<boolean>(false);
 
-watch(() => props.isOpen, (newVal) => {
-  if (newVal) {
-    isCopied.value = false;
-    isAccessDropdownOpen.value = false;
-  }
-});
+interface SharedUser {
+  email: string;
+  name: string;
+  avatarUrl: string | null;
+  role: "reader" | "editor";
+}
+
+const emailInput = ref("");
+const emailError = ref("");
+const isSearchingUser = ref(false);
+const openRoleMenuIndex = ref<number | null>(null);
+const sharedUsers = ref<SharedUser[]>([]);
+
+const publicRole = ref<"reader" | "editor">("reader");
+const isPublicRoleMenuOpen = ref(false);
+
+const closeRoleMenus = () => {
+  openRoleMenuIndex.value = null;
+  isPublicRoleMenuOpen.value = false;
+};
+
+watch(
+  () => props.isOpen,
+  (newVal) => {
+    if (newVal) {
+      isCopied.value = false;
+      isAccessDropdownOpen.value = false;
+      emailInput.value = "";
+      emailError.value = "";
+      sharedUsers.value = [];
+      openRoleMenuIndex.value = null;
+      publicRole.value = "reader";
+      isPublicRoleMenuOpen.value = false;
+      window.addEventListener("click", closeRoleMenus);
+    } else {
+      window.removeEventListener("click", closeRoleMenus);
+    }
+  },
+);
 
 const shareUrl = computed(() => {
   if (!props.file) return "";
@@ -50,130 +88,415 @@ const toggleAccessMenu = (event: Event) => {
   isAccessDropdownOpen.value = !isAccessDropdownOpen.value;
 };
 
-const selectAccess = (type: 'restricted' | 'public') => {
+const selectAccess = (type: "restricted" | "public") => {
   generalAccess.value = type;
   isAccessDropdownOpen.value = false;
+};
+
+const handleAddEmail = async () => {
+  emailError.value = "";
+
+  const email = emailInput.value.trim().toLowerCase();
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    emailError.value = "Email inválido";
+    return;
+  }
+
+  if (user.value?.email && email === user.value.email.toLowerCase()) {
+    emailError.value = "Você já é o proprietário";
+    return;
+  }
+
+  const alreadyAdded = sharedUsers.value.some(
+    (u) => u.email.toLowerCase() === email,
+  );
+  if (alreadyAdded) {
+    emailError.value = "Este e-mail já foi adicionado";
+    return;
+  }
+
+  isSearchingUser.value = true;
+  try {
+    const { data } = await api.get(API_ROUTES.USER.CHECK_EMAIL, {
+      params: { email },
+    });
+
+    sharedUsers.value.push({
+      email: data.email,
+      name: data.name,
+      avatarUrl: data.avatarUrl,
+      role: "reader",
+    });
+
+    emailInput.value = "";
+  } catch (err: any) {
+    if (err.response?.status === 404) {
+      emailError.value = "Usuário não encontrado!";
+    } else if (err.response?.data?.message) {
+      emailError.value = err.response.data.message;
+    } else {
+      emailError.value = "Erro ao buscar usuário";
+    }
+  } finally {
+    isSearchingUser.value = false;
+  }
+};
+
+const toggleUserRoleMenu = (index: number, event: Event) => {
+  event.stopPropagation();
+  if (openRoleMenuIndex.value === index) {
+    openRoleMenuIndex.value = null;
+  } else {
+    openRoleMenuIndex.value = index;
+  }
+};
+
+const changeUserRole = (index: number, role: "reader" | "editor") => {
+  const targetUser = sharedUsers.value[index];
+  if (targetUser) {
+    targetUser.role = role;
+  }
+  openRoleMenuIndex.value = null;
+};
+
+const removeUserAccess = (index: number) => {
+  sharedUsers.value.splice(index, 1);
+  openRoleMenuIndex.value = null;
+};
+
+const togglePublicRoleMenu = (event: Event) => {
+  event.stopPropagation();
+  isPublicRoleMenuOpen.value = !isPublicRoleMenuOpen.value;
+};
+
+const changePublicRole = (role: "reader" | "editor") => {
+  publicRole.value = role;
+  isPublicRoleMenuOpen.value = false;
+};
+
+const handleSave = () => {
+  const usersToShare = sharedUsers.value.map((u) => ({
+    email: u.email,
+    role: u.role,
+  }));
+
+  const publicAccess = {
+    isPublic: generalAccess.value === "public",
+    publicRole: generalAccess.value === "public" ? publicRole.value : null,
+  };
+
+  console.log("Usuários e papéis preparados para salvar:", usersToShare);
+  console.log("Configurações de acesso público:", publicAccess);
+
+  props.close();
 };
 </script>
 
 <template>
   <Overlay v-if="isOpen && file">
-    <Transition name="modal-fade" appear>
-      <div 
-        @click.stop
-        class="bg-[#1e1e1e] border border-white/10 rounded-3xl w-full max-w-[550px] p-6 relative shadow-2xl text-left"
-      >
-        <div class="flex items-center justify-between mb-6">
-          <h3 class="text-white text-[20px] font-normal leading-normal select-none">
-            Compartilhar "{{ file.name }}"
-          </h3>
-          <div class="flex items-center gap-4 text-gray-400">
-            <button class="hover:text-white cursor-pointer transition-colors p-1" title="Ajuda">
-              <FontAwesomeIcon :icon="faCircleQuestion" class="w-[18px] h-[18px]" />
-            </button>
-            <button class="hover:text-white cursor-pointer transition-colors p-1" title="Configurações">
-              <FontAwesomeIcon :icon="faGear" class="w-[18px] h-[18px]" />
-            </button>
-          </div>
-        </div>
-        
-        <div class="border border-white/20 rounded-lg p-3 bg-transparent text-gray-500 text-sm select-none mb-6 cursor-text hover:border-white/30 transition-colors">
-          Adicionar participantes, grupos, espaços e eventos da ag...
-        </div>
-        
-        <div class="mb-6">
-          <h4 class="text-white text-[15px] font-medium mb-3 select-none">Pessoas com acesso</h4>
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <div class="w-[36px] h-[36px] rounded-full bg-[#d81b60] flex items-center justify-center text-white font-semibold text-[15px] uppercase select-none">
-                {{ user?.name ? user.name.charAt(0).toLowerCase() : 'a' }}
-              </div>
-              <div class="flex flex-col">
-                <span class="text-white text-sm font-normal">{{ user?.name || 'ayrt' }} (você)</span>
-                <span class="text-gray-400 text-xs">{{ user?.email || 'caiodalmune@gmail.com' }}</span>
-              </div>
-            </div>
-            <span class="text-gray-500 text-sm font-normal select-none">Proprietário</span>
-          </div>
-        </div>
-        
-        <div class="mb-8">
-          <h4 class="text-white text-[15px] font-medium mb-3 select-none">Acesso geral</h4>
-          <div class="flex items-start justify-between gap-3">
-            <div class="flex items-start gap-3 flex-1 min-w-0">
-              <div 
-                class="w-[36px] h-[36px] rounded-full flex items-center justify-center shrink-0 mt-0.5 transition-colors"
-                :class="generalAccess === 'restricted' ? 'bg-white/10 text-white' : 'bg-[#0f5132] text-[#22c55e]'"
-              >
-                <FontAwesomeIcon :icon="generalAccess === 'restricted' ? faLock : faGlobe" class="text-sm" />
-              </div>
-              
-              <div class="flex-1 flex flex-col min-w-0 relative">
-                <div 
-                  @click.stop="toggleAccessMenu"
-                  class="flex items-center gap-1.5 text-white text-sm font-medium cursor-pointer hover:text-white/80 w-fit select-none"
-                >
-                  <span>{{ generalAccess === 'restricted' ? 'Restrito' : 'Qualquer pessoa com o link' }}</span>
-                  <FontAwesomeIcon :icon="faChevronDown" class="text-[9px]" />
-                </div>
-                <span class="text-gray-400 text-xs mt-0.5 select-none">
-                  {{ generalAccess === 'restricted' ? 'Só as pessoas com acesso podem abrir usando o link.' : 'Qualquer pessoa na Internet com o link pode ver' }}
-                </span>
-                
-                <Transition name="dropdown-fade">
-                  <div 
-                    v-if="isAccessDropdownOpen"
-                    class="absolute left-0 top-6 min-w-[240px] bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl z-50 py-1.5 flex flex-col overflow-hidden text-left"
-                  >
-                    <button 
-                      @click="selectAccess('restricted')"
-                      class="w-full px-4 py-2.5 text-left text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer font-medium"
-                    >
-                      <div class="w-4 h-4 flex items-center justify-center shrink-0">
-                        <FontAwesomeIcon v-if="generalAccess === 'restricted'" :icon="faCheck" class="text-[#22c55e] text-xs" />
-                      </div>
-                      <span>Restrito</span>
-                    </button>
-                    
-                    <button 
-                      @click="selectAccess('public')"
-                      class="w-full px-4 py-2.5 text-left text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer font-medium"
-                    >
-                      <div class="w-4 h-4 flex items-center justify-center shrink-0">
-                        <FontAwesomeIcon v-if="generalAccess === 'public'" :icon="faCheck" class="text-[#22c55e] text-xs" />
-                      </div>
-                      <span>Qualquer pessoa com o link</span>
-                    </button>
-                  </div>
-                </Transition>
-              </div>
-            </div>
-            
-            <div v-if="generalAccess === 'public'" class="shrink-0 flex items-center gap-1.5 text-white text-sm font-medium cursor-pointer hover:text-white/80 select-none mt-1">
-              <span>Leitor</span>
-              <FontAwesomeIcon :icon="faChevronDown" class="text-[9px]" />
-            </div>
-          </div>
-        </div>
-        
+    <div
+      @click.stop
+      class="bg-[#1e1e1e] border border-white/10 rounded-3xl w-full max-w-[550px] p-6 relative shadow-2xl text-left"
+    >
+      <div class="flex items-center justify-between mb-6">
+        <h3
+          class="text-white text-[20px] font-normal leading-normal select-none"
+        >
+          Compartilhar "{{ file.name }}"
+        </h3>
+
+        <button
+          @click="close()"
+          :disabled="isSalving"
+          class="disabled:cursor-not-allowed text-gray-400 hover:text-white cursor-pointer p-1.5 hover:bg-white/5 rounded-lg transition-colors"
+        >
+          <FontAwesomeIcon :icon="faXmark" class="w-4 h-4" />
+        </button>
+      </div>
+
+      <div class="mb-5 flex gap-2">
+        <Input
+          v-model="emailInput"
+          text="Adicione participantes (email)"
+          :error="emailError"
+          :on-key-enter="handleAddEmail"
+        />
+        <button
+          v-if="emailInput.trim().length > 0"
+          @click="handleAddEmail"
+          :disabled="isSearchingUser"
+          class="self-start h-[52px] px-6 bg-[#009900] hover:bg-[#22c55e] disabled:bg-gray-800 disabled:text-gray-500 text-white text-sm font-semibold rounded-full transition-colors cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
+        >
+          <FontAwesomeIcon
+            v-if="isSearchingUser"
+            :icon="faSpinner"
+            class="animate-spin"
+          />
+          <span>Adicionar</span>
+        </button>
+      </div>
+
+      <div class="mb-6 flex flex-col gap-4">
+        <h4 class="text-white text-[15px] font-medium select-none mb-1">
+          Pessoas com acesso
+        </h4>
         <div class="flex items-center justify-between">
-          <button 
-            @click="copyShareUrl"
-            class="px-5 py-2.5 border border-white/20 hover:border-white/30 hover:bg-white/5 text-white text-sm font-semibold rounded-full transition-all cursor-pointer flex items-center gap-2 animate-fade-in"
+          <div class="flex items-center gap-3">
+            <img
+              :src="user?.avatarUrl || UserImage"
+              class="rounded-full size-10 object-cover border border-white/10"
+              alt="Avatar"
+            />
+            <div class="flex flex-col">
+              <span class="text-white text-sm font-normal"
+                >{{ user?.name }} (você)</span
+              >
+              <span class="text-gray-400 text-xs">{{ user?.email }}</span>
+            </div>
+          </div>
+          <span class="text-gray-500 text-sm font-normal select-none"
+            >Proprietário</span
           >
-            <FontAwesomeIcon :icon="isCopied ? faCheck : faLink" class="text-xs" />
-            <span>{{ isCopied ? "Link copiado" : "Copiar link" }}</span>
-          </button>
-          
-          <button 
-            @click="close"
-            class="px-6 py-2.5 bg-[#009900] hover:bg-[#22c55e] text-white text-sm font-semibold rounded-full transition-colors cursor-pointer"
-          >
-            Concluir
-          </button>
+        </div>
+
+        <div
+          v-for="(sharedUser, index) in sharedUsers"
+          :key="sharedUser.email"
+          class="flex items-center justify-between"
+        >
+          <div class="flex items-center gap-3">
+            <img
+              :src="sharedUser.avatarUrl || UserImage"
+              class="rounded-full size-10 object-cover border border-white/10"
+              alt="Avatar"
+            />
+            <div class="flex flex-col">
+              <span class="text-white text-sm font-normal">{{
+                sharedUser.name
+              }}</span>
+              <span class="text-gray-400 text-xs">{{ sharedUser.email }}</span>
+            </div>
+          </div>
+
+          <div class="relative">
+            <button
+              @click.stop="toggleUserRoleMenu(index, $event)"
+              class="flex items-center gap-1.5 text-white text-sm font-medium cursor-pointer hover:text-white/80 select-none py-1.5 px-3 bg-white/5 border border-white/10 rounded-full transition-colors"
+            >
+              <span>{{
+                sharedUser.role === "reader" ? "Leitor" : "Editor"
+              }}</span>
+              <FontAwesomeIcon :icon="faChevronDown" class="text-[9px]" />
+            </button>
+
+            <Transition name="dropdown-fade">
+              <div
+                v-if="openRoleMenuIndex === index"
+                class="absolute right-0 top-9 min-w-[180px] bg-[#1a1a1a] border border-white/10 rounded-xl z-50 py-1.5 flex flex-col overflow-hidden text-right"
+              >
+                <button
+                  @click="changeUserRole(index, 'reader')"
+                  class="w-full px-4 py-2.5 text-left text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer font-medium"
+                >
+                  <div
+                    class="w-4 h-4 flex items-center justify-center shrink-0"
+                  >
+                    <FontAwesomeIcon
+                      v-if="sharedUser.role === 'reader'"
+                      :icon="faCheck"
+                      class="text-[#22c55e] text-xs"
+                    />
+                  </div>
+                  <span>Leitor</span>
+                </button>
+
+                <button
+                  @click="changeUserRole(index, 'editor')"
+                  class="w-full px-4 py-2.5 text-left text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer font-medium"
+                >
+                  <div
+                    class="w-4 h-4 flex items-center justify-center shrink-0"
+                  >
+                    <FontAwesomeIcon
+                      v-if="sharedUser.role === 'editor'"
+                      :icon="faCheck"
+                      class="text-[#22c55e] text-xs"
+                    />
+                  </div>
+                  <span>Editor</span>
+                </button>
+
+                <div class="border-t border-white/5 my-1"></div>
+
+                <button
+                  @click="removeUserAccess(index)"
+                  class="w-full px-4 py-2 text-left text-sm text-red-500 hover:text-red-400 hover:bg-white/5 flex items-center transition-colors cursor-pointer"
+                >
+                  <span>Remover acesso</span>
+                </button>
+              </div>
+            </Transition>
+          </div>
         </div>
       </div>
-    </Transition>
+
+      <div class="mb-8">
+        <h4 class="text-white text-[15px] font-medium mb-3 select-none">
+          Acesso geral
+        </h4>
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex items-start gap-3 flex-1 min-w-0">
+            <div
+              class="w-[36px] h-[36px] rounded-full flex items-center justify-center shrink-0 mt-0.5 transition-colors"
+              :class="
+                generalAccess === 'restricted'
+                  ? 'bg-white/10 text-white'
+                  : 'bg-[#0f5132] text-[#22c55e]'
+              "
+            >
+              <FontAwesomeIcon
+                :icon="generalAccess === 'restricted' ? faLock : faGlobe"
+                class="text-sm"
+              />
+            </div>
+
+            <div class="flex-1 flex flex-col min-w-0 relative">
+              <div
+                @click.stop="toggleAccessMenu"
+                class="flex items-center gap-1.5 text-white text-sm font-medium cursor-pointer hover:text-white/80 w-fit select-none"
+              >
+                <span>{{
+                  generalAccess === "restricted"
+                    ? "Restrito"
+                    : "Qualquer pessoa com o link"
+                }}</span>
+                <FontAwesomeIcon :icon="faChevronDown" class="text-[9px]" />
+              </div>
+              <span class="text-gray-400 text-xs mt-0.5 select-none">
+                {{
+                  generalAccess === "restricted"
+                    ? "Só as pessoas com acesso podem abrir usando o link."
+                    : "Qualquer pessoa na Internet com o link pode ver"
+                }}
+              </span>
+
+              <Transition name="dropdown-fade">
+                <div
+                  v-if="isAccessDropdownOpen"
+                  class="absolute left-0 top-6 min-w-[240px] bg-[#1a1a1a] border border-white/10 rounded-xl z-50 py-1.5 flex flex-col overflow-hidden text-left"
+                >
+                  <button
+                    @click="selectAccess('restricted')"
+                    class="w-full px-4 py-2.5 text-left text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer font-medium"
+                  >
+                    <div
+                      class="w-4 h-4 flex items-center justify-center shrink-0"
+                    >
+                      <FontAwesomeIcon
+                        v-if="generalAccess === 'restricted'"
+                        :icon="faCheck"
+                        class="text-[#22c55e] text-xs"
+                      />
+                    </div>
+                    <span>Restrito</span>
+                  </button>
+
+                  <button
+                    @click="selectAccess('public')"
+                    class="w-full px-4 py-2.5 text-left text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer font-medium"
+                  >
+                    <div
+                      class="w-4 h-4 flex items-center justify-center shrink-0"
+                    >
+                      <FontAwesomeIcon
+                        v-if="generalAccess === 'public'"
+                        :icon="faCheck"
+                        class="text-[#22c55e] text-xs"
+                      />
+                    </div>
+                    <span>Qualquer pessoa com o link</span>
+                  </button>
+                </div>
+              </Transition>
+            </div>
+          </div>
+
+          <div
+            v-if="generalAccess === 'public'"
+            class="relative shrink-0 mt-1"
+          >
+            <button
+              @click.stop="togglePublicRoleMenu"
+              class="flex items-center gap-1.5 text-white text-sm font-medium cursor-pointer hover:text-white/80 select-none py-1.5 px-3 bg-white/5 border border-white/10 rounded-full transition-colors"
+            >
+              <span>{{ publicRole === 'reader' ? 'Leitor' : 'Editor' }}</span>
+              <FontAwesomeIcon :icon="faChevronDown" class="text-[9px]" />
+            </button>
+
+            <Transition name="dropdown-fade">
+              <div
+                v-if="isPublicRoleMenuOpen"
+                class="absolute right-0 top-9 min-w-[180px] bg-[#1a1a1a] border border-white/10 rounded-xl z-50 py-1.5 flex flex-col overflow-hidden text-right"
+              >
+                <button
+                  @click="changePublicRole('reader')"
+                  class="w-full px-4 py-2.5 text-left text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer font-medium"
+                >
+                  <div
+                    class="w-4 h-4 flex items-center justify-center shrink-0"
+                  >
+                    <FontAwesomeIcon
+                      v-if="publicRole === 'reader'"
+                      :icon="faCheck"
+                      class="text-[#22c55e] text-xs"
+                    />
+                  </div>
+                  <span>Leitor</span>
+                </button>
+
+                <button
+                  @click="changePublicRole('editor')"
+                  class="w-full px-4 py-2.5 text-left text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer font-medium"
+                >
+                  <div
+                    class="w-4 h-4 flex items-center justify-center shrink-0"
+                  >
+                    <FontAwesomeIcon
+                      v-if="publicRole === 'editor'"
+                      :icon="faCheck"
+                      class="text-[#22c55e] text-xs"
+                    />
+                  </div>
+                  <span>Editor</span>
+                </button>
+              </div>
+            </Transition>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between">
+        <button
+          @click="copyShareUrl"
+          class="px-5 py-2.5 border border-white/20 hover:border-white/30 hover:bg-white/5 text-white text-sm font-semibold rounded-full cursor-pointer flex items-center gap-2"
+        >
+          <FontAwesomeIcon
+            :icon="isCopied ? faCheck : faLink"
+            class="text-xs"
+          />
+          <span>{{ isCopied ? "Link copiado" : "Copiar link" }}</span>
+        </button>
+
+        <button
+          @click="handleSave"
+          class="px-6 py-2.5 bg-[#009900] hover:bg-[#22c55e] text-white text-sm font-semibold rounded-full transition-colors cursor-pointer"
+        >
+          Salvar
+        </button>
+      </div>
+    </div>
   </Overlay>
 </template>
 
@@ -195,7 +518,9 @@ const selectAccess = (type: 'restricted' | 'public') => {
 
 .modal-fade-enter-active,
 .modal-fade-leave-active {
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
 }
 
 .modal-fade-enter-from,
@@ -206,7 +531,9 @@ const selectAccess = (type: 'restricted' | 'public') => {
 
 .dropdown-fade-enter-active,
 .dropdown-fade-leave-active {
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
 }
 
 .dropdown-fade-enter-from,
