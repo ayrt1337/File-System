@@ -1,4 +1,4 @@
-import { defineStore } from "pinia";
+import { defineStore, getActivePinia } from "pinia";
 import type { User } from "../types/user";
 import { jwtDecode } from "jwt-decode";
 
@@ -44,10 +44,22 @@ export const useAuthStore = defineStore("auth", {
       localStorage.setItem("user", JSON.stringify(this.user));
     },
     logout() {
-      this.user = null;
-      this.token = "";
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+      const pinia = getActivePinia() as any;
+      if (pinia && pinia._s) {
+        const uploadStore = pinia._s.get("upload");
+        if (uploadStore && typeof uploadStore.cancelAllUploads === "function") {
+          uploadStore.cancelAllUploads();
+        }
+
+        pinia._s.forEach((store: any) => {
+          if (typeof store.$reset === "function") {
+            store.$reset();
+          }
+        });
+      }
+
+      localStorage.clear();
+      sessionStorage.clear();
     },
   },
 });

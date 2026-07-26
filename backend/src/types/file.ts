@@ -1,1 +1,1 @@
-export type FileStatus = "PENDING" | "ACTIVE" | "TRASH";
+export type FileStatus = "ACTIVE" | "TRASH";

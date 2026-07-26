@@ -28,6 +28,7 @@ export const API_ROUTES = {
     RENAME: `${FILES_PREFIX}/rename`,
     STATUS: `${FILES_PREFIX}/status`,
     FAVORITE: `${FILES_PREFIX}/favorite`,
+    GET_FILE: `/file/${PARAMS.ID}`
   }
 } as const;
 

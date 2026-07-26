@@ -39,7 +39,7 @@ export async function startUploadWorker() {
               );
 
               const parts = s3Key.split("/");
-              if (parts[0] === "uploads" && parts.length >= 3) {
+              if (parts[0] === "files" && parts.length >= 3) {
                 const userId = parts[1];
                 const filenameWithTimestamp = parts[2];
 
@@ -58,23 +58,19 @@ export async function startUploadWorker() {
                 console.log(
                   `Confirmando upload do arquivo no PostgreSQL: ${s3Key}`,
                 );
+                
+                const hasPreview = ["jpg", "jpeg", "png", "gif", "webp", "svg", "mp4", "webm", "mkv", "avi", "mov"].includes(format);
+                const preview = hasPreview ? s3Key.replace("files", "previews") : null;
 
-                await database.files.upsert({
-                  where: {
-                    userId,
-                    s3Key: s3Key,
-                  },
-                  update: {
-                    size: size,
-                    status: "ACTIVE" as FileStatus,
-                  },
-                  create: {
+                await database.files.create({
+                  data: {
                     name: originalName,
                     format: format,
                     size: size,
                     s3Key: s3Key,
                     userId: userId,
                     status: "ACTIVE" as FileStatus,
+                    preview,
                   },
                 });
               } else {

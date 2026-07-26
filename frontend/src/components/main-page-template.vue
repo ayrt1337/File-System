@@ -8,6 +8,7 @@ import Toast from "./toast.vue";
 import { useLoading } from "../composables/use-loading";
 import { useServerError } from "../composables/use-server-error";
 import { useUnauthorized } from "../composables/use-unauthorized";
+import UploadProgressManager from "./upload-progress-manager.vue";
 
 interface Props {
   header: boolean;
@@ -29,6 +30,7 @@ const { showUnauthorized } = useUnauthorized();
 </script>
 
 <template>
+  <UploadProgressManager />
   <Toast />
   <LoadingSpinner v-if="showLoading" />
 

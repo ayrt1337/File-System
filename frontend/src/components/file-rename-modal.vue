@@ -55,8 +55,8 @@ const submitRename = async () => {
       });
     }
     showToast("Arquivo renomeado com sucesso!", "success");
-    await props.success(newFileName.value.trim());
     props.close();
+    await props.success(newFileName.value.trim());
   } catch (error: any) {
     console.error("Erro ao renomear arquivo:", error);
     renameError.value =

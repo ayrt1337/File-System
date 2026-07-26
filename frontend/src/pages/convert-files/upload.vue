@@ -15,14 +15,14 @@ import {
   faTriangleExclamation,
   faDownload,
 } from "@fortawesome/free-solid-svg-icons";
-import axios from "axios";
 import { useToast } from "../../composables/use-toast.ts";
-import { getFilePreview } from "../../utils/get-file-preview";
+import { useUploadStore } from "../../stores/upload";
 
 const { showToast } = useToast();
 
 const route = useRoute();
 const router = useRouter();
+const uploadStore = useUploadStore();
 
 const type = computed(() => route.query.type as string);
 const fromFormat = computed(() => route.query.from as string);
@@ -74,7 +74,10 @@ const getTypeName = () => {
   }
 };
 
-const validateAndSetFile = (file: File) => {
+const validateAndSetFile = (fileOrFileList: File | FileList) => {
+  const file = fileOrFileList instanceof FileList ? fileOrFileList[0] : fileOrFileList;
+  if (!file) return;
+
   if (fromFormat.value) {
     const ext = "." + fromFormat.value.toLowerCase();
     if (!file.name.toLowerCase().endsWith(ext)) {
@@ -187,22 +190,10 @@ const handleSaveFile = async () => {
 
   try {
     const file = new File([fileBlob], convertedFileName.value, { type: fileBlob.type });
-    const filePreview = await getFilePreview(file);
 
-    const { data } = await api.post(API_ROUTES.FILE.UPLOAD_URL, {
-      fileName: file.name,
-      contentType: file.type,
-      size: file.size,
-      preview: filePreview,
-    });
+    uploadStore.uploadFiles([file]);
 
-    await axios.put(data.url, file, {
-      headers: {
-        "Content-Type": file.type,
-      },
-    });
-
-    showToast("Arquivo salvo com sucesso!", "success");
+    showToast("Conversão salva! Upload iniciado.", "success");
   } catch (error) {
     console.error("Erro no upload do arquivo:", error);
     showToast("Falha ao salvar arquivo.", "error");

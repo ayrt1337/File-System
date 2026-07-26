@@ -28,14 +28,16 @@ export const useFilesServices = () => {
     isFavorite: boolean,
   ): Promise<boolean> => {
     try {
-      await api.patch(API_ROUTES.FILE.FAVORITE, {
-        fileId,
-        isFavorite,
-      });
       const statusText = isFavorite
         ? "adicionado aos favoritos"
         : "removido dos favoritos";
       showToast(`Arquivo ${statusText}!`, "success");
+
+      await api.patch(API_ROUTES.FILE.FAVORITE, {
+        fileId,
+        isFavorite,
+      });
+      
       return true;
     } catch (error: any) {
       console.error("Erro ao atualizar favorito:", error);
@@ -49,11 +51,13 @@ export const useFilesServices = () => {
 
   const deleteFile = async (fileId: string): Promise<boolean> => {
     try {
+      showToast("Arquivo movido para a lixeira!", "success");
+
       await api.patch(API_ROUTES.FILE.STATUS, {
         fileId,
         status: "TRASH",
       });
-      showToast("Arquivo movido para a lixeira!", "success");
+      
       return true;
     } catch (error: any) {
       console.error("Erro ao mover arquivo para a lixeira:", error);
@@ -68,11 +72,13 @@ export const useFilesServices = () => {
 
   const restoreFile = async (fileId: string): Promise<boolean> => {
     try {
+      showToast("Arquivo restaurado com sucesso!", "success");
+
       await api.patch(API_ROUTES.FILE.STATUS, {
         fileId,
         status: "ACTIVE",
       });
-      showToast("Arquivo restaurado com sucesso!", "success");
+      
       return true;
     } catch (error: any) {
       console.error("Erro ao restaurar arquivo:", error);

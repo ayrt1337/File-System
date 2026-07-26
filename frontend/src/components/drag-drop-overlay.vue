@@ -6,11 +6,13 @@ import { faUpload } from "@fortawesome/free-solid-svg-icons";
 interface Props {
   disabled?: boolean;
   subtitle?: string;
-  setFile: (file: File) => void;
+  acceptsMultipleFiles?: boolean;
+  setFile: (file: File | FileList) => void;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   disabled: false,
+  acceptsMultipleFiles: false
 });
 
 const isDragging = ref(false);
@@ -47,7 +49,10 @@ const onWindowDrop = (e: DragEvent) => {
   dragCounter = 0;
 
   if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
-    const file = e.dataTransfer.files[0];
+    let file;
+    if (!props.acceptsMultipleFiles) file = e.dataTransfer.files[0];
+    else file = e.dataTransfer.files;
+    
     if (file) props.setFile(file);
   }
 };

@@ -18,9 +18,12 @@ import { API_ROUTES } from "../../routing/routes";
 import type { UserFile } from "../../types/file";
 import { useFilesServices } from "../../services/files-services.ts";
 import FileShareModal from "../../components/file-share-modal.vue";
+import DragDropOverlay from "../../components/drag-drop-overlay.vue";
+import { useUploadStore } from "../../stores/upload";
 
 const { showLoadingPage } = useLoading();
 const { downloadFile, toggleFavorite, deleteFile } = useFilesServices();
+const uploadStore = useUploadStore();
 
 const files = ref<UserFile[]>([]);
 const searchQuery = ref("");
@@ -126,6 +129,14 @@ const handleRenameClick = (file: UserFile) => {
   isRenameModalOpen.value = true;
   openMenuIndex.value = null;
 };
+
+const handleDroppedFile = (file: File | FileList) => {
+  if (file instanceof FileList) {
+    uploadStore.uploadFiles(file);
+  } else {
+    uploadStore.uploadFiles([file]);
+  }
+};
 </script>
 
 <template>
@@ -136,6 +147,11 @@ const handleRenameClick = (file: UserFile) => {
     :sidebar="true"
     title="Meus Arquivos"
   >
+    <DragDropOverlay
+      :set-file="handleDroppedFile"
+      :accepts-multiple-files="true"
+      subtitle="Solte seus arquivos aqui para fazer upload"
+    />
     <div class="flex flex-col gap-6 py-6">
       <div
         v-if="hasProcessingFiles"

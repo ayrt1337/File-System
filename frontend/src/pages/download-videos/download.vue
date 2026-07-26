@@ -20,12 +20,12 @@ import { api } from "../../services/api";
 import type { Preview } from "../../types/video-preview.ts";
 import Input from "../../components/input.vue";
 import { API_ROUTES } from "../../routing/routes";
-import axios from "axios";
-import { getFilePreview } from "../../utils/get-file-preview";
+import { useUploadStore } from "../../stores/upload";
 
 const route = useRoute();
 const router = useRouter();
 const { showToast } = useToast();
+const uploadStore = useUploadStore();
 
 const platform = computed(() => (route.query.source as string) || "youtube");
 
@@ -240,21 +240,7 @@ const handleSaveFile = async () => {
       const contentType = response.data.type || `video/${option.format}`;
       const file = new File([response.data], fileName, { type: contentType });
 
-      const filePreview = await getFilePreview(file);
-      const { data } = await api.post(API_ROUTES.FILE.UPLOAD_URL, {
-        fileName: file.name,
-        contentType: file.type,
-        size: file.size,
-        preview: filePreview,
-      });
-
-      await axios.put(data.url, file, {
-        headers: {
-          "Content-Type": file.type,
-        },
-      });
-
-      showToast("Arquivo salvo com sucesso!", "success");
+      uploadStore.uploadFiles([file]);
     }
   } catch (error) {
     console.error("Erro no download:", error);

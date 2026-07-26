@@ -1,16 +1,15 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faFile, faStar } from '@fortawesome/free-regular-svg-icons';
 import { faUsers, faArrowRightArrowLeft, faTrash, faArrowRightFromBracket, faDownload, faGear, faUser } from '@fortawesome/free-solid-svg-icons';
-import { getFilePreview } from '../utils/get-file-preview';
 import { router } from '../router';
 import { useRoute } from 'vue-router';
 import { useLoading } from '../composables/use-loading';
 import { useToast } from '../composables/use-toast';
 import { api } from '../services/api';
 import { useAuthStore } from '../stores/auth';
+import { useUploadStore } from '../stores/upload';
 import { API_ROUTES } from '../routing/routes';
 
 interface Props {
@@ -20,6 +19,7 @@ interface Props {
 const props = defineProps<Props>();
 
 const authStore = useAuthStore();
+const uploadStore = useUploadStore();
 const { showToast } = useToast();
 const { showLoadingPage } = useLoading();
 const route = useRoute();
@@ -39,7 +39,6 @@ const handleLogout = async () => {
 }
 
 const fileInputRef = ref<HTMLInputElement | null>(null);
-const isUploading = ref(false);
 
 const triggerFileInput = () => {
     fileInputRef.value?.click();
@@ -47,37 +46,13 @@ const triggerFileInput = () => {
 
 const handleFileChange = async (event: Event) => {
     const target = event.target as HTMLInputElement;
-    const file = target.files?.[0];
-    if (!file) return;
+    const files = target.files;
+    if (!files || files.length === 0) return;
 
-    isUploading.value = true;
+    uploadStore.uploadFiles(files);
 
-    try {
-        const filePreview = await getFilePreview(file);
-        const { data } = await api.post(API_ROUTES.FILE.UPLOAD_URL, {
-            fileName: file.name,
-            contentType: file.type,
-            size: file.size,
-            preview: filePreview
-        });
-
-        await axios.put(data.url, file, {
-            headers: {
-                "Content-Type": file.type,
-            },
-        });
-
-        if (props.getFiles) await props.getFiles();
-
-        showToast("Arquivo enviado com sucesso!", "success");
-    } catch (error) {
-        console.error("Erro no upload do arquivo:", error);
-        showToast("Falha ao enviar arquivo.", "error");
-    } finally {
-        isUploading.value = false;
-        if (fileInputRef.value) {
-            fileInputRef.value.value = "";
-        }
+    if (fileInputRef.value) {
+        fileInputRef.value.value = "";
     }
 };
 </script>
@@ -90,16 +65,12 @@ const handleFileChange = async (event: Event) => {
             </div>
 
             <div 
-                @click="!isUploading ? triggerFileInput() : null" 
-                :class="[
-                    isUploading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer',
-                    'w-auto py-4 px-7 mt-5 inline-block bg-[#363333ac] rounded-[10px] select-none transition-all duration-300'
-                ]"
+                @click="triggerFileInput" 
+                class="cursor-pointer w-auto py-4 px-7 mt-5 inline-block bg-[#363333ac] rounded-[10px] select-none transition-all duration-300"
             >
                 <div class="flex items-center">
-                    <p v-if="!isUploading" class="text-[30px] mr-3">+</p>
-                    <div v-else class="mr-3 animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
-                    <p class="text-[25px]">{{ isUploading ? "Enviando..." : "Novo" }}</p>
+                    <p class="text-[30px] mr-3">+</p>
+                    <p class="text-[25px]">Novo</p>
                 </div>
             </div>
             <input 
@@ -107,6 +78,7 @@ const handleFileChange = async (event: Event) => {
                 ref="fileInputRef" 
                 style="display: none" 
                 @change="handleFileChange" 
+                multiple
             />
 
             <div class="flex flex-col mt-10">

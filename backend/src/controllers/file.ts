@@ -3,6 +3,8 @@ import { AppError } from "../errors/app-error.js";
 import {
   getUploadPresignedUrl,
   getDownloadPresignedUrl,
+  getPreviewPresignedUrl,
+  getTotalUserFiles,
 } from "../services/s3-service.js";
 import database from "../config/database.js";
 import { FileStatus } from "../types/file.js";
@@ -12,7 +14,10 @@ export class FileController {
   async getMyFiles(req: Request, res: Response, next: NextFunction) {
     try {
       const user = (req as any).user;
-      const { status, isFavorite } = req.query as { status?: string; isFavorite?: string };
+      const { status, isFavorite } = req.query as {
+        status?: string;
+        isFavorite?: string;
+      };
 
       let targetStatus: FileStatus = "ACTIVE";
       if (status) {
@@ -49,16 +54,34 @@ export class FileController {
         },
       });
 
-      const pendingFiles = await database.files.count({
+      const databaseUserFiles = await database.files.count({
         where: {
-          userId: user.id,
-          status: "PENDING",
+          userId: user.id
         },
       });
 
+      const s3UserFiles = await getTotalUserFiles(user.id);
+
+      const filesWithPreviews = await Promise.all(
+        files.map(async (file) => {
+          let signedPreviewUrl = null;
+          if (file.preview) {
+            try {
+              signedPreviewUrl = await getPreviewPresignedUrl(file.preview);
+            } catch (err) {
+              console.error(`Erro ao gerar URL do preview para ${file.preview}:`, err);
+            }
+          }
+          return {
+            ...file,
+            preview: signedPreviewUrl,
+          };
+        })
+      );
+
       res.status(200).json({
-        files,
-        hasProcessingFiles: pendingFiles > 0,
+        files: filesWithPreviews,
+        hasProcessingFiles: s3UserFiles > databaseUserFiles,
       });
     } catch (error: any) {
       next(error);
@@ -77,20 +100,13 @@ export class FileController {
         user.id,
         fileName,
         contentType,
+        !!preview
       );
 
-      await database.files.create({
-        data: {
-          name: fileName ? fileName : "",
-          format: contentType ? contentType : "",
-          preview: preview ? preview : "",
-          status: "PENDING" as FileStatus,
-          s3Key: result.s3Key,
-          userId: user.id,
-          size,
-        },
+      res.status(200).json({
+        url: result.url,
+        previewUrl: result.previewUrl
       });
-      res.status(200).json({ url: result.url });
     } catch (error: any) {
       next(error);
     }
@@ -116,7 +132,10 @@ export class FileController {
       }
 
       if (file.status !== "ACTIVE") {
-        throw new AppError("Só é possível fazer download de arquivos ativos!", 400);
+        throw new AppError(
+          "Só é possível fazer download de arquivos ativos!",
+          400,
+        );
       }
 
       const url = await getDownloadPresignedUrl(file.s3Key, file.name);
@@ -173,7 +192,10 @@ export class FileController {
   async updateFileStatus(req: Request, res: Response, next: NextFunction) {
     try {
       const user = (req as any).user;
-      const { fileId, status } = req.body as { fileId: string; status: FileStatus };
+      const { fileId, status } = req.body as {
+        fileId: string;
+        status: FileStatus;
+      };
 
       if (status !== "ACTIVE" && status !== "TRASH") {
         throw new AppError("Status de arquivo inválido!", 400);
@@ -191,11 +213,17 @@ export class FileController {
       }
 
       if (status === "ACTIVE" && file.status !== "TRASH") {
-        throw new AppError("Só é possível restaurar um arquivo que está na lixeira!", 400);
+        throw new AppError(
+          "Só é possível restaurar um arquivo que está na lixeira!",
+          400,
+        );
       }
 
       if (status === "TRASH" && file.status !== "ACTIVE") {
-        throw new AppError("Só é possível mover para a lixeira arquivos ativos!", 400);
+        throw new AppError(
+          "Só é possível mover para a lixeira arquivos ativos!",
+          400,
+        );
       }
 
       await database.files.update({
@@ -260,6 +288,59 @@ export class FileController {
       });
 
       res.status(200).json("success");
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getFile(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = (req as any).user;
+      const id = req.params[PARAMS.ID] as string;
+
+      if (!id) {
+        throw new AppError("Id do arquivo não enviado!", 400);
+      }
+
+      const file = await database.files.findFirst({
+        where: {
+          id,
+          status: "ACTIVE" as FileStatus,
+        },
+      });
+
+      if (!file) {
+        throw new AppError("Arquivo não encontrado!", 404);
+      }
+
+      if (!file.isPublic && file.userId !== user.id) {
+        throw new AppError("Não autorizado!", 403);
+      }
+
+      let signedPreviewUrl = null;
+      if (file.preview) {
+        try {
+          signedPreviewUrl = await getPreviewPresignedUrl(file.preview);
+        } catch (err) {
+          console.error(`Erro ao gerar URL do preview para ${file.preview}:`, err);
+        }
+      }
+
+      const obj = {
+        file: {
+          id: file.id,
+          name: file.name,
+          preview: signedPreviewUrl,
+          format: file.format,
+          size: file.size,
+          createdAt: file.createdAt,
+          updatedAt: file.lastUpdate
+        },
+      };
+
+      file.userId !== user.id ? obj["isFavorite"] = file.isFavorite : null;
+
+      res.status(200).json({ obj });
     } catch (error) {
       next(error);
     }

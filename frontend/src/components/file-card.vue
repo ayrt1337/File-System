@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref, watch } from "vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import {
   faEllipsis,
@@ -38,6 +39,11 @@ const props = withDefaults(
 );
 
 const { getFileIcon, getFileBgClass } = useFilesUtils();
+const hasImageError = ref(false);
+
+watch(() => props.file, () => {
+  hasImageError.value = false;
+});
 </script>
 
 <template>
@@ -87,8 +93,9 @@ const { getFileIcon, getFileBgClass } = useFilesUtils();
       class="flex-1 bg-[#121212]/80 border border-white/5 rounded-xl flex items-center justify-center relative overflow-hidden"
     >
       <img
-        v-if="file.preview"
+        v-if="file.preview && !hasImageError"
         :src="file.preview"
+        @error="hasImageError = true"
         class="w-full h-full object-cover"
         alt="File preview"
       />
