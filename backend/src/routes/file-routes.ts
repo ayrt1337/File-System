@@ -24,5 +24,7 @@ fileRoutes.get(ROUTES.FILE.DOWNLOAD, fileController.getDownloadUrl);
 fileRoutes.patch(ROUTES.FILE.RENAME, fileController.renameFile);
 fileRoutes.patch(ROUTES.FILE.STATUS, fileController.updateFileStatus);
 fileRoutes.patch(ROUTES.FILE.FAVORITE, fileController.updateFavoriteStatus);
+fileRoutes.patch(ROUTES.FILE.ACCESS, fileController.updateFileAccess);
+fileRoutes.get(ROUTES.FILE.SHARED_FILES, fileController.getSharedFiles);
 
 export default fileRoutes;

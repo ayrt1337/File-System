@@ -29,6 +29,8 @@ export const ROUTES = {
     RENAME: `${FILES_PREFIX}/rename`,
     STATUS: `${FILES_PREFIX}/status`,
     FAVORITE: `${FILES_PREFIX}/favorite`,
-    GET_FILE: `/file/:${PARAMS.ID}`
+    GET_FILE: `/file/:${PARAMS.ID}`,
+    ACCESS: `${FILES_PREFIX}/access`,
+    SHARED_FILES: "/shared-files"
   }
 } as const;

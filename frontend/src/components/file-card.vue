@@ -78,7 +78,7 @@ watch(() => props.file, () => {
       </div>
 
       <button
-        v-if="showFavorite"
+        v-if="showFavorite && file.role === 3"
         @click.stop="onToggleFavorite?.(file)"
         class="p-1 rounded-lg hover:bg-white/5 cursor-pointer shrink-0 transition-colors"
         :class="file.isFavorite ? 'text-[#fbbf24]' : 'text-gray-400 hover:text-white'"
@@ -125,6 +125,7 @@ watch(() => props.file, () => {
     >
       <template v-if="isInTrash">
         <button
+          v-if="file.role === 3"
           @click.stop="onRestore?.(file)"
           class="w-full px-4 py-2 text-left text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer"
         >
@@ -136,6 +137,7 @@ watch(() => props.file, () => {
         </button>
 
         <button
+          v-if="file.role && file.role >= 1"
           @click.stop="onInfo?.(file)"
           class="w-full px-4 py-2 text-left text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer"
         >
@@ -146,9 +148,10 @@ watch(() => props.file, () => {
           <span>Informações</span>
         </button>
 
-        <div class="h-px bg-white/5 my-1"></div>
+        <div v-if="file.role === 3" class="h-px bg-white/5 my-1"></div>
 
         <button
+          v-if="file.role === 3"
           @click.stop="onPermanentDelete?.(file)"
           class="w-full px-4 py-2 text-left text-sm text-[#ef4444] hover:bg-[#ef4444]/10 flex items-center gap-3 transition-colors cursor-pointer"
         >
@@ -159,6 +162,7 @@ watch(() => props.file, () => {
 
       <template v-else>
         <button
+          v-if="file.role && file.role >= 1"
           @click.stop="onDownload?.(file)"
           class="w-full px-4 py-2 text-left text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer"
         >
@@ -170,6 +174,7 @@ watch(() => props.file, () => {
         </button>
 
         <button
+          v-if="file.role && file.role >= 2"
           @click.stop="onRename?.(file)"
           class="w-full px-4 py-2 text-left text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer"
         >
@@ -178,6 +183,7 @@ watch(() => props.file, () => {
         </button>
 
         <button
+          v-if="file.role === 3"
           @click.stop="onShare?.(file)"
           class="w-full px-4 py-2 text-left text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer"
         >
@@ -189,6 +195,7 @@ watch(() => props.file, () => {
         </button>
 
         <button
+          v-if="file.role && file.role >= 1"
           @click.stop="onInfo?.(file)"
           class="w-full px-4 py-2 text-left text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer"
         >
@@ -199,9 +206,10 @@ watch(() => props.file, () => {
           <span>Informações sobre o arquivo</span>
         </button>
 
-        <div class="h-px bg-white/5 my-1"></div>
+        <div v-if="file.role === 3" class="h-px bg-white/5 my-1"></div>
 
         <button
+          v-if="file.role === 3"
           @click.stop="onDelete?.(file)"
           class="w-full px-4 py-2 text-left text-sm text-[#ef4444] hover:bg-[#ef4444]/10 flex items-center gap-3 transition-colors cursor-pointer"
         >

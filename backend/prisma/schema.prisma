@@ -29,6 +29,7 @@ model Files {
   size        Int           @default(0)
   s3Key       String        @unique
   isPublic    Boolean       @default(false)
+  publicRole  Int?
   isFavorite  Boolean       @default(false)
   status      String
   createdAt   DateTime      @default(now())
@@ -41,9 +42,11 @@ model Files {
 }
 
 model SharedFiles {
-  id     String @id @default(uuid())
-  user   User   @relation(fields: [userId], references: [id])
-  userId String
-  file   Files  @relation(fields: [fileId], references: [id])
-  fileId String
+  user     User   @relation(fields: [userId], references: [id])
+  userId   String
+  file     Files  @relation(fields: [fileId], references: [id])
+  fileId   String
+  userRole Int
+
+  @@id([userId, fileId])
 }

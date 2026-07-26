@@ -9,19 +9,12 @@ import { API_ROUTES } from "../routing/routes.ts";
 import { useToast } from "../composables/use-toast.ts";
 import type { UserFile } from "../types/file.ts";
 
-const props = withDefaults(
-  defineProps<{
-    isOpen: boolean;
-    file: UserFile | null;
-    close: () => void;
-    success: (newName: string) => Promise<void> | void;
-    isMock?: boolean;
-  }>(),
-  {
-    isMock: false,
-  }
-);
-
+const props = defineProps<{
+  isOpen: boolean;
+  file: UserFile | null;
+  close: () => void;
+  success: (newName: string) => Promise<void> | void;
+}>();
 const { showToast } = useToast();
 
 const newFileName = ref("");
@@ -48,12 +41,10 @@ const submitRename = async () => {
   isRenaming.value = true;
   renameError.value = "";
   try {
-    if (!props.isMock) {
-      await api.patch(API_ROUTES.FILE.RENAME, {
-        fileId: props.file.id,
-        newName: newFileName.value.trim(),
-      });
-    }
+    await api.patch(API_ROUTES.FILE.RENAME, {
+      fileId: props.file.id,
+      newName: newFileName.value.trim(),
+    });
     showToast("Arquivo renomeado com sucesso!", "success");
     props.close();
     await props.success(newFileName.value.trim());

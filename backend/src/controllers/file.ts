@@ -7,8 +7,10 @@ import {
   getTotalUserFiles,
 } from "../services/s3-service.js";
 import database from "../config/database.js";
-import { FileStatus } from "../types/file.js";
+import { FileStatus, FileRole } from "../types/file.js";
 import { PARAMS } from "../routing/routes.js";
+import { checkFilePermission, getUserFileRole } from "../services/permission-service.js";
+import { parseRole, parseRoleOptional } from "../utils/role-parser.js";
 
 export class FileController {
   async getMyFiles(req: Request, res: Response, next: NextFunction) {
@@ -49,8 +51,22 @@ export class FileController {
           format: true,
           preview: true,
           isFavorite: true,
+          isPublic: true,
+          publicRole: true,
           createdAt: true,
           lastUpdate: true,
+          sharedFiles: {
+            select: {
+              userRole: true,
+              user: {
+                select: {
+                  email: true,
+                  name: true,
+                  avatarUrl: true,
+                },
+              },
+            },
+          },
         },
       });
 
@@ -78,6 +94,13 @@ export class FileController {
           return {
             ...file,
             preview: signedPreviewUrl,
+            role: 3,
+            sharedUsers: file.sharedFiles.map((sf) => ({
+              email: sf.user.email,
+              name: sf.user.name,
+              avatarUrl: sf.user.avatarUrl,
+              role: sf.userRole === 1 ? "reader" : "editor",
+            })),
           };
         }),
       );
@@ -123,16 +146,17 @@ export class FileController {
         throw new AppError("ID do arquivo é obrigatório!", 400);
       }
 
-      const file = await database.files.findFirst({
+      const file = await database.files.findUnique({
         where: {
           id,
-          userId: user.id,
         },
       });
 
       if (!file) {
         throw new AppError("Arquivo não encontrado!", 404);
       }
+
+      await checkFilePermission(user.id, file.id, FileRole.READER);
 
       if (file.status !== "ACTIVE") {
         throw new AppError(
@@ -141,7 +165,11 @@ export class FileController {
         );
       }
 
-      const url = await getDownloadPresignedUrl(file.s3Key, file.name);
+      const url = await getDownloadPresignedUrl(
+        file.s3Key,
+        file.name,
+        file.format,
+      );
       res.status(200).json({ url });
     } catch (error: any) {
       next(error);
@@ -160,16 +188,17 @@ export class FileController {
         throw new AppError("O nome do arquivo não pode ser vazio!", 400);
       }
 
-      const file = await database.files.findFirst({
+      const file = await database.files.findUnique({
         where: {
           id: fileId,
-          userId: user.id,
         },
       });
 
       if (!file) {
         throw new AppError("Arquivo não encontrado!", 404);
       }
+
+      await checkFilePermission(user.id, file.id, FileRole.EDITOR);
 
       if (file.status !== "ACTIVE") {
         throw new AppError("Só é possível renomear arquivos ativos!", 400);
@@ -178,7 +207,6 @@ export class FileController {
       await database.files.update({
         where: {
           id: fileId,
-          userId: user.id,
         },
         data: {
           name: newName,
@@ -204,15 +232,18 @@ export class FileController {
         throw new AppError("Status de arquivo inválido!", 400);
       }
 
-      const file = await database.files.findFirst({
+      const file = await database.files.findUnique({
         where: {
           id: fileId,
-          userId: user.id,
         },
       });
 
       if (!file) {
         throw new AppError("Arquivo não encontrado!", 404);
+      }
+
+      if (file.userId !== user.id) {
+        throw new AppError("Não autorizado", 403);
       }
 
       if (status === "ACTIVE" && file.status !== "TRASH") {
@@ -232,7 +263,6 @@ export class FileController {
       await database.files.update({
         where: {
           id: fileId,
-          userId: user.id,
         },
         data: {
           status: status,
@@ -259,15 +289,18 @@ export class FileController {
         throw new AppError("O campo isFavorite deve ser um booleano!", 400);
       }
 
-      const file = await database.files.findFirst({
+      const file = await database.files.findUnique({
         where: {
           id: fileId,
-          userId: user.id,
         },
       });
 
       if (!file) {
         throw new AppError("Arquivo não encontrado!", 404);
+      }
+
+      if (file.userId !== user.id) {
+        throw new AppError("Não autorizado", 403);
       }
 
       if (file.status !== "ACTIVE") {
@@ -282,7 +315,6 @@ export class FileController {
       await database.files.update({
         where: {
           id: fileId,
-          userId: user.id,
         },
         data: {
           isFavorite: isFavorite,
@@ -310,15 +342,26 @@ export class FileController {
           id,
           status: "ACTIVE" as FileStatus,
         },
+        include: {
+          sharedFiles: {
+            include: {
+              user: {
+                select: {
+                  email: true,
+                  name: true,
+                  avatarUrl: true,
+                },
+              },
+            },
+          },
+        },
       });
 
       if (!file) {
         throw new AppError("Arquivo não encontrado!", 404);
       }
 
-      if (!file.isPublic && file.userId !== user.id) {
-        throw new AppError("Não autorizado!", 403);
-      }
+      await checkFilePermission(user.id, file.id, FileRole.READER);
 
       let signedPreviewUrl = null;
       if (file.preview) {
@@ -347,6 +390,8 @@ export class FileController {
         }
       }
 
+      const userRole = await getUserFileRole(user.id, file.id);
+
       const fileResponse = {
         id: file.id,
         name: file.name,
@@ -356,15 +401,197 @@ export class FileController {
         size: file.size,
         createdAt: file.createdAt,
         updatedAt: file.lastUpdate,
+        isFavorite: file.userId === user.id ? file.isFavorite : null,
+        isPublic: file.userId === user.id ? file.isPublic : null,
+        publicRole: file.userId === user.id ? file.publicRole : null,
+        sharedUsers: file.userId === user.id
+          ? file.sharedFiles.map((sf) => ({
+              email: sf.user.email,
+              name: sf.user.name,
+              avatarUrl: sf.user.avatarUrl,
+              role: sf.userRole === 1 ? "reader" : "editor",
+            }))
+          : [],
+        role: userRole,
       };
-
-      file.userId !== user.id
-        ? (fileResponse["isFavorite"] = file.isFavorite)
-        : null;
 
       res.status(200).json({ fileResponse });
     } catch (error) {
       next(error);
     }
   }
+
+  async updateFileAccess(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = (req as any).user;
+
+      const { usersAccess, publicAccess, fileId } = req.body as {
+        usersAccess: [{ email: string; role: any }];
+        publicAccess: { isPublic: boolean; publicRole: any };
+        fileId: string;
+      };
+
+      const file = await database.files.findUnique({
+        where: {
+          id: fileId,
+        },
+      });
+
+      if (!file) {
+        throw new AppError("Arquivo não encontrado!", 404);
+      }
+
+      if (file.userId !== user.id) {
+        throw new AppError("Não autorizado", 403);
+      }
+
+      await database.$transaction(async (tx) => {
+        await tx.sharedFiles.deleteMany({
+          where: {
+            fileId
+          }
+        });
+
+        for (const userAccess of usersAccess) {
+          const user = await tx.user.findUnique({
+            where: {
+              email: userAccess.email,
+            },
+          });
+
+          if (!user) {
+            throw new AppError(
+              `Usuário com o e-mail ${userAccess.email} não encontrado!`,
+              404,
+            );
+          }
+
+          const numericRole = parseRole(userAccess.role);
+
+          await tx.sharedFiles.create({
+            data: {
+              fileId,
+              userId: user.id,
+              userRole: numericRole,
+            }
+          });
+        }
+      });
+
+      if (publicAccess) {
+        await database.files.update({
+          where: {
+            id: fileId,
+          },
+          data: {
+            isPublic: publicAccess.isPublic,
+            publicRole: parseRoleOptional(publicAccess.publicRole),
+          },
+        });
+      }
+
+      const updatedFile = await database.files.findUnique({
+        where: { id: fileId },
+        include: {
+          sharedFiles: {
+            include: {
+              user: {
+                select: {
+                  email: true,
+                  name: true,
+                  avatarUrl: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!updatedFile) {
+        throw new AppError("Arquivo não encontrado!", 404);
+      }
+
+      const fileAccessResponse = {
+        isPublic: updatedFile.isPublic,
+        publicRole: updatedFile.publicRole,
+        sharedUsers: updatedFile.sharedFiles.map((sf) => ({
+          email: sf.user.email,
+          name: sf.user.name,
+          avatarUrl: sf.user.avatarUrl,
+          role: sf.userRole === 1 ? "reader" : "editor",
+        })),
+      };
+
+      res.status(200).json(fileAccessResponse);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getSharedFiles(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = (req as any).user;
+
+      const sharedRecords = await database.sharedFiles.findMany({
+        where: {
+          userId: user.id,
+          file: {
+            status: "ACTIVE",
+          },
+        },
+        include: {
+          file: {
+            select: {
+              id: true,
+              name: true,
+              size: true,
+              format: true,
+              preview: true,
+              createdAt: true,
+              lastUpdate: true,
+              userId: true,
+            },
+          },
+        },
+      });
+
+      const filesWithPreviews = await Promise.all(
+        sharedRecords.map(async (record) => {
+          const file = record.file;
+          let signedPreviewUrl = null;
+          if (file.preview) {
+            try {
+              signedPreviewUrl = await getFilePresignedUrl(file.preview);
+            } catch (err) {
+              console.error(
+                `Erro ao gerar URL do preview para ${file.preview}:`,
+                err,
+              );
+            }
+          }
+
+          const userRole = await getUserFileRole(user.id, file.id);
+
+          return {
+            id: file.id,
+            name: file.name,
+            size: file.size,
+            format: file.format,
+            preview: signedPreviewUrl,
+            createdAt: file.createdAt,
+            lastUpdate: file.lastUpdate,
+            role: userRole,
+          };
+        }),
+      );
+
+      res.status(200).json({
+        files: filesWithPreviews,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
+
+

@@ -59,6 +59,12 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: "/shared-with-me",
+    name: "sharedWithMe",
+    component: () => import("../pages/files/shared-with-me.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
     path: "/file/:id?",
     name: "file",
     component: () => import("../pages/files/file.vue"),

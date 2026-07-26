@@ -17,6 +17,7 @@ import Input from "./input.vue";
 import UserImage from "../assets/981d6b2e0ccb5e968a0618c8d47671da.jpg";
 import { api } from "../services/api";
 import { API_ROUTES } from "../routing/routes";
+import { useToast } from "../composables/use-toast.ts";
 
 const props = defineProps<{
   isOpen: boolean;
@@ -24,6 +25,7 @@ const props = defineProps<{
   close: () => void;
 }>();
 
+const { showToast } = useToast();
 const authStore = useAuthStore();
 const user = computed(() => authStore.getUser);
 
@@ -61,9 +63,10 @@ watch(
       isAccessDropdownOpen.value = false;
       emailInput.value = "";
       emailError.value = "";
-      sharedUsers.value = [];
+      sharedUsers.value = props.file?.sharedUsers ? JSON.parse(JSON.stringify(props.file.sharedUsers)) : [];
+      generalAccess.value = props.file?.isPublic ? "public" : "restricted";
+      publicRole.value = props.file?.publicRole === 2 ? "editor" : "reader";
       openRoleMenuIndex.value = null;
-      publicRole.value = "reader";
       isPublicRoleMenuOpen.value = false;
       window.addEventListener("click", closeRoleMenus);
     } else {
@@ -74,7 +77,7 @@ watch(
 
 const shareUrl = computed(() => {
   if (!props.file) return "";
-  return `${window.location.origin}/share/${props.file.id}`;
+  return `${window.location.origin}/file/${props.file.id}`;
 });
 
 const copyShareUrl = () => {
@@ -176,21 +179,40 @@ const changePublicRole = (role: "reader" | "editor") => {
   isPublicRoleMenuOpen.value = false;
 };
 
-const handleSave = () => {
-  const usersToShare = sharedUsers.value.map((u) => ({
-    email: u.email,
-    role: u.role,
-  }));
+const handleSave = async () => {
+  if (!props.file) return;
 
-  const publicAccess = {
-    isPublic: generalAccess.value === "public",
-    publicRole: generalAccess.value === "public" ? publicRole.value : null,
-  };
+  isSalving.value = true;
 
-  console.log("Usuários e papéis preparados para salvar:", usersToShare);
-  console.log("Configurações de acesso público:", publicAccess);
+  try {
+    const usersToShare = sharedUsers.value.map((u) => ({
+      email: u.email,
+      role: u.role,
+    }));
 
-  props.close();
+    const publicAccess = {
+      isPublic: generalAccess.value === "public",
+      publicRole: generalAccess.value === "public" ? publicRole.value : null,
+    };
+
+    const { data } = await api.patch(API_ROUTES.FILE.ACCESS, {
+      fileId: props.file.id,
+      usersAccess: usersToShare,
+      publicAccess: publicAccess,
+    });
+
+    props.file.isPublic = data.isPublic;
+    props.file.publicRole = data.publicRole;
+    props.file.sharedUsers = data.sharedUsers;
+
+    showToast("Alterações salvas!", "success")
+  } catch (error) {
+    console.error("Erro ao salvar compartilhamento:", error);
+    showToast("Erro ao salvar compartilhamento!", "error")
+  } finally {
+    props.close();
+    isSalving.value = false;
+  }
 };
 </script>
 
@@ -200,17 +222,18 @@ const handleSave = () => {
       @click.stop
       class="bg-[#1e1e1e] border border-white/10 rounded-3xl w-full max-w-[550px] p-6 relative shadow-2xl text-left"
     >
-      <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center justify-between gap-4 mb-6 min-w-0">
         <h3
-          class="text-white text-[20px] font-normal leading-normal select-none"
+          class="text-white text-[20px] font-normal leading-normal select-none truncate flex-1 min-w-0"
+          :title="`Compartilhar &quot;${file.name}&quot;`"
         >
-          Compartilhar "{{ file.name }}"
+          Compartilhar {{ file.name }}
         </h3>
 
         <button
           @click="close()"
           :disabled="isSalving"
-          class="disabled:cursor-not-allowed text-gray-400 hover:text-white cursor-pointer p-1.5 hover:bg-white/5 rounded-lg transition-colors"
+          class="disabled:cursor-not-allowed text-gray-400 hover:text-white cursor-pointer p-1.5 hover:bg-white/5 rounded-lg transition-colors shrink-0"
         >
           <FontAwesomeIcon :icon="faXmark" class="w-4 h-4" />
         </button>
@@ -423,15 +446,12 @@ const handleSave = () => {
             </div>
           </div>
 
-          <div
-            v-if="generalAccess === 'public'"
-            class="relative shrink-0 mt-1"
-          >
+          <div v-if="generalAccess === 'public'" class="relative shrink-0 mt-1">
             <button
               @click.stop="togglePublicRoleMenu"
               class="flex items-center gap-1.5 text-white text-sm font-medium cursor-pointer hover:text-white/80 select-none py-1.5 px-3 bg-white/5 border border-white/10 rounded-full transition-colors"
             >
-              <span>{{ publicRole === 'reader' ? 'Leitor' : 'Editor' }}</span>
+              <span>{{ publicRole === "reader" ? "Leitor" : "Editor" }}</span>
               <FontAwesomeIcon :icon="faChevronDown" class="text-[9px]" />
             </button>
 

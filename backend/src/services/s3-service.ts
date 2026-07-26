@@ -42,11 +42,11 @@ export async function getUploadPresignedUrl(
   return { url, previewUrl, s3Key };
 }
 
-export async function getDownloadPresignedUrl(s3Key: string, fileName: string) {
+export async function getDownloadPresignedUrl(s3Key: string, fileName: string, fileFormat: string) {
   const command = new GetObjectCommand({
     Bucket: BUCKET_NAME,
     Key: s3Key,
-    ResponseContentDisposition: `attachment; filename="${encodeURIComponent(fileName)}"`,
+    ResponseContentDisposition: `attachment; filename="${encodeURIComponent(`${fileName.slice(0, fileName.lastIndexOf("."))}.${fileFormat}`)}"`,
   });
 
   return await getSignedUrl(s3Client, command, { expiresIn: 900 });

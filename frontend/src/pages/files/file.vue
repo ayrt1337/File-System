@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 
 import { useFilesUtils } from "../../utils/files-utils.ts";
@@ -18,8 +18,6 @@ import {
   faChevronDown,
   faFolderOpen,
   faArrowLeft,
-  faEye,
-  faEyeSlash,
 } from "@fortawesome/free-solid-svg-icons";
 import { faStar as faStarRegular } from "@fortawesome/free-regular-svg-icons";
 import type { UserFile } from "../../types/file";
@@ -43,67 +41,31 @@ const { downloadFile, toggleFavorite } = useFilesServices();
 const { showLoadingPage } = useLoading();
 
 const user = computed(() => authStore.getUser);
-
-const mockFile = ref<UserFile>({
-  id: "mock-video-1",
-  name: "4yn1T-F46gx5H61F.mp4",
-  preview:
-    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-  format: "mp4",
-  size: 15482910,
-  isFavorite: false,
-  createdAt: new Date().toISOString(),
-  lastUpdate: null,
+const file = ref<UserFile>({
+  id: "",
+  name: "",
+  preview: "",
+  url: "",
+  format: "",
+  size: 0,
+  createdAt: "",
+  lastUpdate: "",
+  isFavorite: false
 });
 
 const isFileMenuOpen = ref(false);
 const isShareModalOpen = ref(false);
 const isRenameModalOpen = ref(false);
 
-const simulatePreview = ref(true);
-const simulatedFormat = ref("mp4");
-
-const formatsList = [
-  { name: "Vídeo (.mp4)", val: "mp4" },
-  { name: "Imagem (.jpg)", val: "jpg" },
-  { name: "Documento (.pdf)", val: "pdf" },
-  { name: "Planilha (.xlsx)", val: "xlsx" },
-  { name: "Código (.ts)", val: "ts" },
-];
-
-watch([simulatePreview, simulatedFormat], () => {
-  mockFile.value.format = simulatedFormat.value;
-
-  const baseName = mockFile.value.name.substring(
-    0,
-    mockFile.value.name.lastIndexOf("."),
-  );
-  mockFile.value.name = `${baseName || "4yn1T-F46gx5H61F"}.${simulatedFormat.value}`;
-
-  if (simulatePreview.value) {
-    if (simulatedFormat.value === "mp4") {
-      mockFile.value.preview =
-        "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4";
-    } else if (simulatedFormat.value === "jpg") {
-      mockFile.value.preview =
-        "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200&q=80";
-    } else {
-      mockFile.value.preview = null;
-    }
-  } else {
-    mockFile.value.preview = null;
-  }
-});
-
-const fetchFileDetails = async (fileId: string) => {
+const fetchFileDetails = async () => {
   showLoadingPage(true);
 
   try {
     const path = getRouteWithPathParams(API_ROUTES.FILE.GET_FILE, {
-      [PARAMS.ID]: fileId,
+      [PARAMS.ID]: route.params.id as string,
     });
     const { data } = await api.get(path);
-    mockFile.value = data.fileResponse;
+    file.value = data.fileResponse;
   } catch (error: any) {
     console.error("Erro ao buscar detalhes do arquivo:", error);
     verifyApiError(error.response?.status);
@@ -113,10 +75,7 @@ const fetchFileDetails = async (fileId: string) => {
 };
 
 onMounted(() => {
-  if (route.params.id) {
-    mockFile.value.id = route.params.id as string;
-    fetchFileDetails(route.params.id as string);
-  }
+  fetchFileDetails();
   window.addEventListener("click", closeFileMenu);
 });
 
@@ -134,7 +93,7 @@ const closeFileMenu = () => {
 };
 
 const handleDownload = () => {
-  downloadFile(mockFile.value.id);
+  downloadFile(file.value.id);
   isFileMenuOpen.value = false;
 };
 
@@ -148,28 +107,10 @@ const handleRenameClick = () => {
   isFileMenuOpen.value = false;
 };
 
-const handleRenameSuccess = (newName: string) => {
-  mockFile.value.name = newName;
-  const parts = newName.split(".");
-  if (parts.length > 1) {
-    const ext = parts[parts.length - 1]?.toLowerCase();
-    if (ext) {
-      mockFile.value.format = ext;
-      simulatedFormat.value = ext;
-    }
-  }
-};
-
 const handleToggleFavorite = async () => {
-  const originalFav = mockFile.value.isFavorite;
-  mockFile.value.isFavorite = !mockFile.value.isFavorite;
-  const success = await toggleFavorite(
-    mockFile.value.id,
-    !!mockFile.value.isFavorite,
-  );
-  if (!success) {
-    mockFile.value.isFavorite = originalFav;
-  }
+  await toggleFavorite(file.value.id, !file.value.isFavorite);
+
+  file.value.isFavorite = !file.value.isFavorite;
   isFileMenuOpen.value = false;
 };
 
@@ -181,6 +122,9 @@ const goBack = () => {
   }
 };
 
+const handleRenameSuccess = (newName: string) => {
+  file.value.name = newName;
+};
 </script>
 
 <template>
@@ -202,10 +146,10 @@ const goBack = () => {
 
           <div
             class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-md transition-all duration-300"
-            :class="getFileBgClass(mockFile.format)"
+            :class="getFileBgClass(file.format)"
           >
             <FontAwesomeIcon
-              :icon="getFileIcon(mockFile.format)"
+              :icon="getFileIcon(file.format)"
               class="text-[#121212] text-lg"
             />
           </div>
@@ -214,9 +158,9 @@ const goBack = () => {
             <div class="flex items-center gap-2 min-w-0 pl-2">
               <h1
                 class="text-white text-base font-semibold truncate select-none"
-                :title="mockFile.name"
+                :title="file.name"
               >
-                {{ mockFile.name }}
+                {{ file.name }}
               </h1>
               <FontAwesomeIcon
                 :icon="faFolderOpen"
@@ -245,6 +189,7 @@ const goBack = () => {
                     class="absolute left-0 mt-1.5 w-60 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl py-1.5 flex flex-col overflow-hidden z-50 text-left"
                   >
                     <button
+                      v-if="file.role === 3"
                       @click="handleShareClick"
                       class="w-full px-4 py-2.5 text-left text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer"
                     >
@@ -267,6 +212,7 @@ const goBack = () => {
                     </button>
 
                     <button
+                      v-if="file.role && file.role >= 2"
                       @click="handleRenameClick"
                       class="w-full px-4 py-2.5 text-left text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer"
                     >
@@ -277,23 +223,24 @@ const goBack = () => {
                       <span>Renomear</span>
                     </button>
 
-                    <div class="h-px bg-white/5 my-1"></div>
+                    <div v-if="file.role === 3" class="h-px bg-white/5 my-1"></div>
 
                     <button
+                      v-if="file.role === 3"
                       @click="handleToggleFavorite"
                       class="w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 transition-colors cursor-pointer"
                       :class="
-                        mockFile.isFavorite
+                        file.isFavorite
                           ? 'text-[#fbbf24] hover:bg-[#fbbf24]/5'
                           : 'text-gray-300 hover:text-white hover:bg-white/5'
                       "
                     >
                       <FontAwesomeIcon
-                        :icon="mockFile.isFavorite ? faStar : faStarRegular"
+                        :icon="file.isFavorite ? faStar : faStarRegular"
                         class="w-4 h-4"
                       />
                       <span>{{
-                        mockFile.isFavorite
+                        file.isFavorite
                           ? "Remover dos favoritos"
                           : "Adicionar aos favoritos"
                       }}</span>
@@ -307,6 +254,7 @@ const goBack = () => {
 
         <div class="flex items-center shrink-0">
           <button
+            v-if="file.role === 3"
             @click="handleShareClick"
             class="flex items-center gap-2 bg-[#009900] hover:bg-[#22c55e] text-white px-5 py-2 rounded-full font-semibold text-sm transition-all duration-300 shadow-md cursor-pointer mr-5 active:scale-95"
           >
@@ -326,19 +274,19 @@ const goBack = () => {
         class="flex-1 bg-[#161616] m-4 mt-2 rounded-[24px] border border-white/5 flex flex-col items-center justify-center relative overflow-hidden p-6 z-10"
       >
         <div
-          v-if="mockFile.url || mockFile.preview"
+          v-if="file.url || file.preview"
           class="w-full h-full flex flex-col items-center justify-center"
         >
           <div
             v-if="
               ['mp4', 'webm', 'mkv', 'avi', 'mov'].includes(
-                mockFile.format?.toLowerCase(),
+                file.format?.toLowerCase(),
               )
             "
             class="max-w-[1000px] w-full max-h-[75vh] flex items-center justify-center bg-black rounded-2xl overflow-hidden shadow-2xl relative border border-white/10"
           >
             <video
-              :src="mockFile.url || mockFile.preview || undefined"
+              :src="file.url || file.preview || undefined"
               controls
               class="w-full max-h-[75vh] object-contain"
             ></video>
@@ -347,13 +295,13 @@ const goBack = () => {
           <div
             v-else-if="
               ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(
-                mockFile.format?.toLowerCase(),
-              ) && mockFile.preview
+                file.format?.toLowerCase(),
+              ) && file.preview
             "
             class="max-w-[900px] w-full max-h-[75vh] flex items-center justify-center rounded-2xl overflow-hidden shadow-2xl bg-black/40 p-2 border border-white/10"
           >
             <img
-              :src="mockFile.preview || undefined"
+              :src="file.preview || undefined"
               class="max-w-full max-h-[72vh] object-contain rounded-xl"
               alt="Preview do arquivo"
             />
@@ -366,10 +314,10 @@ const goBack = () => {
         >
           <div
             class="w-32 h-32 rounded-[32px] flex items-center justify-center shadow-lg transition-all duration-300 transform hover:scale-105 hover:rotate-3"
-            :class="getFileBgClass(mockFile.format)"
+            :class="getFileBgClass(file.format)"
           >
             <FontAwesomeIcon
-              :icon="getFileIcon(mockFile.format)"
+              :icon="getFileIcon(file.format)"
               class="text-[#121212] text-6xl"
             />
           </div>
@@ -378,12 +326,12 @@ const goBack = () => {
             <h2
               class="text-white text-xl font-bold truncate max-w-sm select-all"
             >
-              {{ mockFile.name }}
+              {{ file.name }}
             </h2>
             <p class="text-gray-400 text-sm">
               Nenhuma visualização disponível para arquivos do tipo
               <span class="uppercase font-semibold text-white/80"
-                >.{{ mockFile.format }}</span
+                >.{{ file.format }}</span
               >
             </p>
           </div>
@@ -396,69 +344,17 @@ const goBack = () => {
             <span>Baixar Arquivo</span>
           </button>
         </div>
-
-        <div
-          v-if="!route.params.id"
-          class="absolute bottom-4 left-4 bg-black/85 backdrop-blur-md border border-white/10 rounded-2xl p-4 flex flex-col gap-3 shadow-2xl text-xs z-30 transition-all hover:border-white/20"
-        >
-          <div
-            class="flex items-center justify-between gap-6 border-b border-white/10 pb-1.5"
-          >
-            <span
-              class="font-bold text-white tracking-wide uppercase text-[10px]"
-              >Configurações do Mock</span
-            >
-            <span class="text-gray-400 text-[9px]">Validar visualização</span>
-          </div>
-
-          <div class="flex items-center justify-between gap-4">
-            <span class="text-gray-300 font-medium">Fornecer Preview:</span>
-            <button
-              @click="simulatePreview = !simulatePreview"
-              class="px-2.5 py-1 rounded-md font-semibold text-[10px] cursor-pointer flex items-center gap-1.5 transition-colors"
-              :class="
-                simulatePreview
-                  ? 'bg-[#009900]/20 text-[#22c55e] border border-[#009900]/30'
-                  : 'bg-white/5 text-gray-400 border border-white/10'
-              "
-            >
-              <FontAwesomeIcon :icon="simulatePreview ? faEye : faEyeSlash" />
-              <span>{{
-                simulatePreview ? "Simulando Com" : "Simulando Sem"
-              }}</span>
-            </button>
-          </div>
-
-          <div class="flex flex-col gap-1.5">
-            <span class="text-gray-300 font-medium">Formato do Arquivo:</span>
-            <div class="flex flex-wrap gap-1">
-              <button
-                v-for="fmt in formatsList"
-                :key="fmt.val"
-                @click="simulatedFormat = fmt.val"
-                class="px-2 py-1 rounded text-[10px] cursor-pointer transition-all border font-medium"
-                :class="
-                  simulatedFormat === fmt.val
-                    ? 'bg-white text-black border-white'
-                    : 'bg-white/5 text-gray-400 border-transparent hover:bg-white/10 hover:text-white'
-                "
-              >
-                {{ fmt.name }}
-              </button>
-            </div>
-          </div>
-        </div>
       </main>
 
       <FileShareModal
         :isOpen="isShareModalOpen"
-        :file="mockFile"
+        :file="file"
         :close="() => (isShareModalOpen = false)"
       />
 
       <FileRenameModal
         :isOpen="isRenameModalOpen"
-        :file="mockFile"
+        :file="file"
         :isMock="true"
         :close="() => (isRenameModalOpen = false)"
         :success="handleRenameSuccess"
@@ -483,7 +379,6 @@ const goBack = () => {
   }
 }
 
-/* Modal transitions */
 .modal-fade-enter-active,
 .modal-fade-leave-active {
   transition:
@@ -497,7 +392,6 @@ const goBack = () => {
   transform: scale(0.95);
 }
 
-/* Dropdown transition */
 .dropdown-fade-enter-active,
 .dropdown-fade-leave-active {
   transition:
