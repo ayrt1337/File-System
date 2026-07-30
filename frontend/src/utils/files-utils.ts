@@ -10,12 +10,36 @@ import {
 } from "@fortawesome/free-regular-svg-icons";
 
 export const useFilesUtils = () => {
+  const isImage = (format: string): boolean => {
+    const fmt = format.toLowerCase();
+    return ["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(fmt);
+  };
+
+  const isVideo = (format: string): boolean => {
+    const fmt = format.toLowerCase();
+    return ["mp4", "webm", "mkv", "avi", "mov"].includes(fmt);
+  };
+
+  const isAudio = (format: string): boolean => {
+    const fmt = format.toLowerCase();
+    return ["mp3", "wav", "ogg", "m4a", "flac"].includes(fmt);
+  };
+
+  const hasPreview = (format: string): boolean => {
+    const fmt = format.toLowerCase();
+    return (isImage(fmt) || isVideo(fmt)) && fmt !== "mkv" && fmt !== "avi";
+  };
+
+  const hasView = (format: string): boolean => {
+    const fmt = format.toLowerCase();
+    return isImage(fmt) || isAudio(fmt) || (isVideo(fmt) && fmt !== "mkv" && fmt !== "avi");
+  };
+
   const getFileIcon = (format: string) => {
     const fmt = format.toLowerCase();
-    if (["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(fmt))
-      return faFileImage;
-    if (["mp4", "webm", "mkv", "avi", "mov"].includes(fmt)) return faFileVideo;
-    if (["mp3", "wav", "ogg", "m4a", "flac"].includes(fmt)) return faFileAudio;
+    if (isImage(fmt)) return faFileImage;
+    if (isVideo(fmt)) return faFileVideo;
+    if (isAudio(fmt)) return faFileAudio;
     if (fmt === "pdf") return faFilePdf;
     if (["doc", "docx", "odt"].includes(fmt)) return faFileWord;
     if (["xls", "xlsx", "csv", "ods"].includes(fmt)) return faFileExcel;
@@ -41,12 +65,9 @@ export const useFilesUtils = () => {
 
   const getFileBgClass = (format: string) => {
     const fmt = format.toLowerCase();
-    if (["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(fmt))
-      return "bg-[#60a5fa]";
-    if (["mp4", "webm", "mkv", "avi", "mov"].includes(fmt))
-      return "bg-[#c084fc]";
-    if (["mp3", "wav", "ogg", "m4a", "flac"].includes(fmt))
-      return "bg-[#f472b6]";
+    if (isImage(fmt)) return "bg-[#60a5fa]";
+    if (isVideo(fmt)) return "bg-[#c084fc]";
+    if (isAudio(fmt)) return "bg-[#f472b6]";
     if (fmt === "pdf") return "bg-[#f87171]";
     if (["doc", "docx", "odt"].includes(fmt)) return "bg-[#38bdf8]";
     if (["xls", "xlsx", "csv", "ods"].includes(fmt)) return "bg-[#34d399]";
@@ -92,6 +113,11 @@ export const useFilesUtils = () => {
     getFileIcon,
     getFileBgClass,
     formatSize,
-    formatDate
-  }
+    formatDate,
+    isImage,
+    isVideo,
+    isAudio,
+    hasPreview,
+    hasView,
+  };
 };

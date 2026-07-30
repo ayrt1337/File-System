@@ -23,6 +23,7 @@ const props = withDefaults(
     openMenuIndex: number | null;
     showFavorite?: boolean;
     isInTrash?: boolean;
+    redirect?: boolean;
     onToggleFavorite?: (file: UserFile) => void;
     onToggleMenu?: (index: number) => void;
     onDownload?: (file: UserFile) => void;
@@ -36,26 +37,72 @@ const props = withDefaults(
   {
     showFavorite: true,
     isInTrash: false,
-  }
+    redirect: true,
+  },
 );
 
-const { getFileIcon, getFileBgClass } = useFilesUtils();
+import { useFileCacheStore } from "../stores/file-cache";
+import { onMounted } from "vue";
+
+const { getFileIcon, getFileBgClass, hasPreview } = useFilesUtils();
 const hasImageError = ref(false);
 const router = useRouter();
+const fileCacheStore = useFileCacheStore();
+const resolvedPreviewUrl = ref<string | null>(null);
+const hasRetriedPreview = ref(false);
 
 const navigateToDetail = () => {
   router.push(`/file/${props.file.id}`);
 };
 
-watch(() => props.file, () => {
-  hasImageError.value = false;
+const loadPreviewUrl = async () => {
+  if (!hasPreview(props.file.format)) return;
+  try {
+    const urls = await fileCacheStore.getOrFetch(props.file.id, "preview");
+    resolvedPreviewUrl.value = urls.preview;
+  } catch (err) {
+    console.warn(
+      `Erro ao carregar preview para arquivo ${props.file.id}:`,
+      err,
+    );
+  }
+};
+
+const handlePreviewError = async () => {
+  if (!hasRetriedPreview.value) {
+    hasRetriedPreview.value = true;
+    fileCacheStore.invalidatePreviewCache(props.file.id);
+    try {
+      const urls = await fileCacheStore.getOrFetch(props.file.id, "preview");
+      resolvedPreviewUrl.value = urls.preview;
+    } catch (err) {
+      console.warn(`Erro no auto-retry do preview do card ${props.file.id}:`, err);
+      hasImageError.value = true;
+    }
+  } else {
+    hasImageError.value = true;
+  }
+};
+
+onMounted(() => {
+  loadPreviewUrl();
 });
+
+watch(
+  () => props.file.id,
+  () => {
+    hasImageError.value = false;
+    resolvedPreviewUrl.value = null;
+    hasRetriedPreview.value = false;
+    loadPreviewUrl();
+  },
+);
 </script>
 
 <template>
   <div
     tabindex="0"
-    @dblclick="navigateToDetail"
+    @dblclick="redirect ? navigateToDetail() : null"
     class="relative flex flex-col gap-3 h-64 p-4 bg-[#1e1e1e]/60 backdrop-blur-md border border-white/10 rounded-2xl hover:border-white/20 focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e]/30 focus:outline-none transition-all duration-300 group cursor-pointer"
   >
     <div class="flex items-center justify-between w-full min-w-0 gap-2">
@@ -81,7 +128,9 @@ watch(() => props.file, () => {
         v-if="showFavorite && file.role === 3"
         @click.stop="onToggleFavorite?.(file)"
         class="p-1 rounded-lg hover:bg-white/5 cursor-pointer shrink-0 transition-colors"
-        :class="file.isFavorite ? 'text-[#fbbf24]' : 'text-gray-400 hover:text-white'"
+        :class="
+          file.isFavorite ? 'text-[#fbbf24]' : 'text-gray-400 hover:text-white'
+        "
       >
         <FontAwesomeIcon
           :icon="file.isFavorite ? faStar : faStarRegular"
@@ -101,9 +150,9 @@ watch(() => props.file, () => {
       class="flex-1 bg-[#121212]/80 border border-white/5 rounded-xl flex items-center justify-center relative overflow-hidden"
     >
       <img
-        v-if="file.preview && !hasImageError"
-        :src="file.preview"
-        @error="hasImageError = true"
+        v-if="resolvedPreviewUrl && !hasImageError"
+        :src="resolvedPreviewUrl"
+        @error="handlePreviewError"
         class="w-full h-full object-cover"
         alt="File preview"
       />
@@ -129,10 +178,7 @@ watch(() => props.file, () => {
           @click.stop="onRestore?.(file)"
           class="w-full px-4 py-2 text-left text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer"
         >
-          <FontAwesomeIcon
-            :icon="faRotateLeft"
-            class="w-4 h-4 text-gray-400"
-          />
+          <FontAwesomeIcon :icon="faRotateLeft" class="w-4 h-4 text-gray-400" />
           <span>Restaurar</span>
         </button>
 
@@ -141,10 +187,7 @@ watch(() => props.file, () => {
           @click.stop="onInfo?.(file)"
           class="w-full px-4 py-2 text-left text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer"
         >
-          <FontAwesomeIcon
-            :icon="faCircleInfo"
-            class="w-4 h-4 text-gray-400"
-          />
+          <FontAwesomeIcon :icon="faCircleInfo" class="w-4 h-4 text-gray-400" />
           <span>Informações</span>
         </button>
 
@@ -166,10 +209,7 @@ watch(() => props.file, () => {
           @click.stop="onDownload?.(file)"
           class="w-full px-4 py-2 text-left text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer"
         >
-          <FontAwesomeIcon
-            :icon="faDownload"
-            class="w-4 h-4 text-gray-400"
-          />
+          <FontAwesomeIcon :icon="faDownload" class="w-4 h-4 text-gray-400" />
           <span>Baixar</span>
         </button>
 
@@ -187,10 +227,7 @@ watch(() => props.file, () => {
           @click.stop="onShare?.(file)"
           class="w-full px-4 py-2 text-left text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer"
         >
-          <FontAwesomeIcon
-            :icon="faShareNodes"
-            class="w-4 h-4 text-gray-400"
-          />
+          <FontAwesomeIcon :icon="faShareNodes" class="w-4 h-4 text-gray-400" />
           <span>Compartilhar</span>
         </button>
 
@@ -199,10 +236,7 @@ watch(() => props.file, () => {
           @click.stop="onInfo?.(file)"
           class="w-full px-4 py-2 text-left text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer"
         >
-          <FontAwesomeIcon
-            :icon="faCircleInfo"
-            class="w-4 h-4 text-gray-400"
-          />
+          <FontAwesomeIcon :icon="faCircleInfo" class="w-4 h-4 text-gray-400" />
           <span>Informações sobre o arquivo</span>
         </button>
 

@@ -25,13 +25,13 @@ export const API_ROUTES = {
     DOWNLOAD_VIDEO: "/download-video",
     CONVERT: "/convert",
     UPLOAD_URL: "/upload-url",
-    DOWNLOAD: `${FILES_PREFIX}/download/:${PARAMS.ID}`,
     RENAME: `${FILES_PREFIX}/rename`,
     STATUS: `${FILES_PREFIX}/status`,
     FAVORITE: `${FILES_PREFIX}/favorite`,
     GET_FILE: `/file/:${PARAMS.ID}`,
     ACCESS: `${FILES_PREFIX}/access`,
-    SHARED_FILES: "/shared-files"
+    SHARED_FILES: "/shared-files",
+    GET_URL: `${FILES_PREFIX}/:${PARAMS.ID}/url`
   }
 } as const;
 

@@ -5,6 +5,7 @@ import {
 import { sqsClient, QUEUE_URL } from "../config/sqs-client.js";
 import database from "../config/database.js";
 import { FileStatus } from "../types/file.js";
+import { hasPreview } from "../utils/files-utils.js";
 
 export async function startUploadWorker() {
   console.log("Worker do SQS iniciado com sucesso. Escutando novos eventos...");
@@ -59,8 +60,8 @@ export async function startUploadWorker() {
                   `Confirmando upload do arquivo no PostgreSQL: ${s3Key}`,
                 );
                 
-                const hasPreview = ["jpg", "jpeg", "png", "gif", "webp", "svg", "mp4", "webm", "mkv", "avi", "mov"].includes(format);
-                const preview = hasPreview ? s3Key.replace("files", "previews") : null;
+                const hasPreviewFile = hasPreview(format);
+                const preview = hasPreviewFile ? s3Key.replace("files", "previews") : null;
 
                 await database.files.create({
                   data: {

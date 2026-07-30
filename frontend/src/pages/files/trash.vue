@@ -138,6 +138,7 @@ const handleInfo = (file: UserFile) => {
             :openMenuIndex="openMenuIndex"
             :showFavorite="false"
             :isInTrash="true"
+            :redirect="false"
             :onToggleMenu="toggleMenu"
             :onInfo="handleInfo"
             :onRestore="handleRestore"

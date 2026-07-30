@@ -31,6 +31,7 @@ export const ROUTES = {
     FAVORITE: `${FILES_PREFIX}/favorite`,
     GET_FILE: `/file/:${PARAMS.ID}`,
     ACCESS: `${FILES_PREFIX}/access`,
-    SHARED_FILES: "/shared-files"
+    SHARED_FILES: "/shared-files",
+    GET_URL: `${FILES_PREFIX}/:${PARAMS.ID}/url`
   }
 } as const;

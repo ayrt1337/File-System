@@ -9,8 +9,12 @@ import {
 import database from "../config/database.js";
 import { FileStatus, FileRole } from "../types/file.js";
 import { PARAMS } from "../routing/routes.js";
-import { checkFilePermission, getUserFileRole } from "../services/permission-service.js";
+import {
+  checkFilePermission,
+  getUserFileRole,
+} from "../services/permission-service.js";
 import { parseRole, parseRoleOptional } from "../utils/role-parser.js";
+import { hasPreview, hasView } from "../utils/files-utils.js";
 
 export class FileController {
   async getMyFiles(req: Request, res: Response, next: NextFunction) {
@@ -49,7 +53,6 @@ export class FileController {
           name: true,
           size: true,
           format: true,
-          preview: true,
           isFavorite: true,
           isPublic: true,
           publicRole: true,
@@ -78,32 +81,18 @@ export class FileController {
 
       const s3UserFiles = await getTotalUserFiles(user.id);
 
-      const filesWithPreviews = await Promise.all(
-        files.map(async (file) => {
-          let signedPreviewUrl = null;
-          if (file.preview) {
-            try {
-              signedPreviewUrl = await getFilePresignedUrl(file.preview);
-            } catch (err) {
-              console.error(
-                `Erro ao gerar URL do preview para ${file.preview}:`,
-                err,
-              );
-            }
-          }
-          return {
-            ...file,
-            preview: signedPreviewUrl,
-            role: 3,
-            sharedUsers: file.sharedFiles.map((sf) => ({
-              email: sf.user.email,
-              name: sf.user.name,
-              avatarUrl: sf.user.avatarUrl,
-              role: sf.userRole === 1 ? "reader" : "editor",
-            })),
-          };
-        }),
-      );
+      const filesWithPreviews = files.map((file) => {
+        return {
+          ...file,
+          role: 3,
+          sharedUsers: file.sharedFiles.map((sf) => ({
+            email: sf.user.email,
+            name: sf.user.name,
+            avatarUrl: sf.user.avatarUrl,
+            role: sf.userRole === 1 ? "reader" : "editor",
+          })),
+        };
+      });
 
       res.status(200).json({
         files: filesWithPreviews,
@@ -133,44 +122,6 @@ export class FileController {
         url: result.url,
         previewUrl: result.previewUrl,
       });
-    } catch (error: any) {
-      next(error);
-    }
-  }
-
-  async getDownloadUrl(req: Request, res: Response, next: NextFunction) {
-    try {
-      const user = (req as any).user;
-      const id = req.params[PARAMS.ID] as string;
-      if (!id) {
-        throw new AppError("ID do arquivo é obrigatório!", 400);
-      }
-
-      const file = await database.files.findUnique({
-        where: {
-          id,
-        },
-      });
-
-      if (!file) {
-        throw new AppError("Arquivo não encontrado!", 404);
-      }
-
-      await checkFilePermission(user.id, file.id, FileRole.READER);
-
-      if (file.status !== "ACTIVE") {
-        throw new AppError(
-          "Só é possível fazer download de arquivos ativos!",
-          400,
-        );
-      }
-
-      const url = await getDownloadPresignedUrl(
-        file.s3Key,
-        file.name,
-        file.format,
-      );
-      res.status(200).json({ url });
     } catch (error: any) {
       next(error);
     }
@@ -363,40 +314,11 @@ export class FileController {
 
       await checkFilePermission(user.id, file.id, FileRole.READER);
 
-      let signedPreviewUrl = null;
-      if (file.preview) {
-        try {
-          signedPreviewUrl = await getFilePresignedUrl(file.preview);
-        } catch (err) {
-          console.error(
-            `Erro ao gerar URL do preview para ${file.preview}:`,
-            err,
-          );
-        }
-      }
-
-      let signedFileUrl = null;
-      if (
-        file.format &&
-        ["mp4", "webm", "mkv", "avi", "mov"].includes(file.format.toLowerCase())
-      ) {
-        try {
-          signedFileUrl = await getFilePresignedUrl(file.s3Key);
-        } catch (err) {
-          console.error(
-            `Erro ao gerar URL de visualização para ${file.s3Key}:`,
-            err,
-          );
-        }
-      }
-
       const userRole = await getUserFileRole(user.id, file.id);
 
       const fileResponse = {
         id: file.id,
         name: file.name,
-        preview: signedPreviewUrl,
-        url: signedFileUrl,
         format: file.format,
         size: file.size,
         createdAt: file.createdAt,
@@ -404,14 +326,15 @@ export class FileController {
         isFavorite: file.userId === user.id ? file.isFavorite : null,
         isPublic: file.userId === user.id ? file.isPublic : null,
         publicRole: file.userId === user.id ? file.publicRole : null,
-        sharedUsers: file.userId === user.id
-          ? file.sharedFiles.map((sf) => ({
-              email: sf.user.email,
-              name: sf.user.name,
-              avatarUrl: sf.user.avatarUrl,
-              role: sf.userRole === 1 ? "reader" : "editor",
-            }))
-          : [],
+        sharedUsers:
+          file.userId === user.id
+            ? file.sharedFiles.map((sf) => ({
+                email: sf.user.email,
+                name: sf.user.name,
+                avatarUrl: sf.user.avatarUrl,
+                role: sf.userRole === 1 ? "reader" : "editor",
+              }))
+            : [],
         role: userRole,
       };
 
@@ -448,8 +371,8 @@ export class FileController {
       await database.$transaction(async (tx) => {
         await tx.sharedFiles.deleteMany({
           where: {
-            fileId
-          }
+            fileId,
+          },
         });
 
         for (const userAccess of usersAccess) {
@@ -473,7 +396,7 @@ export class FileController {
               fileId,
               userId: user.id,
               userRole: numericRole,
-            }
+            },
           });
         }
       });
@@ -558,18 +481,6 @@ export class FileController {
       const filesWithPreviews = await Promise.all(
         sharedRecords.map(async (record) => {
           const file = record.file;
-          let signedPreviewUrl = null;
-          if (file.preview) {
-            try {
-              signedPreviewUrl = await getFilePresignedUrl(file.preview);
-            } catch (err) {
-              console.error(
-                `Erro ao gerar URL do preview para ${file.preview}:`,
-                err,
-              );
-            }
-          }
-
           const userRole = await getUserFileRole(user.id, file.id);
 
           return {
@@ -577,7 +488,6 @@ export class FileController {
             name: file.name,
             size: file.size,
             format: file.format,
-            preview: signedPreviewUrl,
             createdAt: file.createdAt,
             lastUpdate: file.lastUpdate,
             role: userRole,
@@ -592,6 +502,69 @@ export class FileController {
       next(error);
     }
   }
+
+  async getUrl(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = (req as any).user;
+      const { id } = req.params;
+      const type = req.query.type as string | undefined;
+
+      const file = await database.files.findUnique({
+        where: { id: id as string },
+      });
+
+      if (!file) {
+        throw new AppError("Arquivo não encontrado!", 404);
+      }
+
+      await checkFilePermission(user.id, file.id, FileRole.READER);
+
+      let signedPreviewUrl: string | null = null;
+      let signedFileUrl: string | null = null;
+
+      const fetchPreview =
+        (type === "preview" || type === "both" || !type) &&
+        hasPreview(file.format);
+      const fetchDownload =
+        type === "download" ||
+        ((type === "url" || type === "both" || !type) && hasView(file.format));
+
+      if (fetchPreview && file.preview) {
+        try {
+          signedPreviewUrl = await getFilePresignedUrl(file.preview);
+        } catch (err) {
+          console.error(
+            `Erro ao assinar URL de preview para ${file.preview}:`,
+            err,
+          );
+        }
+      }
+
+      if (fetchDownload) {
+        try {
+          if (type === "download") {
+            signedFileUrl = await getDownloadPresignedUrl(
+              file.s3Key,
+              file.name,
+              file.format,
+            );
+          } else {
+            signedFileUrl = await getFilePresignedUrl(file.s3Key);
+          }
+        } catch (err) {
+          console.error(
+            `Erro ao assinar URL de download para ${file.s3Key}:`,
+            err,
+          );
+        }
+      }
+
+      res.status(200).json({
+        url: signedFileUrl,
+        preview: signedPreviewUrl,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
-
-

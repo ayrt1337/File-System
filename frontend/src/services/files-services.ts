@@ -1,24 +1,29 @@
-import { API_ROUTES, getRouteWithPathParams, PARAMS } from "../routing/routes";
+import { API_ROUTES } from "../routing/routes";
 import { useToast } from "../composables/use-toast";
 import { api } from "./api";
+import { useFileCacheStore } from "../stores/file-cache";
 
 const { showToast } = useToast();
 
 export const useFilesServices = () => {
   const downloadFile = async (fileId: string) => {
+    const cacheStore = useFileCacheStore();
     try {
-      const path = getRouteWithPathParams(API_ROUTES.FILE.DOWNLOAD, {
-        [PARAMS.ID]: fileId,
-      });
-      const { data } = await api.get(path);
+      const urls = await cacheStore.getOrFetch(fileId, "download");
+
+      if (!urls.downloadUrl) {
+        throw new Error("URL de download inválida ou indisponível");
+      }
+
       const link = document.createElement("a");
-      link.href = data.url;
+      link.href = urls.downloadUrl;
       link.setAttribute("download", "");
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     } catch (error) {
       console.error("Erro ao baixar arquivo:", error);
+      cacheStore.invalidateDownloadUrlCache(fileId);
       showToast("Erro ao baixar o arquivo.", "error");
     }
   };
@@ -37,7 +42,7 @@ export const useFilesServices = () => {
         fileId,
         isFavorite,
       });
-      
+
       return true;
     } catch (error: any) {
       console.error("Erro ao atualizar favorito:", error);
@@ -57,7 +62,7 @@ export const useFilesServices = () => {
         fileId,
         status: "TRASH",
       });
-      
+
       return true;
     } catch (error: any) {
       console.error("Erro ao mover arquivo para a lixeira:", error);
@@ -78,7 +83,7 @@ export const useFilesServices = () => {
         fileId,
         status: "ACTIVE",
       });
-      
+
       return true;
     } catch (error: any) {
       console.error("Erro ao restaurar arquivo:", error);
@@ -94,6 +99,6 @@ export const useFilesServices = () => {
     downloadFile,
     toggleFavorite,
     deleteFile,
-    restoreFile
-  }
+    restoreFile,
+  };
 };

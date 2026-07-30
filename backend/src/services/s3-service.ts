@@ -66,7 +66,7 @@ export async function getTotalUserFiles(userId: string) {
   let isTruncated = true;
   let continuationToken = undefined;
 
-  const prefix = `uploads/${userId}/`;
+  const prefix = `files/${userId}/`;
 
   while (isTruncated) {
     const command = new ListObjectsV2Command({
