@@ -95,10 +95,24 @@ export const useFilesServices = () => {
     }
   };
 
+  const deletePermanentFile = async (fileId: string): Promise<boolean> => {
+    try {
+      await api.patch(API_ROUTES.FILE.STATUS, {
+        fileId,
+        status: "DELETED",
+      });
+      return true;
+    } catch (error: any) {
+      console.error("Erro ao deletar permanentemente o arquivo:", error);
+      return false;
+    }
+  };
+
   return {
     downloadFile,
     toggleFavorite,
     deleteFile,
     restoreFile,
+    deletePermanentFile,
   };
 };

@@ -6,6 +6,7 @@ import route from "./routes/index.js";
 import { errorMiddleware } from "./middlewares/error-middleware.js";
 import helmet from "helmet";
 import { startUploadWorker } from "./services/upload-worker.js";
+import { startCleanupWorker } from "./services/cleanup-worker.js";
 
 const options = {
   origin: process.env.CORS_ORIGIN,
@@ -27,5 +28,8 @@ app.listen(port, () => {
   console.log(`Server Started at ${port}`);
   startUploadWorker().catch((error) => {
     console.error("Erro fatal ao rodar worker do SQS:", error);
+  });
+  startCleanupWorker().catch((error) => {
+    console.error("Erro fatal ao iniciar worker de limpeza:", error);
   });
 });

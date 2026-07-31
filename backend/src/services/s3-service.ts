@@ -2,7 +2,8 @@ import {
   PutObjectCommand,
   GetObjectCommand,
   ListObjectsV2Command,
-  HeadObjectCommand
+  HeadObjectCommand,
+  DeleteObjectCommand
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { s3Client, BUCKET_NAME } from "../config/s3-client.js";
@@ -84,4 +85,12 @@ export async function getTotalUserFiles(userId: string) {
   }
 
   return totalFiles;
+}
+
+export async function deleteObjectFromS3(s3Key: string): Promise<void> {
+  const command = new DeleteObjectCommand({
+    Bucket: BUCKET_NAME,
+    Key: s3Key,
+  });
+  await s3Client.send(command);
 }

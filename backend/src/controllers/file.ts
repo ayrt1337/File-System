@@ -179,7 +179,7 @@ export class FileController {
         status: FileStatus;
       };
 
-      if (status !== "ACTIVE" && status !== "TRASH") {
+      if (status !== "ACTIVE" && status !== "TRASH" && status !== "DELETED") {
         throw new AppError("Status de arquivo inválido!", 400);
       }
 
@@ -207,6 +207,13 @@ export class FileController {
       if (status === "TRASH" && file.status !== "ACTIVE") {
         throw new AppError(
           "Só é possível mover para a lixeira arquivos ativos!",
+          400,
+        );
+      }
+
+      if (status === "DELETED" && file.status !== "TRASH") {
+        throw new AppError(
+          "Só é possível deletar um arquivo que está na lixeira!",
           400,
         );
       }

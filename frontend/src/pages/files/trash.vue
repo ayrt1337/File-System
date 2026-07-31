@@ -2,7 +2,11 @@
 import HomePageTemplate from "../../components/home-page-template.vue";
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import {
+  faTrashCan,
+  faSpinner,
+  faTriangleExclamation,
+} from "@fortawesome/free-solid-svg-icons";
 import { useToast } from "../../composables/use-toast.ts";
 import { useLoading } from "../../composables/use-loading.ts";
 import { useFilesServices } from "../../services/files-services.ts";
@@ -13,16 +17,23 @@ import { api } from "../../services/api.ts";
 import { verifyApiError } from "../../services/verify-api-error.ts";
 import { API_ROUTES } from "../../routing/routes";
 import type { UserFile } from "../../types/file";
+import Overlay from "../../components/overlay.vue";
+import { useFileCacheStore } from "../../stores/file-cache";
 
 const { showToast } = useToast();
 const { showLoadingPage } = useLoading();
-const { restoreFile } = useFilesServices();
+const { restoreFile, deletePermanentFile } = useFilesServices();
+const fileCacheStore = useFileCacheStore();
 
 const searchQuery = ref("");
 const isLoadingFiles = ref<boolean>(false);
 const selectedFile = ref<UserFile | null>(null);
 const isInfoModalOpen = ref(false);
 const files = ref<UserFile[]>([]);
+
+const showDeleteConfirm = ref<boolean>(false);
+const fileToDelete = ref<UserFile | null>(null);
+const inputLoading = ref<boolean>(false);
 
 const fetchFiles = async () => {
   isLoadingFiles.value = true;
@@ -87,9 +98,29 @@ const handleRestore = async (file: UserFile) => {
 };
 
 const handlePermanentDelete = (file: UserFile) => {
-  files.value = files.value.filter((f) => f.id !== file.id);
-  showToast("Arquivo excluído permanentemente!", "success");
+  fileToDelete.value = file;
+  showDeleteConfirm.value = true;
   openMenuIndex.value = null;
+};
+
+const confirmDelete = async () => {
+  if (!fileToDelete.value) return;
+  inputLoading.value = true;
+
+  const fileId = fileToDelete.value.id;
+  const success = await deletePermanentFile(fileId);
+
+  if (success) {
+    fileCacheStore.invalidateFileCache(fileId);
+    files.value = files.value.filter((f) => f.id !== fileId);
+    showToast("Arquivo excluído permanentemente!", "success");
+  } else {
+    showToast("Erro ao excluir o arquivo permanentemente.", "error");
+  }
+
+  inputLoading.value = false;
+  showDeleteConfirm.value = false;
+  fileToDelete.value = null;
 };
 
 const handleInfo = (file: UserFile) => {
@@ -107,6 +138,23 @@ const handleInfo = (file: UserFile) => {
     title="Lixeira"
   >
     <div class="flex flex-col gap-6 py-6">
+      <div
+        class="relative bg-[#fbbf24]/10 border border-[#fbbf24]/20 text-[#fbbf24] rounded-2xl p-4 flex items-center gap-3 select-none transition-all duration-300"
+      >
+        <FontAwesomeIcon
+          :icon="faTriangleExclamation"
+          class="text-[22px] mt-0.5 shrink-0"
+        />
+        <div class="flex flex-col gap-0.5">
+          <p class="text-[17px] font-semibold text-white">
+            Limpeza Automática
+          </p>
+          <p class="text-[14px] text-[#fbbf24]/80">
+            Os arquivos que permanecerem na lixeira por mais de 30 dias serão excluídos permanentemente de forma automática.
+          </p>
+        </div>
+      </div>
+
       <FileSkeletonLoader v-if="isLoadingFiles" :count="4" />
 
       <template v-else>
@@ -153,4 +201,59 @@ const handleInfo = (file: UserFile) => {
     :file="selectedFile"
     :close="() => isInfoModalOpen = false"
   />
+
+  <Overlay v-if="showDeleteConfirm">
+    <Transition name="modal-fade" appear>
+      <div
+        class="relative bg-[#1a1a1a] border border-[#333] w-full max-w-[400px] rounded-[24px] p-8 shadow-2xl overflow-hidden"
+      >
+        <div class="flex flex-col items-center text-center">
+          <div
+            class="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-6"
+          >
+            <FontAwesomeIcon
+              :icon="faTriangleExclamation"
+              class="text-3xl text-red-500"
+            />
+          </div>
+
+          <h3 class="text-xl font-bold text-white mb-2">Excluir permanentemente?</h3>
+          <p class="text-gray-400 text-sm leading-relaxed mb-8">
+            Esta ação é permanente e o arquivo não poderá ser recuperado.
+            Tem certeza que deseja continuar?
+          </p>
+
+          <div class="flex gap-3 w-full">
+            <button
+              @click="showDeleteConfirm = false"
+              class="cursor-pointer flex-1 px-6 py-3 rounded-full bg-[#333] hover:bg-[#444] text-white font-semibold transition-all duration-300"
+            >
+              Cancelar
+            </button>
+            <button
+              :disabled="inputLoading"
+              @click="confirmDelete()"
+              class="cursor-pointer flex-1 px-6 py-3 rounded-full bg-red-600 hover:bg-red-500 text-white font-semibold transition-all duration-300 shadow-lg shadow-red-900/20"
+            >
+              <FontAwesomeIcon v-if="inputLoading" :icon="faSpinner" spin class="mr-2" />
+              Confirmar
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Overlay>
 </template>
+
+<style scoped>
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+  transform: scale(0.9) translateY(20px);
+}
+</style>
