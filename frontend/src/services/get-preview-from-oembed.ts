@@ -27,7 +27,8 @@ const mappingPlatforms: Record<string, any> = {
 
 export const getPreview = async (platform: string, url: string) => {
   const urlPlatform = getPlatformFromUrl(url);
-  if (!urlPlatform || urlPlatform !== platform) return;
+  console.log(platform, urlPlatform)
+  if (!urlPlatform || !platform.includes(urlPlatform)) return;
 
   const oembedUrl = mappingPlatforms[platform].oembed;
   if (!oembedUrl) return;

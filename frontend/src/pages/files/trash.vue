@@ -160,7 +160,7 @@ const handleInfo = (file: UserFile) => {
       <template v-else>
         <div
           v-if="filteredFiles.length === 0"
-          class="flex flex-col items-center justify-center min-h-[60vh] text-center gap-4"
+          class="flex flex-col items-center justify-center min-h-[53vh] text-center gap-4"
         >
           <div
             class="size-30 rounded-full bg-[#1e1e1e] flex items-center justify-center border border-white/5 text-gray-500"

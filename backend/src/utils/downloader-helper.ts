@@ -12,6 +12,7 @@ export const downloadMedia = async (
   url: string,
   quality: string,
   outputFormat: string,
+  cookiesContent?: string,
 ): Promise<Buffer> => {
   const tempDir = os.tmpdir();
   const timestamp = Date.now();
@@ -23,14 +24,24 @@ export const downloadMedia = async (
     tempDir,
     `download_${timestamp}_${safeBase}.${outputFormat}`,
   );
+  const tempCookiePath = path.join(
+    tempDir,
+    `cookies_${timestamp}_${safeBase}.txt`,
+  );
   const ffmpegDir = path.dirname(ffmpegPath.path);
 
   try {
     let options: Record<string, any> = {
       output: tempFilePath,
       ffmpegLocation: ffmpegDir,
+      jsRuntimes: "node",
       extractorArgs: "youtube:player_client=default,-android_sdkless",
     };
+
+    if (cookiesContent && cookiesContent.trim().length > 0) {
+      await fs.writeFile(tempCookiePath, cookiesContent, "utf-8");
+      options.cookies = tempCookiePath;
+    }
 
     if (outputFormatMapping[outputFormat].includes("audio")) {
       options = {
@@ -58,5 +69,11 @@ export const downloadMedia = async (
     try {
       await fs.unlink(tempFilePath);
     } catch {}
+
+    if (cookiesContent) {
+      try {
+        await fs.unlink(tempCookiePath);
+      } catch {}
+    }
   }
 };

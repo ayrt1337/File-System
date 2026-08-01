@@ -8,6 +8,7 @@ import {
   faSpinner,
   faDownload,
   faChevronDown,
+  faVideo
 } from "@fortawesome/free-solid-svg-icons";
 import {
   faYoutube,
@@ -21,6 +22,7 @@ import type { Preview } from "../../types/video-preview.ts";
 import Input from "../../components/input.vue";
 import { API_ROUTES } from "../../routing/routes";
 import { useUploadStore } from "../../stores/upload";
+import { formatCookiesToNetscape } from "../../utils/cookie-formatter";
 
 const route = useRoute();
 const router = useRouter();
@@ -76,7 +78,11 @@ const preview = ref<Preview | null>(null);
 const isLoadingPreview = ref(false);
 const isDownloading = ref(false);
 const isOpen = ref(false);
+const imageError = ref(false);
 const dropdownRef = ref<HTMLElement | null>(null);
+
+const cookies = ref("");
+const showCookiesConfig = ref(false);
 
 interface DownloadOption {
   format: string;
@@ -156,9 +162,10 @@ const handleFetchPreview = async () => {
 
   isLoadingPreview.value = true;
   preview.value = null;
+  imageError.value = false;
 
   try {
-    const result = await getPreview(platform.value, url.value) as Preview;
+    const result = (await getPreview(platform.value, url.value)) as Preview;
     if (result) {
       preview.value = result;
     } else {
@@ -182,14 +189,20 @@ const handleDownload = async () => {
   isOpen.value = false;
 
   try {
-    const response = await api.get(API_ROUTES.FILE.DOWNLOAD_VIDEO, {
-      params: {
+    const formattedCookies = formatCookiesToNetscape(cookies.value, url.value);
+
+    const response = await api.post(
+      API_ROUTES.FILE.DOWNLOAD_VIDEO,
+      {
         source: url.value,
         format: option.format,
         quality: option.quality,
+        cookies: formattedCookies || undefined,
       },
-      responseType: "blob",
-    });
+      {
+        responseType: "blob",
+      },
+    );
 
     if (response.data) {
       const blob = new Blob([response.data]);
@@ -224,14 +237,20 @@ const handleSaveFile = async () => {
   isOpen.value = false;
 
   try {
-    const response = await api.get(API_ROUTES.FILE.DOWNLOAD_VIDEO, {
-      params: {
+    const formattedCookies = formatCookiesToNetscape(cookies.value, url.value);
+
+    const response = await api.post(
+      API_ROUTES.FILE.DOWNLOAD_VIDEO,
+      {
         source: url.value,
         format: option.format,
         quality: option.quality,
+        cookies: formattedCookies || undefined,
       },
-      responseType: "blob",
-    });
+      {
+        responseType: "blob",
+      },
+    );
 
     if (response.data) {
       const title = preview.value?.title || "video";
@@ -302,6 +321,47 @@ const handleSaveFile = async () => {
           </button>
         </div>
 
+        <div class="w-full mt-4">
+          <button
+            @click="showCookiesConfig = !showCookiesConfig"
+            type="button"
+            class="text-[14px] text-gray-400 hover:text-emerald-400 flex items-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <span>Vídeo privado ou restrito? Configurar Cookies</span>
+            <FontAwesomeIcon
+              :icon="faChevronDown"
+              class="text-[10px] transition-transform duration-200"
+              :class="{ 'rotate-180': showCookiesConfig }"
+            />
+          </button>
+
+          <div
+            v-if="showCookiesConfig"
+            class="mt-3 p-4 bg-[#1e1e1e]/60 border border-gray-800 rounded-xl text-left flex flex-col gap-3"
+          >
+            <div class="flex items-center justify-between">
+              <span class="text-[14px] font-semibold text-gray-300">
+                Cole o cabeçalho <code class="text-emerald-400">Cookie</code> ou
+                texto do arquivo de cookies
+              </span>
+            </div>
+
+            <textarea
+              v-model="cookies"
+              rows="3"
+              placeholder="Cole aqui o valor copiado do F12 (ex: SID=xxxx; HSID=yyyy...) ou conteúdo do cookies.txt"
+              class="w-full bg-[#121212] border border-gray-800 rounded-lg p-3 text-[14px] text-gray-300 font-mono focus:outline-none focus:border-emerald-500/50 resize-y"
+            ></textarea>
+
+            <p class="text-[13px] text-gray-500 leading-normal">
+              Dica: No site do vídeo, abra o <b>F12</b> &rarr; aba
+              <b>Network (Rede)</b>, recarregue a página, clique em qualquer
+              requisição e copie o valor da linha <b>Cookie:</b> em
+              <i>Request Headers</i>.
+            </p>
+          </div>
+        </div>
+
         <div
           v-if="isLoadingPreview"
           class="mt-8 py-10 flex flex-col items-center justify-center"
@@ -317,20 +377,28 @@ const handleSaveFile = async () => {
 
         <div
           v-else-if="preview"
-          class="mt-8 border border-gray-800 bg-[#1a1a1a]/40 rounded-[15px] p-6 transition-all duration-300"
+          class="mt-8 border border-[#2c2c2c] bg-[#1a1a1a]/40 rounded-[15px] p-6 transition-all duration-300 w-full"
         >
           <div
             class="flex flex-col md:flex-row gap-5 items-center md:items-start"
           >
             <div
-              v-if="preview.thumbnail"
+              v-if="preview.thumbnail && !imageError"
               class="w-full md:w-56 shrink-0 aspect-video rounded-[15px] overflow-hidden shadow-lg border border-[#2c2c2c] relative bg-black/40 flex items-center justify-center"
             >
               <img
                 :src="preview.thumbnail"
                 alt="Video Thumbnail"
+                @error="imageError = true"
                 class="w-full h-full object-cover"
               />
+            </div>
+            <div
+              v-else
+              class="w-full md:w-56 shrink-0 aspect-video rounded-[15px] overflow-hidden shadow-lg border border-[#2c2c2c] relative bg-[#181818] flex flex-col items-center justify-center gap-2 text-gray-500 p-4 text-center"
+            >
+              <FontAwesomeIcon :icon="faVideo" class="text-2xl text-gray-600" />
+              <span class="text-[13px] text-gray-400 font-medium">Prévia de imagem indisponível</span>
             </div>
 
             <div class="flex-1 flex flex-col justify-between min-w-0">
@@ -338,7 +406,7 @@ const handleSaveFile = async () => {
                 <h3
                   class="font-bold text-white text-lg md:text-xl leading-snug line-clamp-3 mb-2 tracking-wide"
                 >
-                  {{ preview.title }}
+                  {{ preview.title || "Vídeo sem título" }}
                 </h3>
               </div>
             </div>
@@ -372,7 +440,8 @@ const handleSaveFile = async () => {
                   >
                   <FontAwesomeIcon
                     :icon="faChevronDown"
-                    class="text-[11px] shrink-0"
+                    class="text-[11px] shrink-0 transition-transform duration-200"
+                    :class="{ 'rotate-180': isOpen }"
                   />
                 </button>
               </div>
@@ -388,7 +457,7 @@ const handleSaveFile = async () => {
             <transition name="fade">
               <div
                 v-if="isOpen"
-                class="overflow-y-auto h-[200px] absolute right-0 top-full mt-2 w-64 rounded-[15px] bg-[#1a1a1a] border border-gray-800 py-2 z-50"
+                class="overflow-y-auto h-[200px] absolute right-0 bottom-full mb-2 w-64 rounded-[15px] bg-[#1a1a1a] border border-gray-800 py-2 z-50"
               >
                 <button
                   v-for="opt in downloadOptionsList"

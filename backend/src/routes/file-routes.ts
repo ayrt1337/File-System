@@ -11,12 +11,12 @@ const fileController = new FileController();
 const fileConvertorController = new FileConvertorController();
 const downloadVideosController = new DownloadVideosController();
 
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 100 * 1024 * 1024 } });
 
 fileRoutes.use(authenticate);
 
 fileRoutes.get(ROUTES.FILE.MY_FILES, fileController.getMyFiles);
-fileRoutes.get(ROUTES.FILE.DOWNLOAD_VIDEO, downloadVideosController.download);
+fileRoutes.post(ROUTES.FILE.DOWNLOAD_VIDEO, downloadVideosController.download);
 fileRoutes.post(ROUTES.FILE.CONVERT, upload.single("file"), fileConvertorController.convert);
 fileRoutes.post(ROUTES.FILE.UPLOAD_URL, fileController.getUploadUrl);
 fileRoutes.get(ROUTES.FILE.GET_FILE, fileController.getFile);
