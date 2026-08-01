@@ -8,11 +8,11 @@ export class AuthController {
     try {
       const { email, password } = req.body;
 
-      const user = await database.user.findUnique({
-        where: { email: email },
+      const user = await database.user.findFirst({
+        where: { email: email, inactive: false },
       });
 
-      if (!user || user.inactive) {
+      if (!user) {
         const newPassword = await services.hashData(password);
         const token = services.genToken(
           {
@@ -40,7 +40,7 @@ export class AuthController {
     try {
       const { email, password, rememberMe } = req.body;
 
-      const user = await database.user.findUnique({
+      const user = await database.user.findFirst({
         where: { email: email, inactive: false },
       });
 
@@ -53,7 +53,7 @@ export class AuthController {
         {
           id: user.id,
         },
-        maxAge,
+        rememberMe ? 3600 * 24 * 365 : 3600 * 24,
       );
 
       res.cookie("sessionId", sessionId, {
@@ -80,8 +80,8 @@ export class AuthController {
     try {
       const { email } = req.body;
 
-      const user = await database.user.findUnique({
-        where: { email: email },
+      const user = await database.user.findFirst({
+        where: { email: email, inactive: false },
       });
 
       if (user) {
@@ -108,7 +108,7 @@ export class AuthController {
     try {
       const { password, token } = req.body;
 
-      const decoded = services.decodeToken(token) as {
+      const decoded = services.verifyToken(token) as {
         data: { email: string };
       };
 
@@ -117,7 +117,7 @@ export class AuthController {
       }
       const hashPassword = await services.hashData(password);
       await database.user.update({
-        where: { email: decoded.data.email },
+        where: { email: decoded.data.email, inactive: false },
         data: { password: hashPassword },
       });
 
@@ -145,7 +145,7 @@ export class AuthController {
       }
 
       await database.user.upsert({
-        where: { email: decoded.data.email },
+        where: { email: decoded.data.email, inactive: true },
         update: {
           name: "Usuário",
           inactive: false,

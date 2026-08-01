@@ -35,8 +35,8 @@ export class FileController {
       }
 
       const showOnlyFavorites = isFavorite === "true";
-      if (showOnlyFavorites) {
-        targetStatus = "ACTIVE";
+      if (showOnlyFavorites && targetStatus !== "ACTIVE"){
+        throw new AppError("Requisição inválida!", 400)
       }
 
       const files = await database.files.findMany({

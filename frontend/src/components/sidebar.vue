@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faFile, faStar } from '@fortawesome/free-regular-svg-icons';
-import { faUsers, faArrowRightArrowLeft, faTrash, faArrowRightFromBracket, faDownload, faGear, faUser } from '@fortawesome/free-solid-svg-icons';
+import { faUsers, faArrowRightArrowLeft, faTrash, faArrowRightFromBracket, faDownload, faUser } from '@fortawesome/free-solid-svg-icons';
 import { router } from '../router';
 import { useRoute } from 'vue-router';
 import { useLoading } from '../composables/use-loading';
@@ -128,12 +128,6 @@ const handleFileChange = async (event: Event) => {
             </div>
 
             <div class="flex flex-col mt-10">
-                <div
-                    class="gap-2 py-2 px-3 hover:bg-[#363333ac] hover:text-white rounded-full transition-all duration-300 text-[17px] cursor-pointer flex items-center">
-                    <FontAwesomeIcon :icon="faGear" />
-                    <p>Configurações</p>
-                </div>
-
                 <div
                     @click="!route.path.startsWith('/profile') ? router.push({ name: 'profile' }) : null"
                     :style="route.path.startsWith('/profile') ? 'background-color: #009900; color: white;' : ''"

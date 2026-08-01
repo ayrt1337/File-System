@@ -36,9 +36,20 @@ export class UserController {
     try {
       const user = (req as any).user;
 
-      await database.user.update({
-        where: { id: user.id },
-        data: { inactive: true, lastUpdate: new Date() },
+      await database.$transaction(async (tx) => {
+        await tx.files.updateMany({
+          where: { userId: user.id },
+          data: { status: "DELETED" }
+        });
+
+        await tx.sharedFiles.deleteMany({
+          where: { userId: user.id }
+        });
+
+        await tx.user.update({
+          where: { id: user.id },
+          data: { inactive: true, lastUpdate: new Date() },
+        });
       });
 
       res.clearCookie("sessionId");

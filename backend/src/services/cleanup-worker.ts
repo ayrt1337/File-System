@@ -49,10 +49,16 @@ export async function startCleanupWorker() {
             await deleteObjectFromS3(file.preview);
           }
 
-          await database.files.delete({
-            where: {
-              id: file.id,
-            },
+          await database.$transaction(async (tx) => {
+            await tx.sharedFiles.deleteMany({
+              where: { fileId: file.id }
+            });
+            
+            await tx.files.delete({
+              where: {
+                id: file.id,
+              },
+            });
           });
 
           console.log(`[Worker] Arquivo ${file.name} (ID: ${file.id}) removido fisicamente.`);

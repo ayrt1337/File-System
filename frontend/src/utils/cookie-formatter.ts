@@ -27,7 +27,7 @@ export function formatCookiesToNetscape(
 
   const cleanContent = cookiesContent.replace(/^cookie:\s*/i, "").trim();
   const pairs = cleanContent.split(";");
-  console.log(domain)
+  
   for (const pair of pairs) {
     const trimmed = pair.trim();
     if (!trimmed) continue;
