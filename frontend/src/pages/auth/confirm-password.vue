@@ -121,21 +121,28 @@ const changePassword = async () => {
 
   <Container v-else>
     <BgContainer
-      class="flex flex-col items-center justify-center max-w-[700px] p-15 py-13 pt-14"
+      class="flex flex-col items-center justify-center max-w-[700px] w-full p-4 sm:p-10 py-6 sm:py-12"
     >
       <div class="w-full">
         <div
           class="w-full flex flex-col items-center justify-center"
           v-if="showInput"
         >
-          <h1 class="mb-6 text-[18px]">Escreva abaixo a nova senha</h1>
+          <h1
+            class="mb-4 sm:mb-6 text-base sm:text-[18px] text-center text-gray-200"
+          >
+            Escreva abaixo a nova senha
+          </h1>
 
-          <p v-if="errorMessage" class="error text-red-500 text-center mb-4">
+          <p
+            v-if="errorMessage"
+            class="error text-red-500 text-center text-xs sm:text-sm mb-3"
+          >
             {{ errorMessage }}
           </p>
 
           <Input
-            class="mt-5 w-full"
+            class="mt-3 sm:mt-5 w-full"
             text="Senha"
             :password="true"
             v-model="data.password"
@@ -144,7 +151,7 @@ const changePassword = async () => {
           />
 
           <Input
-            class="mt-5 w-full"
+            class="mt-3 sm:mt-5 w-full"
             text="Confirmar Senha"
             :password="true"
             v-model="data.confirmPassword"
@@ -156,7 +163,7 @@ const changePassword = async () => {
             type="button"
             :disabled="inputLoading"
             @click="changePassword()"
-            class="disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none mt-6 cursor-pointer flex-1 bg-[#009900] hover:bg-[#22c55e] text-black font-bold py-3.5 px-6 rounded-full transition-all duration-300 transform hover:-translate-y-0.5"
+            class="disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none mt-5 sm:mt-6 cursor-pointer w-full bg-[#009900] hover:bg-[#22c55e] text-black font-bold py-3 sm:py-3.5 px-6 rounded-full transition-all duration-300 transform hover:-translate-y-0.5 text-sm sm:text-base"
           >
             <FontAwesomeIcon v-if="inputLoading" :icon="faSpinner" spin />
             Solicitar Alteração

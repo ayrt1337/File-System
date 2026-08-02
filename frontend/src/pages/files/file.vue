@@ -202,39 +202,39 @@ const handleRenameSuccess = (newName: string) => {
       class="w-screen h-screen flex flex-col bg-[#121212] overflow-hidden text-white font-sans"
     >
       <header
-        class="h-[80px] bg-[#121212] border-b border-white/5 flex items-center justify-between px-6 shrink-0 relative z-30"
+        class="min-h-[70px] sm:h-[80px] py-2 sm:py-0 bg-[#121212] border-b border-white/5 flex items-center justify-between px-3 sm:px-6 shrink-0 relative z-30 gap-2"
       >
         <div class="flex items-center min-w-0 flex-1">
           <button
             @click="goBack"
-            class="p-2.5 rounded-full hover:bg-white/5 mr-4 text-gray-400 hover:text-white cursor-pointer transition-colors"
+            class="p-2 rounded-full hover:bg-white/5 mr-2 sm:mr-4 text-gray-400 hover:text-white cursor-pointer transition-colors shrink-0"
             title="Voltar"
           >
-            <FontAwesomeIcon :icon="faArrowLeft" class="h-5 w-5" />
+            <FontAwesomeIcon :icon="faArrowLeft" class="h-4 w-4 sm:h-5 sm:w-5" />
           </button>
 
           <template v-if="!fileNotFound">
             <div
-              class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-md transition-all duration-300"
+              class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 shadow-md transition-all duration-300"
               :class="getFileBgClass(file.format)"
             >
               <FontAwesomeIcon
                 :icon="getFileIcon(file.format)"
-                class="text-[#121212] text-lg"
+                class="text-[#121212] text-sm sm:text-lg"
               />
             </div>
 
-            <div class="ml-4 flex flex-col min-w-0 flex-1 pr-4">
-              <div class="flex items-center gap-2 min-w-0 pl-2">
+            <div class="ml-2 sm:ml-4 flex flex-col min-w-0 flex-1 pr-2 sm:pr-4">
+              <div class="flex items-center gap-1.5 min-w-0">
                 <h1
-                  class="text-white text-base font-semibold truncate select-none"
+                  class="text-white text-xs sm:text-base font-semibold truncate select-none"
                   :title="file.name"
                 >
                   {{ file.name }}
                 </h1>
                 <FontAwesomeIcon
                   :icon="faFolderOpen"
-                  class="text-gray-500 text-xs shrink-0 cursor-default"
+                  class="mt-1 text-gray-500 text-[10px] sm:text-xs shrink-0 cursor-default hidden sm:inline"
                 />
               </div>
 
@@ -242,13 +242,13 @@ const handleRenameSuccess = (newName: string) => {
                 <div class="relative">
                   <button
                     @click.stop="toggleFileMenu"
-                    class="text-xs text-gray-400 hover:text-white hover:bg-white/5 px-2 py-0.5 rounded transition-all cursor-pointer select-none font-medium flex items-center gap-1.5"
+                    class="text-[11px] sm:text-xs text-gray-400 hover:text-white hover:bg-white/5 px-1.5 sm:px-2 py-0.5 rounded transition-all cursor-pointer select-none font-medium flex items-center gap-1"
                     :class="{ 'bg-white/10 text-white': isFileMenuOpen }"
                   >
                     <span>Arquivo</span>
                     <FontAwesomeIcon
                       :icon="faChevronDown"
-                      class="text-[9px] transition-transform duration-200"
+                      class="text-[8px] sm:text-[9px] transition-transform duration-200"
                       :class="{ 'rotate-180': isFileMenuOpen }"
                     />
                   </button>
@@ -256,27 +256,27 @@ const handleRenameSuccess = (newName: string) => {
                   <Transition name="dropdown-fade">
                     <div
                       v-if="isFileMenuOpen"
-                      class="absolute left-0 mt-1.5 w-60 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl py-1.5 flex flex-col overflow-hidden z-50 text-left"
+                      class="absolute left-0 mt-1.5 w-52 sm:w-60 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl py-1.5 flex flex-col overflow-hidden z-50 text-left"
                     >
                       <button
                         v-if="file.role === 3"
                         @click="handleShareClick"
-                        class="w-full px-4 py-2.5 text-left text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer"
+                        class="w-full px-3 sm:px-4 py-2 text-left text-xs sm:text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-2.5 transition-colors cursor-pointer"
                       >
                         <FontAwesomeIcon
                           :icon="faShareNodes"
-                          class="w-4 h-4 text-gray-400"
+                          class="w-4 h-4 text-gray-400 shrink-0"
                         />
                         <span>Compartilhar</span>
                       </button>
 
                       <button
                         @click="handleDownload"
-                        class="w-full px-4 py-2.5 text-left text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer"
+                        class="w-full px-3 sm:px-4 py-2 text-left text-xs sm:text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-2.5 transition-colors cursor-pointer"
                       >
                         <FontAwesomeIcon
                           :icon="faDownload"
-                          class="w-4 h-4 text-gray-400"
+                          class="w-4 h-4 text-gray-400 shrink-0"
                         />
                         <span>Baixar</span>
                       </button>
@@ -284,11 +284,11 @@ const handleRenameSuccess = (newName: string) => {
                       <button
                         v-if="file.role && file.role >= 2"
                         @click="handleRenameClick"
-                        class="w-full px-4 py-2.5 text-left text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer"
+                        class="w-full px-3 sm:px-4 py-2 text-left text-xs sm:text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-2.5 transition-colors cursor-pointer"
                       >
                         <FontAwesomeIcon
                           :icon="faPen"
-                          class="w-4 h-4 text-gray-400"
+                          class="w-4 h-4 text-gray-400 shrink-0"
                         />
                         <span>Renomear</span>
                       </button>
@@ -301,7 +301,7 @@ const handleRenameSuccess = (newName: string) => {
                       <button
                         v-if="file.role === 3"
                         @click="handleToggleFavorite"
-                        class="w-full px-4 py-2.5 text-left text-sm flex items-center gap-3 transition-colors cursor-pointer"
+                        class="w-full px-3 sm:px-4 py-2 text-left text-xs sm:text-sm flex items-center gap-2.5 transition-colors cursor-pointer"
                         :class="
                           file.isFavorite
                             ? 'text-[#fbbf24] hover:bg-[#fbbf24]/5'
@@ -310,12 +310,12 @@ const handleRenameSuccess = (newName: string) => {
                       >
                         <FontAwesomeIcon
                           :icon="file.isFavorite ? faStar : faStarRegular"
-                          class="w-4 h-4"
+                          class="w-4 h-4 shrink-0"
                         />
-                        <span>{{
+                        <span class="truncate">{{
                           file.isFavorite
-                            ? "Remover dos favoritos"
-                            : "Adicionar aos favoritos"
+                            ? "Remover favorito"
+                            : "Adicionar favorito"
                         }}</span>
                       </button>
                     </div>
@@ -326,25 +326,25 @@ const handleRenameSuccess = (newName: string) => {
           </template>
 
           <template v-else>
-            <h1 class="text-white text-base font-semibold select-none">
-              Arquivo Indisponível
+            <h1 class="text-white text-xs sm:text-base font-semibold select-none">
+              Indisponível
             </h1>
           </template>
         </div>
 
-        <div v-if="!fileNotFound" class="flex items-center shrink-0">
+        <div v-if="!fileNotFound" class="flex items-center shrink-0 gap-2 sm:gap-3">
           <button
             v-if="file.role === 3"
             @click="handleShareClick"
-            class="flex items-center gap-2 bg-[#009900] hover:bg-[#22c55e] text-white px-5 py-2 rounded-full font-semibold text-sm transition-all duration-300 shadow-md cursor-pointer mr-5 active:scale-95"
+            class="flex items-center gap-1.5 bg-[#009900] hover:bg-[#22c55e] text-white px-3 sm:px-5 py-1.5 sm:py-2 rounded-full font-semibold text-xs sm:text-sm transition-all duration-300 shadow-md cursor-pointer active:scale-95"
           >
-            <FontAwesomeIcon :icon="faLock" class="text-xs" />
-            <span>Compartilhar</span>
+            <FontAwesomeIcon :icon="faLock" class="text-[10px] sm:text-xs" />
+            <span class="hidden sm:inline">Compartilhar</span>
           </button>
 
           <img
             :src="user?.avatarUrl || UserImage"
-            class="rounded-full size-10 object-cover border border-white/10"
+            class="rounded-full size-8 sm:size-10 object-cover border border-white/10 shrink-0"
             alt="Avatar"
           />
         </div>

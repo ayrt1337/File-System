@@ -278,7 +278,7 @@ const handleSaveFile = async () => {
     title="Baixar Vídeos"
   >
     <div class="max-w-3xl mx-auto text-white mt-10">
-      <div class="flex items-center gap-4 mb-8">
+      <div class="flex flex-col justify-center sm:flex-row sm:items-center gap-4 mb-8">
         <button
           @click="router.push('/download-videos')"
           class="flex items-center justify-center w-10 h-10 rounded-full border border-[#333] bg-[#141414] hover:bg-[#222] transition-colors text-gray-400 hover:text-white cursor-pointer"
@@ -301,7 +301,7 @@ const handleSaveFile = async () => {
       </div>
 
       <div
-        class="flex flex-col items-center bg-[#141414]/80 border border-[#222] rounded-[15px] p-8"
+        class="flex flex-col items-center bg-[#141414]/80 border border-[#222] rounded-[15px] p-5 pt-6 pb-8 sm:p-8"
       >
         <div class="w-full flex flex-col sm:flex-row gap-3">
           <div class="flex-1 relative">
@@ -321,18 +321,13 @@ const handleSaveFile = async () => {
           </button>
         </div>
 
-        <div class="w-full mt-4">
+        <div class="flex flex-col items-center w-full mt-4 gap-2">
           <button
             @click="showCookiesConfig = !showCookiesConfig"
             type="button"
             class="text-[14px] text-gray-400 hover:text-emerald-400 flex items-center gap-1.5 transition-colors cursor-pointer"
           >
             <span>Vídeo privado ou restrito? Configurar Cookies</span>
-            <FontAwesomeIcon
-              :icon="faChevronDown"
-              class="text-[10px] transition-transform duration-200"
-              :class="{ 'rotate-180': showCookiesConfig }"
-            />
           </button>
 
           <div
@@ -349,7 +344,7 @@ const handleSaveFile = async () => {
             <textarea
               v-model="cookies"
               rows="3"
-              placeholder="Cole aqui o valor copiado do F12 (ex: SID=xxxx; HSID=yyyy...) ou conteúdo do cookies.txt"
+              placeholder="Cole aqui o valor copiado do F12 (ex: SID=xxxx; HSID=yyyy...)"
               class="w-full bg-[#121212] border border-gray-800 rounded-lg p-3 text-[14px] text-gray-300 font-mono focus:outline-none focus:border-emerald-500/50 resize-y"
             ></textarea>
 

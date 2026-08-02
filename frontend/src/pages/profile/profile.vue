@@ -189,42 +189,42 @@ onMounted(() => getProfile());
 </script>
 
 <template>
-  <HomePageTemplate title="Perfil" :sidebar="true" :header="false">
-    <div class="text-[#ffffff]">
+  <HomePageTemplate title="Perfil" :sidebar="true" :header="true" :searchInput="false">
+    <div class="text-[#ffffff] pb-6">
       <Overlay v-if="showDeleteConfirm">
         <Transition name="modal-fade" appear>
           <div
-            class="relative bg-[#1a1a1a] border border-[#333] w-full max-w-[400px] rounded-[24px] p-8 shadow-2xl overflow-hidden"
+            class="relative bg-[#1a1a1a] border border-[#333] w-full max-w-[400px] rounded-2xl sm:rounded-[24px] p-4 sm:p-8 shadow-2xl overflow-hidden text-left"
           >
             <div class="flex flex-col items-center text-center">
               <div
-                class="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-6"
+                class="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-4 sm:mb-6"
               >
                 <FontAwesomeIcon
                   :icon="faTriangleExclamation"
-                  class="text-3xl text-red-500"
+                  class="text-2xl sm:text-3xl text-red-500"
                 />
               </div>
 
-              <h3 class="text-xl font-bold text-white mb-2">Excluir Conta?</h3>
-              <p class="text-gray-400 text-sm leading-relaxed mb-8">
+              <h3 class="text-lg sm:text-xl font-bold text-white mb-2">Excluir Conta?</h3>
+              <p class="text-gray-400 text-xs sm:text-sm leading-relaxed mb-6 sm:mb-8">
                 Esta ação é permanente e todos os seus dados serão removidos.
                 Tem certeza que deseja continuar?
               </p>
 
-              <div class="flex gap-3 w-full">
+              <div class="flex gap-2 sm:gap-3 w-full">
                 <button
                   @click="showDeleteConfirm = false"
-                  class="cursor-pointer flex-1 px-6 py-3 rounded-full bg-[#333] hover:bg-[#444] text-white font-semibold transition-all duration-300"
+                  class="cursor-pointer flex-1 px-4 sm:px-6 py-2.5 sm:py-3 rounded-full bg-[#333] hover:bg-[#444] text-white text-xs sm:text-sm font-semibold transition-all duration-300"
                 >
                   Cancelar
                 </button>
                 <button
                   :disabled="inputLoading"
                   @click="confirmDelete()"
-                  class="cursor-pointer flex-1 px-6 py-3 rounded-full bg-red-600 hover:bg-red-500 text-white font-semibold transition-all duration-300 shadow-lg shadow-red-900/20"
+                  class="cursor-pointer flex-1 px-4 sm:px-6 py-2.5 sm:py-3 rounded-full bg-red-600 hover:bg-red-500 text-white text-xs sm:text-sm font-semibold transition-all duration-300 shadow-lg shadow-red-900/20"
                 >
-                  <FontAwesomeIcon v-if="inputLoading" :icon="faSpinner" spin />
+                  <FontAwesomeIcon v-if="inputLoading" :icon="faSpinner" spin class="mr-1.5" />
                   Confirmar
                 </button>
               </div>
@@ -234,17 +234,17 @@ onMounted(() => getProfile());
       </Overlay>
 
       <div>
-        <h2 class="text-[20px] font-medium">Foto de Perfil</h2>
+        <h2 class="text-base sm:text-[20px] font-medium">Foto de Perfil</h2>
 
         <div @click="triggerFileInput" class="relative w-fit mt-2 cursor-pointer group">
           <img
             :src="data.avatarUrl || UserImage"
-            class="mt-[10px] rounded-full size-[120px] object-cover group-hover:opacity-80 transition-opacity duration-300"
+            class="mt-2 rounded-full size-24 sm:size-[120px] object-cover group-hover:opacity-80 transition-opacity duration-300 border border-white/10"
           />
-          <div class="absolute bottom-[0px] right-[0px]">
+          <div class="absolute bottom-0 right-0">
             <FontAwesomeIcon
               :icon="faCamera"
-              class="scale-y-112 scale-x-103 rounded-full bg-[#1f1f1f] p-2 border border-[#333] hover:bg-gray-800 transition-colors text-[20px] text-[#22c55e]"
+              class="rounded-full bg-[#1f1f1f] p-2 border border-[#333] hover:bg-gray-800 transition-colors text-base sm:text-[20px] text-[#22c55e]"
             />
           </div>
         </div>
@@ -257,13 +257,13 @@ onMounted(() => getProfile());
         />
       </div>
 
-      <div class="mt-[60px]">
-        <h2 class="text-[20px] mb-3 font-medium">Email</h2>
-        <p>{{ data.email }}</p>
+      <div class="mt-8 sm:mt-[60px]">
+        <h2 class="text-base sm:text-[20px] mb-2 font-medium">Email</h2>
+        <p class="text-sm sm:text-base text-gray-300 break-all">{{ data.email }}</p>
       </div>
 
-      <div class="mt-[50px]">
-        <h2 class="text-[20px] mb-3 font-medium">Nome</h2>
+      <div class="mt-6 sm:mt-[50px]">
+        <h2 class="text-base sm:text-[20px] mb-2 font-medium">Nome</h2>
 
         <Input
           class="max-w-[500px]"
@@ -273,15 +273,15 @@ onMounted(() => getProfile());
         />
       </div>
 
-      <div class="flex mt-[50px]">
-        <div class="mr-3">
+      <div class="flex flex-col sm:flex-row gap-3 mt-8 sm:mt-[50px]">
+        <div>
           <button
             @click="handleUpdate()"
             type="submit"
             :disabled="inputLoading || !hasChanges"
-            class="text-white cursor-pointer text-[15px] flex-1 bg-[#009900] hover:bg-[#22c55e] text-black font-bold py-2.5 px-6 rounded-full transition-all duration-300 transform disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+            class="w-full sm:w-auto text-white cursor-pointer text-[14px] sm:text-[15px] bg-[#009900] hover:bg-[#22c55e] text-black font-bold py-2.5 px-6 rounded-full transition-all duration-300 transform disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
           >
-            <FontAwesomeIcon v-if="inputLoading" :icon="faSpinner" spin />
+            <FontAwesomeIcon v-if="inputLoading" :icon="faSpinner" spin class="mr-2" />
             Salvar Alterações
           </button>
         </div>
@@ -290,7 +290,7 @@ onMounted(() => getProfile());
           <button
             @click="showDeleteConfirm = true"
             type="submit"
-            class="text-white cursor-pointer flex-1 bg-red-600 hover:bg-red-500 text-black font-bold text-[15px] py-2.5 px-6 rounded-full transition-all duration-300 transform disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+            class="w-full sm:w-auto text-white cursor-pointer bg-red-600 hover:bg-red-500 font-bold text-[14px] sm:text-[15px] py-2.5 px-6 rounded-full transition-all duration-300 transform disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
           >
             Excluir Conta
           </button>

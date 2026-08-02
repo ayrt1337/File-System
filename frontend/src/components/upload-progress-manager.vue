@@ -47,7 +47,7 @@ const statusText = computed(() => {
   <Transition name="fade-slide">
     <div
       v-if="uploadStore.isVisible"
-      class="fixed bottom-6 right-6 w-96 bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-2xl z-[999] overflow-hidden flex flex-col font-sans transition-all duration-300"
+      class="fixed bottom-3 right-3 sm:bottom-6 sm:right-6 w-[calc(100vw-24px)] max-w-[360px] bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-2xl z-[999] overflow-hidden flex flex-col font-sans transition-all duration-300"
     >
       <div
         class="bg-[#121212] px-4 py-3 flex items-center justify-between border-b border-white/5 select-none"

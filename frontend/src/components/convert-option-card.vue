@@ -86,10 +86,10 @@ const colorClasses = computed(() => {
 
 <template>
   <div
-    class="flex items-center justify-between p-4 bg-[#141414]/80 border border-[#222] rounded-xl cursor-pointer transition-all duration-300 group hover:bg-[#222] hover:border-[#333]"
+    class="flex items-center justify-between p-4 bg-[#141414]/80 border border-[#222] rounded-xl cursor-pointer transition-all duration-300 group hover:bg-[#222] hover:border-[#333] min-w-0 overflow-hidden"
   >
-    <div class="flex items-center gap-2">
-      <div class="relative w-12 h-10 flex items-center justify-center">
+    <div class="flex items-center gap-3 min-w-0 flex-1">
+      <div class="relative w-12 h-10 flex items-center justify-center shrink-0">
         <div
           :class="[
             'absolute top-0 left-0 text-xl opacity-75',
@@ -116,9 +116,9 @@ const colorClasses = computed(() => {
         </div>
       </div>
 
-      <div class="flex flex-col">
+      <div class="flex flex-col min-w-0 flex-1">
         <div
-          class="flex items-center gap-1 text-white font-semibold text-[15px] group-hover:text-white transition-colors duration-200 tracking-wide"
+          class="flex items-center flex-wrap gap-x-1 text-white font-semibold text-[15px] group-hover:text-white transition-colors duration-200 tracking-wide leading-snug"
         >
           <span :class="[from ? 'uppercase' : 'capitalize']">
             {{ from ? from : "Converter" }}
@@ -127,7 +127,8 @@ const colorClasses = computed(() => {
           <span class="uppercase">{{ to }}</span>
         </div>
         <span
-          class="text-gray-500 text-[13px] font-normal group-hover:text-gray-400 transition-colors duration-200"
+          class="text-gray-500 text-[13px] font-normal group-hover:text-gray-400 transition-colors duration-200 truncate"
+          :title="title"
         >
           {{ title }}
         </span>

@@ -1,72 +1,102 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import Container from '../../components/container.vue';
-import BgContainer from '../../components/bg-container.vue';
-import { router } from '../../router/index.ts';
-import EmailImg from '../../assets/email-img.png';
-import { api } from '../../services/api';
-import { API_ROUTES } from '../../routing/routes';
+import { onMounted, ref } from "vue";
+import Container from "../../components/container.vue";
+import BgContainer from "../../components/bg-container.vue";
+import { router } from "../../router/index.ts";
+import EmailImg from "../../assets/email-img.png";
+import { api } from "../../services/api";
+import { API_ROUTES } from "../../routing/routes";
 
 const { email, password, reason } = history.state;
 
 onMounted(() => {
-    if (!email || !reason) {
-        router.push('/login');
-    }
-})
+  if (!email || !reason) {
+    router.push("/login");
+  }
+});
 
 const popup = ref<boolean>(false);
 
 const reSendEmail = async () => {
-    popup.value = true;
-    setTimeout(() => {
-        popup.value = false;
-    }, 2000);
+  popup.value = true;
+  setTimeout(() => {
+    popup.value = false;
+  }, 2000);
 
-    const path = reason == "confirmation" ? API_ROUTES.AUTH.REGISTER : API_ROUTES.AUTH.RESET;
+  const path =
+    reason == "confirmation" ? API_ROUTES.AUTH.REGISTER : API_ROUTES.AUTH.RESET;
 
-    try {
-        await api.post(path, { email: email, password: password });
-    } catch (error) {
-        console.log("Erro no reenvio do email: ", error);
-    }
-}
+  try {
+    await api.post(path, { email: email, password: password });
+  } catch (error) {
+    console.log("Erro no reenvio do email: ", error);
+  }
+};
 </script>
 
 <template>
-    <Container>
-        <BgContainer class="flex-col items-center justify-center flex max-w-[700px] p-15 py-13 pt-14">
-            <Transition name="fade-scale">
-                <div v-if="popup" class="absolute bg-[#0f0f0f] rounded-2xl p-4 px-6">
-                    <p class="text-[18px] text-[#ffffff] font-medium flex items-center gap-2">
-                        Email reenviado!
-                    </p>
-                </div>
-            </Transition>
+  <Container>
+    <BgContainer
+      class="flex-col items-center justify-center flex max-w-[700px] w-full p-4 sm:p-10 py-6 sm:py-12"
+    >
+      <Transition name="fade-scale">
+        <div
+          v-if="popup"
+          class="absolute top-4 bg-[#0f0f0f] border border-white/10 rounded-2xl p-3 px-5 shadow-xl"
+        >
+          <p
+            class="text-base sm:text-[18px] text-[#ffffff] font-medium flex items-center gap-2"
+          >
+            Email reenviado!
+          </p>
+        </div>
+      </Transition>
 
-            <img class="size-[240px]" :src="EmailImg" alt="email">
+      <img
+        class="size-40 sm:size-[240px] object-contain"
+        :src="EmailImg"
+        alt="email"
+      />
 
-            <p class="text-center mb-5 mt-6 text-[20px]">Enviamos um email para <span class="text-[#009900]">{{ email }}</span>, clique no link presente para {{ reason == "confirmation" ? "confirmar o seu cadastro." : "redefinir sua senha." }}</p>
-            <p class="text-center text-[20px]"><span @click="reSendEmail()" class="cursor-pointer text-[#009900]">Clique aqui</span> se você não recebeu nenhum email.</p>
-        </BgContainer>
-    </Container>
+      <p
+        class="text-center mb-4 mt-4 sm:mt-6 text-[18px] sm:text-[20px] text-gray-200"
+      >
+        Enviamos um email para
+        <span class="text-[#009900] font-semibold break-all">{{ email }}</span
+        >, clique no link presente para
+        {{
+          reason == "confirmation"
+            ? "confirmar o seu cadastro."
+            : "redefinir sua senha."
+        }}
+      </p>
+      <p class="text-center text-[18px] sm:text-[20px] text-gray-300">
+        <span
+          @click="reSendEmail()"
+          class="cursor-pointer text-[#009900] underline font-medium"
+          >Clique aqui</span
+        >
+        se você não recebeu nenhum email.
+      </p>
+    </BgContainer>
+  </Container>
 </template>
 
 <style scoped>
 .fade-scale-enter-active,
 .fade-scale-leave-active {
-    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .fade-scale-enter-from,
 .fade-scale-leave-to {
-    opacity: 0;
-    transform: scale(0.9) translateY(-10px);
+  opacity: 0;
+  transform: scale(0.9) translateY(-10px);
 }
 
 .fade-scale-enter-to,
 .fade-scale-leave-from {
-    opacity: 1;
-    transform: scale(1) translateY(0);
+  opacity: 1;
+  transform: scale(1) translateY(0);
 }
 </style>

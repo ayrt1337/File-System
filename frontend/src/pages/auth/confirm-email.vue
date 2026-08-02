@@ -40,19 +40,27 @@ onMounted(async () => {
   <LoadingSpinner v-if="loading" />
 
   <Container v-else>
-    <BgContainer class="max-w-[700px] p-15 py-13 pt-14">
+    <BgContainer class="max-w-[700px] w-full p-4 sm:p-10 py-6 sm:py-12">
       <div>
         <div class="flex flex-col items-center justify-center" v-if="success">
-          <img class="size-[200px] mb-6" :src="SuccessImage" alt="success" />
-          <p class="text-center text-[20px]">
+          <img
+            class="size-36 sm:size-[200px] mb-4 sm:mb-6 object-contain"
+            :src="SuccessImage"
+            alt="success"
+          />
+          <p class="text-center text-sm sm:text-[20px] text-gray-200">
             Conta cadastrada com sucesso! Você será redirecionado para o login
             em breve.
           </p>
         </div>
 
         <div class="flex flex-col items-center justify-center" v-else>
-          <img class="size-[200px] mb-6" :src="FailImage" alt="error" />
-          <p class="text-center text-[20px]">
+          <img
+            class="size-36 sm:size-[200px] mb-4 sm:mb-6 object-contain"
+            :src="FailImage"
+            alt="error"
+          />
+          <p class="text-center text-sm sm:text-[20px] text-gray-200">
             Algo inesperado aconteceu, tente realizar o cadastro novamente.
           </p>
         </div>

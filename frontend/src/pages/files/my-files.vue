@@ -151,27 +151,26 @@ const handleDroppedFile = (file: File | FileList) => {
       :accepts-multiple-files="true"
       subtitle="Solte seus arquivos aqui para fazer upload"
     />
-    <div class="flex flex-col gap-6 py-6">
+    <div class="flex flex-col gap-4 sm:gap-6 py-3 sm:py-6">
       <div
         v-if="hasProcessingFiles"
-        class="relative bg-[#fbbf24]/10 border border-[#fbbf24]/20 text-[#fbbf24] rounded-2xl p-4 pr-12 flex items-center gap-3 select-none transition-all duration-300"
+        class="relative bg-[#fbbf24]/10 border border-[#fbbf24]/20 text-[#fbbf24] rounded-2xl p-3 sm:p-4 pr-10 sm:pr-12 flex items-center gap-2.5 sm:gap-3 select-none transition-all duration-300"
       >
         <FontAwesomeIcon
           :icon="faTriangleExclamation"
-          class="text-[22px] mt-0.5 shrink-0"
+          class="text-lg sm:text-[22px] mt-0.5 shrink-0"
         />
-        <div class="flex flex-col gap-0.5">
-          <p class="text-[17px] font-semibold text-white">
+        <div class="flex flex-col gap-0.5 min-w-0">
+          <p class="text-sm sm:text-[17px] font-semibold text-white truncate">
             Arquivos em processamento
           </p>
-          <p class="text-[14px] text-[#fbbf24]/80">
-            Um ou mais arquivos estão sendo processados e em breve estarão
-            visíveis na sua listagem.
+          <p class="text-xs sm:text-[14px] text-[#fbbf24]/80">
+            Um ou mais arquivos estão sendo processados.
           </p>
         </div>
         <button
           @click="hasProcessingFiles = false"
-          class="absolute top-1/2 -translate-y-1/2 right-4 text-[#fbbf24]/60 hover:text-[#fbbf24] transition-colors p-1.5 hover:bg-[#fbbf24]/10 rounded-lg cursor-pointer"
+          class="absolute top-1/2 -translate-y-1/2 right-3 text-[#fbbf24]/60 hover:text-[#fbbf24] transition-colors p-1 hover:bg-[#fbbf24]/10 rounded-lg cursor-pointer"
         >
           <FontAwesomeIcon :icon="faXmark" class="h-4 w-4" />
         </button>
@@ -182,15 +181,15 @@ const handleDroppedFile = (file: File | FileList) => {
       <template v-else>
         <div
           v-if="filteredFiles.length === 0"
-          class="flex flex-col items-center justify-center min-h-[60vh] text-center gap-4"
+          class="flex flex-col items-center justify-center min-h-[50vh] sm:min-h-[60vh] text-center gap-3 sm:gap-4 px-2"
         >
           <div
-            class="size-30 rounded-full bg-[#1e1e1e] flex items-center justify-center border border-white/5 text-gray-500"
+            class="size-24 sm:size-30 rounded-full bg-[#1e1e1e] flex items-center justify-center border border-white/5 text-gray-500"
           >
-            <FontAwesomeIcon :icon="faFile" class="text-5xl" />
+            <FontAwesomeIcon :icon="faFile" class="text-3xl sm:text-5xl" />
           </div>
           <div>
-            <h3 class="text-white text-[20px] font-semibold">
+            <h3 class="text-white text-base sm:text-[20px] font-semibold">
               Nenhum arquivo encontrado
             </h3>
           </div>
@@ -198,7 +197,7 @@ const handleDroppedFile = (file: File | FileList) => {
 
         <div
           v-else
-          class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+          class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6"
         >
           <FileCard
             v-for="(file, index) in filteredFiles"
@@ -222,19 +221,19 @@ const handleDroppedFile = (file: File | FileList) => {
   <FileInfoModal
     :isOpen="isInfoModalOpen"
     :file="selectedFile"
-    :close="() => isInfoModalOpen = false"
+    :close="() => (isInfoModalOpen = false)"
   />
 
   <FileRenameModal
     :isOpen="isRenameModalOpen"
     :file="selectedFile"
-    :close="() => isRenameModalOpen = false"
+    :close="() => (isRenameModalOpen = false)"
     :success="fetchFiles"
   />
 
-  <FileShareModal 
+  <FileShareModal
     :isOpen="isShareModalOpen"
     :file="selectedFile"
-    :close="() => isShareModalOpen = false"
+    :close="() => (isShareModalOpen = false)"
   />
 </template>

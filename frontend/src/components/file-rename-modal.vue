@@ -63,19 +63,19 @@ const submitRename = async () => {
   <Overlay v-if="isOpen">
     <Transition name="modal-fade" appear>
       <div
-        class="bg-[#1e1e1e] border border-white/10 rounded-2xl w-full max-w-[450px] p-6 relative shadow-2xl overflow-hidden text-left"
+        class="bg-[#1e1e1e] border border-white/10 rounded-2xl w-full max-w-[450px] p-4 sm:p-6 relative shadow-2xl overflow-hidden text-left"
       >
         <button
           @click="close()"
           :disabled="isRenaming"
-          class="disabled:cursor-not-allowed absolute top-4 right-4 text-gray-400 hover:text-white cursor-pointer p-1.5 hover:bg-white/5 rounded-lg transition-colors"
+          class="disabled:cursor-not-allowed absolute top-3 right-3 sm:top-4 sm:right-4 text-gray-400 hover:text-white cursor-pointer p-1.5 hover:bg-white/5 rounded-lg transition-colors"
         >
           <FontAwesomeIcon :icon="faXmark" class="w-4 h-4" />
         </button>
 
-        <h3 class="text-white text-lg font-semibold mb-6">Renomear Arquivo</h3>
+        <h3 class="text-white text-base sm:text-lg font-semibold mb-4 sm:mb-6 pr-8">Renomear Arquivo</h3>
 
-        <div class="flex flex-col gap-5">
+        <div class="flex flex-col gap-4 sm:gap-5">
           <Input
             v-model="newFileName"
             text="Digite o novo nome do arquivo"
@@ -83,18 +83,18 @@ const submitRename = async () => {
             :onKeyEnter="submitRename"
           />
 
-          <div class="flex gap-3 w-full mt-2">
+          <div class="flex gap-2 sm:gap-3 w-full mt-1 sm:mt-2">
             <button
               @click="close()"
               :disabled="isRenaming"
-              class="disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex-1 px-6 py-3 rounded-full bg-[#333] hover:bg-[#444] text-white font-semibold transition-all duration-300"
+              class="disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex-1 px-4 sm:px-6 py-2.5 sm:py-3 rounded-full bg-[#333] hover:bg-[#444] text-white text-[13px] sm:text-sm font-semibold transition-all duration-300"
             >
               Cancelar
             </button>
             <button
               :disabled="isRenaming"
               @click="submitRename"
-              class="cursor-pointer flex-1 px-6 py-3 rounded-full bg-[#009900] hover:bg-[#22c55e] text-white font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="cursor-pointer flex-1 px-4 sm:px-6 py-2.5 sm:py-3 rounded-full bg-[#009900] hover:bg-[#22c55e] text-white text-[13px] sm:text-sm font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <FontAwesomeIcon
                 v-if="isRenaming"

@@ -104,6 +104,7 @@ watch(
     tabindex="0"
     @dblclick="redirect ? navigateToDetail() : null"
     class="relative flex flex-col gap-3 h-64 p-4 bg-[#1e1e1e]/60 backdrop-blur-md border border-white/10 rounded-2xl hover:border-white/20 focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e]/30 focus:outline-none transition-all duration-300 group cursor-pointer"
+    :class="{ 'z-30': openMenuIndex === index }"
   >
     <div class="flex items-center justify-between w-full min-w-0 gap-2">
       <div class="flex items-center gap-2 min-w-0 flex-1">
@@ -170,7 +171,7 @@ watch(
 
     <div
       v-if="openMenuIndex === index"
-      class="absolute right-4 top-12 w-56 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl z-40 py-1.5 flex flex-col overflow-hidden"
+      class="absolute right-2 sm:right-4 top-12 w-48 sm:w-56 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl z-50 py-1.5 flex flex-col overflow-hidden"
     >
       <template v-if="isInTrash">
         <button

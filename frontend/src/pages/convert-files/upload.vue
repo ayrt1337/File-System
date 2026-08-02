@@ -221,7 +221,7 @@ const handleSaveFile = async () => {
     />
 
     <div class="max-w-2xl mx-auto text-white mt-10">
-      <div class="flex items-center gap-4 mb-8">
+      <div class="flex flex-col justify-center sm:flex-row sm:items-center gap-4 mb-8">
         <button
           @click="router.push('/convert-files')"
           class="flex items-center justify-center w-10 h-10 rounded-full border border-[#333] bg-[#141414] hover:bg-[#222] transition-colors text-gray-400 hover:text-white cursor-pointer"
@@ -240,7 +240,7 @@ const handleSaveFile = async () => {
       </div>
 
       <div
-        class="bg-[#141414]/80 border border-[#222] rounded-3xl px-8 py-10 relative overflow-hidden"
+        class="bg-[#141414]/80 border border-[#222] rounded-3xl p-4 sm:px-8 sm:py-10 relative overflow-hidden"
       >
         <div v-if="!selectedFile && conversionStatus !== 'error'">
           <div
@@ -287,7 +287,7 @@ const handleSaveFile = async () => {
 
         <div v-else-if="selectedFile && conversionStatus === 'idle'">
           <div
-            class="flex items-center gap-4 p-4 border border-[#222] bg-[#1a1a1a]/50 rounded-2xl mb-8"
+            class="flex items-center gap-4 p-4 border border-[#222] bg-[#1a1a1a]/50 rounded-2xl mb-5 sm:mb-8"
           >
             <div class="flex-1 min-w-0">
               <p class="font-semibold text-sm text-gray-200 truncate">
@@ -305,7 +305,7 @@ const handleSaveFile = async () => {
             </button>
           </div>
 
-          <div class="flex justify-center gap-3">
+          <div class="flex flex-col sm:flex-row justify-center gap-3">
             <button
               @click="clearFile"
               class="px-6 py-3 border border-[#333] hover:border-gray-600 hover:bg-gray-800/40 text-gray-300 font-semibold text-sm rounded-full transition-all duration-300 cursor-pointer"
@@ -393,7 +393,7 @@ const handleSaveFile = async () => {
           <div
             class="flex flex-col gap-3 w-full max-w-sm items-center"
           >
-            <div class="flex gap-2">
+            <div class="flex flex-col sm:flex-row justify-center gap-2">
               <button
                 @click="downloadConvertedFile"
                 class="disabled:cursor-not-allowed disabled:bg-green-950/50 disabled:text-gray-500 px-8 py-3 bg-[#009900] hover:bg-[#22c55e] text-black font-bold text-sm rounded-full transition-all duration-300 transform cursor-pointer flex items-center justify-center gap-2"

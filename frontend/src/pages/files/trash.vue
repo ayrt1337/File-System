@@ -146,11 +146,10 @@ const handleInfo = (file: UserFile) => {
           class="text-[22px] mt-0.5 shrink-0"
         />
         <div class="flex flex-col gap-0.5">
-          <p class="text-[17px] font-semibold text-white">
-            Limpeza Automática
-          </p>
+          <p class="text-[17px] font-semibold text-white">Limpeza Automática</p>
           <p class="text-[14px] text-[#fbbf24]/80">
-            Os arquivos que permanecerem na lixeira por mais de 30 dias serão excluídos permanentemente de forma automática.
+            Os arquivos que permanecerem na lixeira por mais de 30 dias serão
+            excluídos permanentemente de forma automática.
           </p>
         </div>
       </div>
@@ -176,7 +175,7 @@ const handleInfo = (file: UserFile) => {
 
         <div
           v-else
-          class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+          class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6"
         >
           <FileCard
             v-for="(file, index) in filteredFiles"
@@ -199,28 +198,30 @@ const handleInfo = (file: UserFile) => {
   <FileInfoModal
     :isOpen="isInfoModalOpen"
     :file="selectedFile"
-    :close="() => isInfoModalOpen = false"
+    :close="() => (isInfoModalOpen = false)"
   />
 
   <Overlay v-if="showDeleteConfirm">
     <Transition name="modal-fade" appear>
       <div
-        class="relative bg-[#1a1a1a] border border-[#333] w-full max-w-[400px] rounded-[24px] p-8 shadow-2xl overflow-hidden"
+        class="relative bg-[#1a1a1a] border border-[#333] w-full max-w-[400px] rounded-2xl sm:rounded-[24px] p-4 sm:p-8 shadow-2xl overflow-hidden"
       >
         <div class="flex flex-col items-center text-center">
           <div
-            class="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-6"
+            class="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-4 sm:mb-6"
           >
             <FontAwesomeIcon
               :icon="faTriangleExclamation"
-              class="text-3xl text-red-500"
+              class="text-xl sm:text-3xl text-red-500"
             />
           </div>
 
-          <h3 class="text-xl font-bold text-white mb-2">Excluir permanentemente?</h3>
+          <h3 class="text-lg sm:text-xl font-bold text-white mb-2">
+            Excluir permanentemente?
+          </h3>
           <p class="text-gray-400 text-sm leading-relaxed mb-8">
-            Esta ação é permanente e o arquivo não poderá ser recuperado.
-            Tem certeza que deseja continuar?
+            Esta ação é permanente e o arquivo não poderá ser recuperado. Tem
+            certeza que deseja continuar?
           </p>
 
           <div class="flex gap-3 w-full">
@@ -235,7 +236,12 @@ const handleInfo = (file: UserFile) => {
               @click="confirmDelete()"
               class="cursor-pointer flex-1 px-6 py-3 rounded-full bg-red-600 hover:bg-red-500 text-white font-semibold transition-all duration-300 shadow-lg shadow-red-900/20"
             >
-              <FontAwesomeIcon v-if="inputLoading" :icon="faSpinner" spin class="mr-2" />
+              <FontAwesomeIcon
+                v-if="inputLoading"
+                :icon="faSpinner"
+                spin
+                class="mr-2"
+              />
               Confirmar
             </button>
           </div>

@@ -11,7 +11,7 @@ const { showLoading } = useLoading();
 <template>
     <Transition name="toast">
         <div v-if="toastState.show && !showLoading" :class="[
-            'fixed top-8 right-8 z-[100] flex items-center gap-2 px-6 py-4 rounded-lg shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-xl border transition-all duration-300',
+            'fixed top-4 right-3 left-3 sm:left-auto sm:right-8 sm:top-8 max-w-[calc(100vw-24px)] sm:max-w-md z-[100] flex items-center gap-3 px-4 sm:px-6 py-3 sm:py-4 rounded-xl shadow-2xl backdrop-blur-xl border transition-all duration-300',
             toastState.type === 'error' ? 'bg-[#1a1111]/95 border-red-500/20 text-red-400' : 'bg-[#111a11]/95 border-emerald-500/20 text-emerald-400'
         ]">
             <div class="flex items-center justify-center w-10 h-10 rounded-full">

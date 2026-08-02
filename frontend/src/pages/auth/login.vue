@@ -74,27 +74,35 @@ const handleLogin = async () => {
 
 <template>
   <Container>
-    <BgContainer class="max-w-6xl h-[70vh] flex">
+    <BgContainer
+      class="w-full max-w-[600px] min-[1360px]:max-w-6xl min-[1360px]:min-h-[70vh] h-auto flex justify-center min-[1360px]:flex-row my-auto"
+    >
       <div
-        class="w-full lg:w-1/2 pr-0 p-8 md:py-12 lg:py-16 flex flex-col justify-center relative z-20 bg-[#121212]"
+        class="w-full min-[1360px]:w-1/2 px-15 py-25 max-[650px]:px-7 max-[650px]:py-16 min-[1360px]:py-16 flex items-center relative z-20 bg-[#121212]"
       >
-        <div class="max-w-md mx-auto w-full">
-          <div class="mb-10">
+        <div class="w-full min-[1360px]:max-w-md min-[1360px]:mx-auto">
+          <div class="mb-6 sm:mb-10">
             <h1
               class="text-4xl font-bold bg-gradient-to-r from-white to-gray-500 bg-clip-text text-transparent mb-2 text-center"
             >
               Bem Vindo!
             </h1>
-            <p class="text-gray-500 text-center">
+            <p class="text-base text-gray-500 text-center">
               Faça o login para a sua conta
             </p>
           </div>
 
-          <p v-if="errorMessage" class="error text-red-500 text-center">
+          <p
+            v-if="errorMessage"
+            class="error text-red-500 text-center text-base mb-2"
+          >
             {{ errorMessage }}
           </p>
 
-          <form @submit.prevent="handleLogin" class="mt-5 space-y-6">
+          <form
+            @submit.prevent="handleLogin"
+            class="mt-3 sm:mt-5 space-y-4 sm:space-y-6"
+          >
             <Input
               leftIcon="faEnvelope"
               text="Email"
@@ -110,7 +118,9 @@ const handleLogin = async () => {
               leftIcon="faLock"
             />
 
-            <div class="flex justify-between items-center text-sm">
+            <div
+              class="flex justify-between items-start sm:items-center text-sm gap-2"
+            >
               <label class="flex items-center cursor-pointer group">
                 <input
                   v-model="data.rememberMe"
@@ -118,34 +128,39 @@ const handleLogin = async () => {
                   class="sr-only peer"
                 />
                 <div
-                  class="relative w-11 h-6 bg-[#1a1a1a] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#22c55e]/50 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-gray-500 after:border-gray-600 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#22c55e] peer-checked:after:bg-white peer-checked:after:border-transparent"
+                  class="relative w-9 sm:w-11 h-5 sm:h-6 bg-[#1a1a1a] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#22c55e]/50 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-gray-500 after:border-gray-600 after:border after:rounded-full after:h-4 sm:after:h-5 after:w-4 sm:after:w-5 after:transition-all peer-checked:bg-[#22c55e] peer-checked:after:bg-white peer-checked:after:border-transparent"
                 ></div>
                 <span
-                  class="ml-3 text-gray-500 group-hover:text-gray-400 transition select-none"
+                  class="ml-2.5 sm:ml-3 text-gray-500 group-hover:text-gray-400 transition select-none"
                   >Manter login</span
                 >
               </label>
               <a
                 @click="router.push('/reset')"
-                class="cursor-pointer text-[#00b300] hover:text-[#22c55e] transition-colors font-medium"
+                class="cursor-pointer text-[#00b300] hover:text-[#22c55e] transition-colors font-medium text-sm"
                 >Esqueceu a senha?</a
               >
             </div>
 
-            <div class="flex gap-4 pt-2">
+            <div class="flex flex-col sm:flex-row gap-3 pt-2">
               <button
                 type="submit"
                 :disabled="loading"
-                class="cursor-pointer flex-1 bg-[#009900] hover:bg-[#22c55e] text-black font-bold py-3.5 px-6 rounded-full transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+                class="cursor-pointer w-full sm:flex-1 bg-[#009900] hover:bg-[#22c55e] text-black font-bold py-3 sm:py-3.5 px-6 rounded-full transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none text-sm sm:text-base"
               >
-                <FontAwesomeIcon v-if="loading" :icon="faSpinner" spin />
+                <FontAwesomeIcon
+                  v-if="loading"
+                  :icon="faSpinner"
+                  spin
+                  class="mr-2"
+                />
                 Login
               </button>
 
               <button
                 type="button"
                 @click="router.push('/register')"
-                class="cursor-pointer flex-1 bg-transparent hover:bg-gray-800/50 text-gray-300 hover:text-white border border-gray-700 hover:border-gray-500 font-bold py-3.5 px-6 rounded-full transition-all duration-300 transform hover:-translate-y-0.5"
+                class="cursor-pointer w-full sm:flex-1 bg-transparent hover:bg-gray-800/50 text-gray-300 hover:text-white border border-gray-700 hover:border-gray-500 font-bold py-3 sm:py-3.5 px-6 rounded-full transition-all duration-300 transform hover:-translate-y-0.5 text-sm sm:text-base"
               >
                 Cadastrar
               </button>
@@ -154,7 +169,9 @@ const handleLogin = async () => {
         </div>
       </div>
 
-      <div class="hidden lg:block lg:w-1/2 relative overflow-hidden">
+      <div
+        class="hidden min-[1360px]:block min-[1360px]:w-1/2 relative overflow-hidden"
+      >
         <div
           class="absolute inset-0 flex flex-col items-center justify-center z-30 text-center pl-0 p-12"
         >

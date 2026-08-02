@@ -220,11 +220,11 @@ const handleSave = async () => {
   <Overlay v-if="isOpen && file">
     <div
       @click.stop
-      class="bg-[#1e1e1e] border border-white/10 rounded-3xl w-full max-w-[550px] p-6 relative shadow-2xl text-left"
+      class="bg-[#1e1e1e] border border-white/10 rounded-2xl sm:rounded-3xl w-full max-w-[550px] p-4 sm:p-6 relative shadow-2xl text-left max-h-[90vh] overflow-y-auto"
     >
-      <div class="flex items-center justify-between gap-4 mb-6 min-w-0">
+      <div class="flex items-center justify-between gap-3 mb-4 sm:mb-6 min-w-0">
         <h3
-          class="text-white text-[20px] font-normal leading-normal select-none truncate flex-1 min-w-0"
+          class="text-white text-base sm:text-[20px] font-normal leading-normal select-none truncate flex-1 min-w-0"
           :title="`Compartilhar &quot;${file.name}&quot;`"
         >
           Compartilhar {{ file.name }}
@@ -239,10 +239,10 @@ const handleSave = async () => {
         </button>
       </div>
 
-      <div class="mb-5 flex gap-2">
+      <div class="mb-4 sm:mb-5 flex flex-col sm:flex-row gap-2">
         <Input
           v-model="emailInput"
-          text="Adicione participantes (email)"
+          text="Participantes (email)"
           :error="emailError"
           :on-key-enter="handleAddEmail"
         />
@@ -250,7 +250,7 @@ const handleSave = async () => {
           v-if="emailInput.trim().length > 0"
           @click="handleAddEmail"
           :disabled="isSearchingUser"
-          class="self-start h-[52px] px-6 bg-[#009900] hover:bg-[#22c55e] disabled:bg-gray-800 disabled:text-gray-500 text-white text-sm font-semibold rounded-full transition-colors cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
+          class="h-[46px] sm:h-[52px] px-5 sm:px-6 bg-[#009900] hover:bg-[#22c55e] disabled:bg-gray-800 disabled:text-gray-500 text-white text-xs sm:text-sm font-semibold rounded-full transition-colors cursor-pointer flex items-center justify-center gap-1.5 shrink-0"
         >
           <FontAwesomeIcon
             v-if="isSearchingUser"
@@ -261,25 +261,25 @@ const handleSave = async () => {
         </button>
       </div>
 
-      <div class="mb-6 flex flex-col gap-4">
-        <h4 class="text-white text-[15px] font-medium select-none mb-1">
+      <div class="mb-5 sm:mb-6 flex flex-col gap-3 sm:gap-4">
+        <h4 class="text-white sm:text-[15px] font-medium select-none">
           Pessoas com acesso
         </h4>
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 sm:gap-3 min-w-0">
             <img
               :src="user?.avatarUrl || UserImage"
-              class="rounded-full size-10 object-cover border border-white/10"
+              class="rounded-full size-10 sm:size-10 object-cover border border-white/10 shrink-0"
               alt="Avatar"
             />
-            <div class="flex flex-col">
-              <span class="text-white text-sm font-normal"
+            <div class="flex flex-col min-w-0">
+              <span class="text-white text-[14px] sm:text-sm font-normal truncate"
                 >{{ user?.name }} (você)</span
               >
-              <span class="text-gray-400 text-xs">{{ user?.email }}</span>
+              <span class="text-gray-400 text-[12px] sm:text-xs truncate">{{ user?.email }}</span>
             </div>
           </div>
-          <span class="text-gray-500 text-sm font-normal select-none"
+          <span class="text-gray-500 text-xs sm:text-sm font-normal select-none shrink-0"
             >Proprietário</span
           >
         </div>
@@ -287,26 +287,26 @@ const handleSave = async () => {
         <div
           v-for="(sharedUser, index) in sharedUsers"
           :key="sharedUser.email"
-          class="flex items-center justify-between"
+          class="flex items-center justify-between gap-2"
         >
-          <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2 sm:gap-3 min-w-0">
             <img
               :src="sharedUser.avatarUrl || UserImage"
-              class="rounded-full size-10 object-cover border border-white/10"
+              class="rounded-full size-8 sm:size-10 object-cover border border-white/10 shrink-0"
               alt="Avatar"
             />
-            <div class="flex flex-col">
-              <span class="text-white text-sm font-normal">{{
+            <div class="flex flex-col min-w-0">
+              <span class="text-white text-[14px] sm:text-sm font-normal truncate">{{
                 sharedUser.name
               }}</span>
-              <span class="text-gray-400 text-xs">{{ sharedUser.email }}</span>
+              <span class="text-gray-400 text-[12px] sm:text-xs truncate">{{ sharedUser.email }}</span>
             </div>
           </div>
 
-          <div class="relative">
+          <div class="relative shrink-0">
             <button
               @click.stop="toggleUserRoleMenu(index, $event)"
-              class="flex items-center gap-1.5 text-white text-sm font-medium cursor-pointer hover:text-white/80 select-none py-1.5 px-3 bg-white/5 border border-white/10 rounded-full transition-colors"
+              class="flex items-center gap-1 text-white text-xs sm:text-sm font-medium cursor-pointer hover:text-white/80 select-none py-1 px-2.5 sm:py-1.5 sm:px-3 bg-white/5 border border-white/10 rounded-full transition-colors"
             >
               <span>{{
                 sharedUser.role === "reader" ? "Leitor" : "Editor"
@@ -317,11 +317,11 @@ const handleSave = async () => {
             <Transition name="dropdown-fade">
               <div
                 v-if="openRoleMenuIndex === index"
-                class="absolute right-0 top-9 min-w-[180px] bg-[#1a1a1a] border border-white/10 rounded-xl z-50 py-1.5 flex flex-col overflow-hidden text-right"
+                class="absolute right-0 top-9 min-w-[160px] bg-[#1a1a1a] border border-white/10 rounded-xl z-50 py-1.5 flex flex-col overflow-hidden text-right shadow-xl"
               >
                 <button
                   @click="changeUserRole(index, 'reader')"
-                  class="w-full px-4 py-2.5 text-left text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer font-medium"
+                  class="w-full px-3 py-2 text-left text-xs sm:text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-2 transition-colors cursor-pointer font-medium"
                 >
                   <div
                     class="w-4 h-4 flex items-center justify-center shrink-0"
@@ -337,7 +337,7 @@ const handleSave = async () => {
 
                 <button
                   @click="changeUserRole(index, 'editor')"
-                  class="w-full px-4 py-2.5 text-left text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer font-medium"
+                  class="w-full px-3 py-2 text-left text-xs sm:text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-2 transition-colors cursor-pointer font-medium"
                 >
                   <div
                     class="w-4 h-4 flex items-center justify-center shrink-0"
@@ -355,7 +355,7 @@ const handleSave = async () => {
 
                 <button
                   @click="removeUserAccess(index)"
-                  class="w-full px-4 py-2 text-left text-sm text-red-500 hover:text-red-400 hover:bg-white/5 flex items-center transition-colors cursor-pointer"
+                  class="w-full px-3 py-2 text-left text-xs sm:text-sm text-red-500 hover:text-red-400 hover:bg-white/5 flex items-center transition-colors cursor-pointer"
                 >
                   <span>Remover acesso</span>
                 </button>
@@ -365,14 +365,14 @@ const handleSave = async () => {
         </div>
       </div>
 
-      <div class="mb-8">
-        <h4 class="text-white text-[15px] font-medium mb-3 select-none">
+      <div class="mb-6 sm:mb-8">
+        <h4 class="text-white text-[14px] sm:text-[15px] font-medium mb-3 sm:mb-3 select-none">
           Acesso geral
         </h4>
-        <div class="flex items-start justify-between gap-3">
-          <div class="flex items-start gap-3 flex-1 min-w-0">
+        <div class="flex flex sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-2.5 sm:gap-3 flex-1 min-w-0">
             <div
-              class="w-[36px] h-[36px] rounded-full flex items-center justify-center shrink-0 mt-0.5 transition-colors"
+              class="w-8 h-8 sm:w-[36px] sm:h-[36px] rounded-full flex items-center justify-center shrink-0 mt-0.5 transition-colors"
               :class="
                 generalAccess === 'restricted'
                   ? 'bg-white/10 text-white'
@@ -381,38 +381,38 @@ const handleSave = async () => {
             >
               <FontAwesomeIcon
                 :icon="generalAccess === 'restricted' ? faLock : faGlobe"
-                class="text-sm"
+                class="text-xs sm:text-sm"
               />
             </div>
 
             <div class="flex-1 flex flex-col min-w-0 relative">
               <div
                 @click.stop="toggleAccessMenu"
-                class="flex items-center gap-1.5 text-white text-sm font-medium cursor-pointer hover:text-white/80 w-fit select-none"
+                class="flex items-center gap-1.5 text-white text-[14px] sm:text-sm font-medium cursor-pointer hover:text-white/80 w-fit select-none"
               >
                 <span>{{
                   generalAccess === "restricted"
                     ? "Restrito"
-                    : "Qualquer pessoa com o link"
+                    : "Público"
                 }}</span>
                 <FontAwesomeIcon :icon="faChevronDown" class="text-[9px]" />
               </div>
-              <span class="text-gray-400 text-xs mt-0.5 select-none">
+              <span class="text-gray-400 text-[12px] sm:text-xs mt-0.5 select-none leading-tight">
                 {{
                   generalAccess === "restricted"
-                    ? "Só as pessoas com acesso podem abrir usando o link."
-                    : "Qualquer pessoa na Internet com o link pode ver"
+                    ? "Só as pessoas com acesso podem abrir."
+                    : "Qualquer pessoa com o link pode ver"
                 }}
               </span>
 
               <Transition name="dropdown-fade">
                 <div
                   v-if="isAccessDropdownOpen"
-                  class="absolute left-0 top-6 min-w-[240px] bg-[#1a1a1a] border border-white/10 rounded-xl z-50 py-1.5 flex flex-col overflow-hidden text-left"
+                  class="absolute left-0 top-6 min-w-[200px] sm:min-w-[240px] bg-[#1a1a1a] border border-white/10 rounded-xl z-50 py-1.5 flex flex-col overflow-hidden text-left shadow-xl"
                 >
                   <button
                     @click="selectAccess('restricted')"
-                    class="w-full px-4 py-2.5 text-left text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer font-medium"
+                    class="w-full px-3 py-2 text-left text-xs sm:text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-2 transition-colors cursor-pointer font-medium"
                   >
                     <div
                       class="w-4 h-4 flex items-center justify-center shrink-0"
@@ -428,7 +428,7 @@ const handleSave = async () => {
 
                   <button
                     @click="selectAccess('public')"
-                    class="w-full px-4 py-2.5 text-left text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer font-medium"
+                    class="w-full px-3 py-2 text-left text-xs sm:text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-2 transition-colors cursor-pointer font-medium"
                   >
                     <div
                       class="w-4 h-4 flex items-center justify-center shrink-0"
@@ -439,17 +439,17 @@ const handleSave = async () => {
                         class="text-[#22c55e] text-xs"
                       />
                     </div>
-                    <span>Qualquer pessoa com o link</span>
+                    <span>Público</span>
                   </button>
                 </div>
               </Transition>
             </div>
           </div>
 
-          <div v-if="generalAccess === 'public'" class="relative shrink-0 mt-1">
+          <div v-if="generalAccess === 'public'" class="relative shrink-0 self-center">
             <button
               @click.stop="togglePublicRoleMenu"
-              class="flex items-center gap-1.5 text-white text-sm font-medium cursor-pointer hover:text-white/80 select-none py-1.5 px-3 bg-white/5 border border-white/10 rounded-full transition-colors"
+              class="flex items-center gap-1.5 text-white text-xs sm:text-sm font-medium cursor-pointer hover:text-white/80 select-none py-1 px-3 bg-white/5 border border-white/10 rounded-full transition-colors"
             >
               <span>{{ publicRole === "reader" ? "Leitor" : "Editor" }}</span>
               <FontAwesomeIcon :icon="faChevronDown" class="text-[9px]" />
@@ -458,11 +458,11 @@ const handleSave = async () => {
             <Transition name="dropdown-fade">
               <div
                 v-if="isPublicRoleMenuOpen"
-                class="absolute right-0 top-9 min-w-[180px] bg-[#1a1a1a] border border-white/10 rounded-xl z-50 py-1.5 flex flex-col overflow-hidden text-right"
+                class="absolute right-0 top-9 min-w-[160px] bg-[#1a1a1a] border border-white/10 rounded-xl z-50 py-1.5 flex flex-col overflow-hidden text-right shadow-xl"
               >
                 <button
                   @click="changePublicRole('reader')"
-                  class="w-full px-4 py-2.5 text-left text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer font-medium"
+                  class="w-full px-3 py-2 text-left text-xs sm:text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-2 transition-colors cursor-pointer font-medium"
                 >
                   <div
                     class="w-4 h-4 flex items-center justify-center shrink-0"
@@ -478,7 +478,7 @@ const handleSave = async () => {
 
                 <button
                   @click="changePublicRole('editor')"
-                  class="w-full px-4 py-2.5 text-left text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors cursor-pointer font-medium"
+                  class="w-full px-3 py-2 text-left text-xs sm:text-sm text-gray-300 hover:text-white hover:bg-white/5 flex items-center gap-2 transition-colors cursor-pointer font-medium"
                 >
                   <div
                     class="w-4 h-4 flex items-center justify-center shrink-0"
@@ -497,21 +497,21 @@ const handleSave = async () => {
         </div>
       </div>
 
-      <div class="flex items-center justify-between">
+      <div class="flex items-center justify-between gap-2 pt-2 border-t border-white/5">
         <button
           @click="copyShareUrl"
-          class="px-5 py-2.5 border border-white/20 hover:border-white/30 hover:bg-white/5 text-white text-sm font-semibold rounded-full cursor-pointer flex items-center gap-2"
+          class="px-3 sm:px-5 py-2 sm:py-2.5 border border-white/20 hover:border-white/30 hover:bg-white/5 text-white text-[14px] sm:text-sm font-semibold rounded-full cursor-pointer flex items-center gap-1.5 sm:gap-2"
         >
           <FontAwesomeIcon
             :icon="isCopied ? faCheck : faLink"
             class="text-xs"
           />
-          <span>{{ isCopied ? "Link copiado" : "Copiar link" }}</span>
+          <span>{{ isCopied ? "Copiado" : "Copiar link" }}</span>
         </button>
 
         <button
           @click="handleSave"
-          class="px-6 py-2.5 bg-[#009900] hover:bg-[#22c55e] text-white text-sm font-semibold rounded-full transition-colors cursor-pointer"
+          class="px-5 sm:px-6 py-2 sm:py-2.5 bg-[#009900] hover:bg-[#22c55e] text-white text-[14px] sm:text-sm font-semibold rounded-full transition-colors cursor-pointer"
         >
           Salvar
         </button>

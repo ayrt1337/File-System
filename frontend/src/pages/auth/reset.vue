@@ -61,13 +61,16 @@ const sendEmail = async (): Promise<void> => {
 <template>
   <Container>
     <BgContainer
-      class="flex flex-col items-center justify-center max-w-[700px] p-15 py-13 pt-14"
+      class="flex flex-col items-center justify-center max-w-[700px] w-full p-4 sm:p-10 py-6 sm:py-12"
     >
-      <h1 class="mb-6 text-[18px]">
+      <h1 class="mb-4 sm:mb-6 text-base sm:text-[18px] text-center text-gray-200">
         Digite o email da conta que deseja trocar a senha
       </h1>
 
-      <p v-if="errorMessage" class="error text-red-500 text-center mb-4">
+      <p
+        v-if="errorMessage"
+        class="error text-red-500 text-center text-base sm:text-base mb-3"
+      >
         {{ errorMessage }}
       </p>
 
@@ -83,7 +86,7 @@ const sendEmail = async (): Promise<void> => {
         type="button"
         :disabled="loading"
         @click="sendEmail()"
-        class="mt-6 cursor-pointer flex-1 bg-[#009900] hover:bg-[#22c55e] text-black font-bold py-3.5 px-6 rounded-full transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
+        class="mt-5 sm:mt-6 cursor-pointer w-full bg-[#009900] hover:bg-[#22c55e] text-black font-bold py-3 sm:py-3.5 px-6 rounded-full transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2 text-sm sm:text-base"
       >
         <FontAwesomeIcon v-if="loading" :icon="faSpinner" spin />
         Solicitar Alteração

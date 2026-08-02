@@ -132,21 +132,24 @@ const handleRenameClick = (file: UserFile) => {
     :sidebar="true"
     title="Favoritos"
   >
-    <div class="flex flex-col gap-6 py-6">
-      <FileSkeletonLoader v-if="isLoadingFiles" :count="4" />
+    <div class="flex flex-col gap-4 sm:gap-6 py-3 sm:py-6">
+      <FileSkeletonLoader v-if="isLoadingFiles" :count="8" />
 
       <template v-else>
         <div
           v-if="filteredFiles.length === 0"
-          class="flex flex-col items-center justify-center min-h-[60vh] text-center gap-4"
+          class="flex flex-col items-center justify-center min-h-[50vh] sm:min-h-[60vh] text-center gap-3 sm:gap-4 px-2"
         >
           <div
-            class="size-30 rounded-full bg-[#1e1e1e] flex items-center justify-center border border-white/5 text-gray-500"
+            class="size-24 sm:size-30 rounded-full bg-[#1e1e1e] flex items-center justify-center border border-white/5 text-gray-500"
           >
-            <FontAwesomeIcon :icon="faStar" class="text-5xl text-[#fbbf24]" />
+            <FontAwesomeIcon
+              :icon="faStar"
+              class="text-3xl sm:text-5xl text-[#fbbf24]"
+            />
           </div>
           <div>
-            <h3 class="text-white text-[20px] font-semibold">
+            <h3 class="text-white text-base sm:text-[20px] font-semibold">
               Nenhum arquivo favorito
             </h3>
           </div>
@@ -154,7 +157,7 @@ const handleRenameClick = (file: UserFile) => {
 
         <div
           v-else
-          class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+          class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6"
         >
           <FileCard
             v-for="(file, index) in filteredFiles"
@@ -178,19 +181,19 @@ const handleRenameClick = (file: UserFile) => {
   <FileInfoModal
     :isOpen="isInfoModalOpen"
     :file="selectedFile"
-    :close="() => isInfoModalOpen = false"
+    :close="() => (isInfoModalOpen = false)"
   />
 
   <FileRenameModal
     :isOpen="isRenameModalOpen"
     :file="selectedFile"
-    :close="() => isRenameModalOpen = false"
+    :close="() => (isRenameModalOpen = false)"
     :success="fetchFiles"
   />
 
-  <FileShareModal 
+  <FileShareModal
     :isOpen="isShareModelOpen"
     :file="selectedFile"
-    :close="() => isShareModelOpen = false"
+    :close="() => (isShareModelOpen = false)"
   />
 </template>
