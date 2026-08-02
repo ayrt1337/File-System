@@ -205,10 +205,10 @@ const handleSave = async () => {
     props.file.publicRole = data.publicRole;
     props.file.sharedUsers = data.sharedUsers;
 
-    showToast("Alterações salvas!", "success")
+    showToast("Alterações salvas!", "success");
   } catch (error) {
     console.error("Erro ao salvar compartilhamento:", error);
-    showToast("Erro ao salvar compartilhamento!", "error")
+    showToast("Erro ao salvar compartilhamento!", "error");
   } finally {
     props.close();
     isSalving.value = false;

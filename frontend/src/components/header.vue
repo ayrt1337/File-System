@@ -57,7 +57,7 @@ onUnmounted(() => {
 
 <template>
   <div
-    class="flex items-center justify-between bg-[#121212] w-full h-[70px] sm:h-[85px] px-3 sm:px-6 relative gap-2 sm:gap-4 shrink-0"
+    class="flex items-center justify-between bg-[#121212] w-full h-[70px] sm:h-[85px] pr-3 sm:pr-6 relative gap-2 sm:gap-4 shrink-0"
   >
     <div class="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
       <button
