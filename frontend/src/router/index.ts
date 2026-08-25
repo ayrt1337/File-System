@@ -130,10 +130,13 @@ router.beforeEach((to) => {
     const { showServerErrorPage } = useServerError();
 
     try {
-      if (!hasValidSessionStored()) router.push("/login");
+      if (!hasValidSessionStored()) {
+        return { name: "login" };
+      }
     } catch (error: any) {
       console.error("Erro ao verificar usuário:", error);
       showServerErrorPage(true);
+      return false;
     }
   }
 });
