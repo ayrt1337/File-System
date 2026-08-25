@@ -4,7 +4,7 @@ import { ref, computed, onMounted, onUnmounted } from "vue";
 import { api } from "../../services/api";
 import { verifyApiError } from "../../services/verify-api-error";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
-import { faFile } from "@fortawesome/free-solid-svg-icons";
+import { faFile, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useLoading } from "../../composables/use-loading.ts";
 import FileInfoModal from "../../components/file-info-modal.vue";
 import FileRenameModal from "../../components/file-rename-modal.vue";
@@ -14,6 +14,7 @@ import { API_ROUTES } from "../../routing/routes";
 import type { UserFile } from "../../types/file";
 import { useFilesServices } from "../../services/files-services.ts";
 import FileShareModal from "../../components/file-share-modal.vue";
+import { useInfiniteScroll } from "../../composables/use-infinite-scroll";
 
 const { showLoadingPage } = useLoading();
 const { downloadFile, toggleFavorite, deleteFile } = useFilesServices();
@@ -21,19 +22,69 @@ const { downloadFile, toggleFavorite, deleteFile } = useFilesServices();
 const files = ref<UserFile[]>([]);
 const searchQuery = ref("");
 const isLoadingFiles = ref<boolean>(false);
+const isLoadingMore = ref<boolean>(false);
+const page = ref<number>(1);
+const limit = 30;
+const hasMore = ref<boolean>(true);
+const totalFiles = ref<number>(0);
 const selectedFile = ref<UserFile | null>(null);
+const sentinelRef = ref<HTMLElement | null>(null);
 
-const fetchFiles = async () => {
-  isLoadingFiles.value = true;
-  const { data } = await api.get(API_ROUTES.FILE.SHARED_FILES);
-  files.value = data.files || [];
-  isLoadingFiles.value = false;
+const fetchFiles = async (reset = false) => {
+  if (reset) {
+    page.value = 1;
+    hasMore.value = true;
+    isLoadingFiles.value = true;
+  }
+
+  try {
+    const { data } = await api.get(
+      `${API_ROUTES.FILE.SHARED_FILES}?page=${page.value}&limit=${limit}`,
+    );
+    const newFiles = data.files || [];
+    if (reset) {
+      files.value = newFiles;
+    } else {
+      files.value = [...files.value, ...newFiles];
+    }
+    hasMore.value = data.hasMore ?? false;
+    totalFiles.value = data.total ?? files.value.length;
+  } finally {
+    if (reset) {
+      isLoadingFiles.value = false;
+    }
+  }
 };
+
+const loadMore = async () => {
+  if (isLoadingFiles.value || isLoadingMore.value || !hasMore.value) return;
+
+  isLoadingMore.value = true;
+  page.value += 1;
+  try {
+    const { data } = await api.get(
+      `${API_ROUTES.FILE.SHARED_FILES}?page=${page.value}&limit=${limit}`,
+    );
+    const newFiles = data.files || [];
+    files.value = [...files.value, ...newFiles];
+    hasMore.value = data.hasMore ?? false;
+    totalFiles.value = data.total ?? files.value.length;
+  } catch (error: any) {
+    console.error("Erro ao carregar mais compartilhados: ", error);
+    page.value -= 1;
+  } finally {
+    isLoadingMore.value = false;
+  }
+};
+
+useInfiniteScroll(sentinelRef, loadMore, {
+  enabled: () => hasMore.value && !isLoadingFiles.value && !isLoadingMore.value,
+});
 
 const loadFiles = async () => {
   showLoadingPage(true);
   try {
-    await fetchFiles();
+    await fetchFiles(true);
   } catch (error: any) {
     console.error("Erro em iniciar página: ", error);
     verifyApiError(error.response?.status);
@@ -168,6 +219,18 @@ const handleRenameClick = (file: UserFile) => {
             :onDelete="handleDelete"
           />
         </div>
+
+        <div
+          v-if="files.length !== totalFiles"
+          ref="sentinelRef"
+          class="w-full flex items-center justify-center py-6 min-h-[48px]"
+        >
+          <FontAwesomeIcon
+            v-if="isLoadingMore"
+            :icon="faSpinner"
+            class="animate-spin text-2xl text-[#22c55e]"
+          />
+        </div>
       </template>
     </div>
   </HomePageTemplate>
@@ -182,7 +245,7 @@ const handleRenameClick = (file: UserFile) => {
     :isOpen="isRenameModalOpen"
     :file="selectedFile"
     :close="() => (isRenameModalOpen = false)"
-    :success="fetchFiles"
+    :success="() => fetchFiles(true)"
   />
 
   <FileShareModal

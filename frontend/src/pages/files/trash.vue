@@ -19,6 +19,7 @@ import { API_ROUTES } from "../../routing/routes";
 import type { UserFile } from "../../types/file";
 import Overlay from "../../components/overlay.vue";
 import { useFileCacheStore } from "../../stores/file-cache";
+import { useInfiniteScroll } from "../../composables/use-infinite-scroll";
 
 const { showToast } = useToast();
 const { showLoadingPage } = useLoading();
@@ -27,25 +28,75 @@ const fileCacheStore = useFileCacheStore();
 
 const searchQuery = ref("");
 const isLoadingFiles = ref<boolean>(false);
+const isLoadingMore = ref<boolean>(false);
+const page = ref<number>(1);
+const limit = 30;
+const hasMore = ref<boolean>(true);
+const totalFiles = ref<number>(0);
 const selectedFile = ref<UserFile | null>(null);
 const isInfoModalOpen = ref(false);
 const files = ref<UserFile[]>([]);
+const sentinelRef = ref<HTMLElement | null>(null);
 
 const showDeleteConfirm = ref<boolean>(false);
 const fileToDelete = ref<UserFile | null>(null);
 const inputLoading = ref<boolean>(false);
 
-const fetchFiles = async () => {
-  isLoadingFiles.value = true;
-  const { data } = await api.get(`${API_ROUTES.FILE.MY_FILES}?status=TRASH`);
-  files.value = data.files || [];
-  isLoadingFiles.value = false;
+const fetchFiles = async (reset = false) => {
+  if (reset) {
+    page.value = 1;
+    hasMore.value = true;
+    isLoadingFiles.value = true;
+  }
+
+  try {
+    const { data } = await api.get(
+      `${API_ROUTES.FILE.MY_FILES}?status=TRASH&page=${page.value}&limit=${limit}`,
+    );
+    const newFiles = data.files || [];
+    if (reset) {
+      files.value = newFiles;
+    } else {
+      files.value = [...files.value, ...newFiles];
+    }
+    hasMore.value = data.hasMore ?? false;
+    totalFiles.value = data.total ?? files.value.length;
+  } finally {
+    if (reset) {
+      isLoadingFiles.value = false;
+    }
+  }
 };
+
+const loadMore = async () => {
+  if (isLoadingFiles.value || isLoadingMore.value || !hasMore.value) return;
+
+  isLoadingMore.value = true;
+  page.value += 1;
+  try {
+    const { data } = await api.get(
+      `${API_ROUTES.FILE.MY_FILES}?status=TRASH&page=${page.value}&limit=${limit}`,
+    );
+    const newFiles = data.files || [];
+    files.value = [...files.value, ...newFiles];
+    hasMore.value = data.hasMore ?? false;
+    totalFiles.value = data.total ?? files.value.length;
+  } catch (error: any) {
+    console.error("Erro ao carregar mais itens da lixeira: ", error);
+    page.value -= 1;
+  } finally {
+    isLoadingMore.value = false;
+  }
+};
+
+useInfiniteScroll(sentinelRef, loadMore, {
+  enabled: () => hasMore.value && !isLoadingFiles.value && !isLoadingMore.value,
+});
 
 const loadFiles = async () => {
   showLoadingPage(true);
   try {
-    await fetchFiles();
+    await fetchFiles(true);
   } catch (error: any) {
     console.error("Erro em iniciar página: ", error);
     verifyApiError(error.response?.status);
@@ -190,6 +241,18 @@ const handleInfo = (file: UserFile) => {
             :onInfo="handleInfo"
             :onRestore="handleRestore"
             :onPermanentDelete="handlePermanentDelete"
+          />
+        </div>
+
+        <div
+          v-if="files.length !== totalFiles"
+          ref="sentinelRef"
+          class="w-full flex items-center justify-center py-6 min-h-[48px]"
+        >
+          <FontAwesomeIcon
+            v-if="isLoadingMore"
+            :icon="faSpinner"
+            class="animate-spin text-2xl text-[#22c55e]"
           />
         </div>
       </template>

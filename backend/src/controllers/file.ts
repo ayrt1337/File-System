@@ -20,9 +20,11 @@ export class FileController {
   async getMyFiles(req: Request, res: Response, next: NextFunction) {
     try {
       const user = (req as any).user;
-      const { status, isFavorite } = req.query as {
+      const { status, isFavorite, page, limit } = req.query as {
         status?: string;
         isFavorite?: string;
+        page?: string;
+        limit?: string;
       };
 
       let targetStatus: FileStatus = "ACTIVE";
@@ -35,51 +37,63 @@ export class FileController {
       }
 
       const showOnlyFavorites = isFavorite === "true";
-      if (showOnlyFavorites && targetStatus !== "ACTIVE"){
-        throw new AppError("Requisição inválida!", 400)
+      if (showOnlyFavorites && targetStatus !== "ACTIVE") {
+        throw new AppError("Requisição inválida!", 400);
       }
 
-      const files = await database.files.findMany({
-        where: {
-          userId: user.id,
-          status: targetStatus,
-          isFavorite: showOnlyFavorites ? true : undefined,
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-        select: {
-          id: true,
-          name: true,
-          size: true,
-          format: true,
-          isFavorite: true,
-          isPublic: true,
-          publicRole: true,
-          createdAt: true,
-          lastUpdate: true,
-          sharedFiles: {
+      const pageNumber = Math.max(1, parseInt(page || "1", 10));
+      const limitNumber = Math.max(1, Math.min(100, parseInt(limit || "30", 10)));
+      const skip = (pageNumber - 1) * limitNumber;
+
+      const whereClause = {
+        userId: user.id,
+        status: targetStatus,
+        isFavorite: showOnlyFavorites ? true : undefined,
+      };
+
+      const [files, totalFilteredFiles, databaseUserFiles, s3UserFiles] =
+        await Promise.all([
+          database.files.findMany({
+            where: whereClause,
+            orderBy: {
+              createdAt: "desc",
+            },
+            skip,
+            take: limitNumber,
             select: {
-              userRole: true,
-              user: {
+              id: true,
+              name: true,
+              size: true,
+              format: true,
+              isFavorite: true,
+              isPublic: true,
+              publicRole: true,
+              createdAt: true,
+              lastUpdate: true,
+              sharedFiles: {
                 select: {
-                  email: true,
-                  name: true,
-                  avatarUrl: true,
+                  userRole: true,
+                  user: {
+                    select: {
+                      email: true,
+                      name: true,
+                      avatarUrl: true,
+                    },
+                  },
                 },
               },
             },
-          },
-        },
-      });
-
-      const databaseUserFiles = await database.files.count({
-        where: {
-          userId: user.id,
-        },
-      });
-
-      const s3UserFiles = await getTotalUserFiles(user.id);
+          }),
+          database.files.count({
+            where: whereClause,
+          }),
+          database.files.count({
+            where: {
+              userId: user.id,
+            },
+          }),
+          getTotalUserFiles(user.id),
+        ]);
 
       const filesWithPreviews = files.map((file) => {
         return {
@@ -96,6 +110,10 @@ export class FileController {
 
       res.status(200).json({
         files: filesWithPreviews,
+        total: totalFilteredFiles,
+        page: pageNumber,
+        limit: limitNumber,
+        hasMore: skip + files.length < totalFilteredFiles,
         hasProcessingFiles: s3UserFiles > databaseUserFiles,
       });
     } catch (error: any) {
@@ -461,29 +479,51 @@ export class FileController {
   async getSharedFiles(req: Request, res: Response, next: NextFunction) {
     try {
       const user = (req as any).user;
+      const { page, limit } = req.query as {
+        page?: string;
+        limit?: string;
+      };
 
-      const sharedRecords = await database.sharedFiles.findMany({
-        where: {
-          userId: user.id,
-          file: {
-            status: "ACTIVE",
-          },
+      const pageNumber = Math.max(1, parseInt(page || "1", 10));
+      const limitNumber = Math.max(1, Math.min(100, parseInt(limit || "30", 10) || 30));
+      const skip = (pageNumber - 1) * limitNumber;
+
+      const sharedWhere = {
+        userId: user.id,
+        file: {
+          status: "ACTIVE",
         },
-        include: {
-          file: {
-            select: {
-              id: true,
-              name: true,
-              size: true,
-              format: true,
-              preview: true,
-              createdAt: true,
-              lastUpdate: true,
-              userId: true,
+      };
+
+      const [sharedRecords, totalCount] = await Promise.all([
+        database.sharedFiles.findMany({
+          where: sharedWhere,
+          skip,
+          take: limitNumber,
+          orderBy: {
+            file: {
+              createdAt: "desc",
             },
           },
-        },
-      });
+          include: {
+            file: {
+              select: {
+                id: true,
+                name: true,
+                size: true,
+                format: true,
+                preview: true,
+                createdAt: true,
+                lastUpdate: true,
+                userId: true,
+              },
+            },
+          },
+        }),
+        database.sharedFiles.count({
+          where: sharedWhere,
+        }),
+      ]);
 
       const filesWithPreviews = await Promise.all(
         sharedRecords.map(async (record) => {
@@ -504,6 +544,10 @@ export class FileController {
 
       res.status(200).json({
         files: filesWithPreviews,
+        total: totalCount,
+        page: pageNumber,
+        limit: limitNumber,
+        hasMore: skip + sharedRecords.length < totalCount,
       });
     } catch (error) {
       next(error);

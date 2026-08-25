@@ -103,18 +103,18 @@ watch(
   <div
     tabindex="0"
     @dblclick="redirect ? navigateToDetail() : null"
-    class="relative flex flex-col gap-3 h-64 p-4 bg-[#1e1e1e]/60 backdrop-blur-md border border-white/10 rounded-2xl hover:border-white/20 focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e]/30 focus:outline-none transition-all duration-300 group cursor-pointer"
+    class="select-none relative flex flex-col gap-3 h-64 p-4 bg-[#1e1e1e]/60 backdrop-blur-md border border-white/10 rounded-2xl hover:border-white/20 focus:border-[#22c55e] focus:ring-1 focus:ring-[#22c55e]/30 focus:outline-none transition-all duration-300 group cursor-pointer"
     :class="{ 'z-30': openMenuIndex === index }"
   >
-    <div class="flex items-center justify-between w-full min-w-0 gap-2">
-      <div class="flex items-center gap-2 min-w-0 flex-1">
+    <div class="flex items-center justify-between w-full min-w-0 gap-2 select-none">
+      <div class="flex items-center gap-2 min-w-0 flex-1 select-none">
         <div
-          class="w-6 h-6 rounded-md flex items-center justify-center shrink-0"
+          class="w-6 h-6 rounded-md flex items-center justify-center shrink-0 select-none"
           :class="getFileBgClass(file.format)"
         >
           <FontAwesomeIcon
             :icon="getFileIcon(file.format)"
-            class="text-xs text-[#121212]"
+            class="text-xs text-[#121212] select-none"
           />
         </div>
         <h4
@@ -128,43 +128,44 @@ watch(
       <button
         v-if="showFavorite && file.role === 3"
         @click.stop="onToggleFavorite?.(file)"
-        class="p-1 rounded-lg hover:bg-white/5 cursor-pointer shrink-0 transition-colors"
+        class="p-1 rounded-lg hover:bg-white/5 cursor-pointer shrink-0 transition-colors select-none"
         :class="
           file.isFavorite ? 'text-[#fbbf24]' : 'text-gray-400 hover:text-white'
         "
       >
         <FontAwesomeIcon
           :icon="file.isFavorite ? faStar : faStarRegular"
-          class="h-4 w-4"
+          class="h-4 w-4 select-none"
         />
       </button>
 
       <button
         @click.stop="onToggleMenu?.(index)"
-        class="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-white/5 cursor-pointer shrink-0 transition-colors"
+        class="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-white/5 cursor-pointer shrink-0 transition-colors select-none"
       >
-        <FontAwesomeIcon :icon="faEllipsis" class="h-4 w-4" />
+        <FontAwesomeIcon :icon="faEllipsis" class="h-4 w-4 select-none" />
       </button>
     </div>
 
     <div
-      class="flex-1 bg-[#121212]/80 border border-white/5 rounded-xl flex items-center justify-center relative overflow-hidden"
+      class="select-none flex-1 bg-[#121212]/80 border border-white/5 rounded-xl flex items-center justify-center relative overflow-hidden"
     >
       <img
         v-if="resolvedPreviewUrl && !hasImageError"
         :src="resolvedPreviewUrl"
         @error="handlePreviewError"
-        class="w-full h-full object-cover"
+        class="w-full h-full object-cover select-none pointer-events-none"
         alt="File preview"
+        draggable="false"
       />
       <div
         v-else
-        class="w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-300"
+        class="select-none w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-300"
         :class="getFileBgClass(file.format)"
       >
         <FontAwesomeIcon
           :icon="getFileIcon(file.format)"
-          class="text-3xl text-[#121212]"
+          class="text-3xl text-[#121212] select-none"
         />
       </div>
     </div>

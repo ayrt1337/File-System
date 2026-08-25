@@ -497,7 +497,7 @@ const handleSave = async () => {
         </div>
       </div>
 
-      <div class="flex items-center justify-between gap-2 pt-2 border-t border-white/5">
+      <div class="flex items-center justify-between gap-2 pt-2">
         <button
           @click="copyShareUrl"
           class="px-3 sm:px-5 py-2 sm:py-2.5 border border-white/20 hover:border-white/30 hover:bg-white/5 text-white text-[14px] sm:text-sm font-semibold rounded-full cursor-pointer flex items-center gap-1.5 sm:gap-2"
