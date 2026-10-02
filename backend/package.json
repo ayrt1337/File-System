@@ -40,6 +40,7 @@
     "zod": "^4.4.3"
   },
   "scripts": {
-    "dev": "nodemon --exec tsx src/app.ts"
+    "dev": "nodemon --exec tsx src/app.ts",
+    "update:ytdlp": "node node_modules/yt-dlp-exec/scripts/postinstall.js"
   }
 }
